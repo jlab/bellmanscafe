@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block head %}
+Home
+{% endblock %}
+
+{% block body %}
+<h4>Hello {{usr}}!</h4>
+
+<form action="/bellman">
+    <input type="submit" value="Go To Bellman's Cafe" />
+</form>
+{% endblock %}
