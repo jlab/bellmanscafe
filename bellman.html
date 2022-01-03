@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block head %}
+Bellman's Cafe
+{% endblock %}
+
+{% block body %}
+<h1>Welcome to Bellman's Cafe</h1>
+<form action="#" method="post">
+    <p>Enter an exercice:</p>
+    <p><input type="text" name="ex" placeholder = "Excercise" /></p>
+
+    <p><label for="gra">Choose Grammar:</label>
+
+<select name="gra" id="gra">
+  <option value=""></option>
+  <option value="elmamun">elmamun</option>
+  <option value="2">2</option>
+  <option value="3">3</option>
+  <option value="4">4</option>
+</select>
+</p>
+
+    <p><label for="alg1">Choose Algebra 1:</label>
+
+<select name="alg1" id="alg1">
+  <option value=""></option>
+  <option value="enum">enum</option>
+  <option value="count">count</option>
+  <option value="pretty">pretty</option>
+  <option value="opt">opt</option>
+</select>
+</p>
+
+<p><label for="operator">Algebra Produkt:</label>
+
+<select name="operator" id="operator">
+  <option value=""></option>
+  <option value="*">*</option>
+  <option value="X">X</option>
+  <option value="Y">Y</option>
+</select>
+</p>
+
+
+<p><label for="alg2">Choose Algebra 2:</label>
+
+<select name="alg2" id="alg2">
+  <option value=""></option>
+  <option value="enum">enum</option>
+  <option value="count">count</option>
+  <option value="pretty">pretty</option>
+  <option value="opt">opt</option>
+</select>
+</p>
+
+
+<p><button type="submit" id=submit>Submit</button></p>
+</form>
+
+<!--
+<script type=text/javascript>
+        $(function() {
+          $('button#submit').on('click', function(e) {
+            e.preventDefault()
+            $.getJSON('/background_process_test',
+                function(data) {
+              //do nothing
+            });
+            return false;
+          });
+        });
+</script>
+-->
+
+
+{% endblock %}
