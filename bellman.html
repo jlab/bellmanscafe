@@ -13,22 +13,46 @@ Bellman's Cafe
     <p><label for="gra">Choose Grammar:</label>
 
 <select name="gra" id="gra">
+  <script type=text/javascript>
+    var grafiles = {{ grafiles|safe }};
+    /*
+    for (let i in grafiles) {
+        let grastr = grafiles[i]
+        document.write('<option value="'+grafiles[i]+'">'+grafiles[i]+'</option>');
+    }
+    */
+    grafiles.forEach(function(element) {
+        let grammar = element.substring(0, element.lastIndexOf('.')) || element;
+        document.write('<option value="'+grammar+'">'+grammar+'</option>');
+    });
+  </script>
+  <!--
   <option value=""></option>
-  <option value="elmamun">elmamun</option>
+  <option value={{gra}}>{{gra}}</option>
   <option value="2">2</option>
   <option value="3">3</option>
   <option value="4">4</option>
+  -->
 </select>
 </p>
 
     <p><label for="alg1">Choose Algebra 1:</label>
 
 <select name="alg1" id="alg1">
+  <script type=text/javascript>
+    var algebras = {{ algebras|safe }};
+    algebras.forEach(function(element) {
+        let algebra = element.replace("alg_", "");;
+        document.write('<option value="'+algebra+'">'+algebra+'</option>');
+    });
+  </script>
+  <!--
   <option value=""></option>
   <option value="enum">enum</option>
   <option value="count">count</option>
   <option value="pretty">pretty</option>
   <option value="opt">opt</option>
+  -->
 </select>
 </p>
 
@@ -46,11 +70,20 @@ Bellman's Cafe
 <p><label for="alg2">Choose Algebra 2:</label>
 
 <select name="alg2" id="alg2">
+  <script type=text/javascript>
+    var algebras = {{ algebras|safe }};
+    algebras.forEach(function(element) {
+        let algebra = element.replace("alg_", "");;
+        document.write('<option value="'+algebra+'">'+algebra+'</option>');
+    });
+  </script>
+  <!--
   <option value=""></option>
   <option value="enum">enum</option>
   <option value="count">count</option>
   <option value="pretty">pretty</option>
   <option value="opt">opt</option>
+  -->
 </select>
 </p>
 

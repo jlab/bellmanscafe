@@ -1,4 +1,4 @@
-import os, subprocess
+import os, subprocess, glob, json
 from flask import Flask, redirect, url_for, render_template, request, session
 
 app = Flask(__name__)
@@ -6,11 +6,28 @@ app.secret_key = "xasdqfghuioiuwqenjdcbjhawbuomcujeq1217846421kopNSJJGWmc8u29"
 
 #Variablen
 ex=""
+grafiles=""
 gra=""
 alg1=""
 operator=""
 alg2=""
 res=""
+grafiles= sorted(glob.glob('*.gap'))
+gra= grafiles[0].split(".")[0]
+print(grafiles)
+print(gra+"!")
+algebras=[]
+for grafile in grafiles:
+	#newlist = []
+	with open(grafile) as myfile:
+	    for myline in myfile:
+	    	splitline = myline.split(" ")
+	    	if splitline[0] == "algebra":
+	    		algebras.append(splitline[1])
+	    		#newlist.append(splitline[1])
+	#algebras.append(newlist)
+algebras = sorted(algebras)
+print(algebras)
 
 @app.route("/", methods=["POST", "GET"])
 def login():
@@ -43,7 +60,9 @@ def bellman():
         global operator
         global alg2
         global res
-
+        global grafiles
+        global algebras
+        
         ex= request.form.get('ex')
         gra= request.form.get('gra')
         alg1= request.form.get('alg1')
@@ -53,11 +72,15 @@ def bellman():
     #Algebra
     if ex != "" and gra != "" and alg1 != "" and operator == "" and alg2 == "":
         
-        if not os.exists (alg1+"_gapc.cc"):
-            subprocess.run('gapc -p '+alg1+' -o '+alg1+'_gapc.cc '+gra+' 2>&1')
-       
-        subprocess.run("make -f "+alg1+"_gapc.mf"+" 2>&1")
-        res = subprocess.run("./"+alg1+"_gapc "+ex+" 2>&1", capture_output=True)
+        dirstr="computed"
+        if not os.path.exists (dirstr+"/"+alg1+"_gapc.cc"):
+            if not os.path.exists(dirstr):
+                os.makedirs(dirstr)
+            subprocess.run('gapc -p '+'alg_'+alg1+' -o '+dirstr+'/'+alg1+'_gapc.cc '+gra+'.gap'+' 2>&1', shell=True)
+        os.chdir("./computed")
+        
+        subprocess.run("make -f "+alg1+"_gapc.mf"+" 2>&1", shell=True)
+        res = subprocess.run("./"+alg1+"_gapc "+ex+" 2>&1", shell=True, capture_output=True)
         
         return redirect(url_for("result"))
         
@@ -65,15 +88,19 @@ def bellman():
     elif ex != "" and gra != "" and alg1 != "" and operator != "" and alg2 != "":
         
         
-        if not os.exists (alg1+"_"+alg2+"_gapc.cc"):
-            subprocess.run('gapc -p '+alg1+operator+alg2+' -o '+alg1+'_'+alg2+'_gapc.cc '+gra+' 2>&1')
+        if not os.path.exists ("computed/"+alg1+"_"+alg2+"_gapc.cc"):
+            if not os.path.exists("computed"):
+                os.makedirs("computed")
+            subprocess.run('gapc -p '+'alg_'+alg1+operator+alg2+' -o '+dirstr+'/'+alg1+'_'+alg2+'_gapc.cc '+gra+'.gap'+' 2>&1', shell=True)
+        os.chdir("./computed")
 
-        subprocess.run("make -f "+alg1+"_"+alg2+"_gapc.mf"+" 2>&1")
-        res = subprocess.run("./"+alg1+"_"+alg2+"_gapc "+ex+" 2>&1")
+        subprocess.run("make -f "+alg1+"_"+alg2+"_gapc.mf"+" 2>&1", shell=True)
+        res = subprocess.run("./"+alg1+"_"+alg2+"_gapc "+ex+" 2>&1", shell=True, capture_output=True)
+        
         return redirect(url_for("result"))
 
 
-    return render_template("bellman.html")
+    return render_template("bellman.html", gra=gra, grafiles=json.dumps(grafiles), algebras=json.dumps(algebras))
 
 @app.route("/result")
 def result():
