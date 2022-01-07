@@ -26,11 +26,14 @@ Bellman's Cafe
     function myFunction(selectObject) {
         var dictionary = {{ dictionary|safe }};
         var selected = selectObject.value;
+        
         if(selected == ""){
           var alg2Select = document.getElementById("alg2select");
             while (alg2Select.firstChild) {
                 alg2Select.removeChild(alg2Select.firstChild);
-            }  
+            } 
+            var operat = document.getElementById("operator")
+            operat.selectedIndex = 0;
         }
         
         var algebrasList = dictionary[selected];
@@ -45,21 +48,6 @@ Bellman's Cafe
             option.text = algebraString;
             alg1Select.appendChild(option);
         });
-        
-        var alg2Select = document.getElementById("alg2select");
-        while (alg2Select.firstChild) {
-            alg2Select.removeChild(alg2Select.firstChild);
-        }
-        var emptyOption = document.createElement("option");
-        emptyOption.value = "";
-        emptyOption.text = "";
-        alg2Select.appendChild(emptyOption);
-        algebrasList.forEach(function(algebraString) {
-            var option = document.createElement("option");
-            option.value = algebraString;
-            option.text = algebraString;
-            alg2Select.appendChild(option);
-        });
     }
 </script>
 </p>
@@ -72,18 +60,46 @@ Bellman's Cafe
 
 <p><label for="operator">Algebra Produkt:</label>
 
-<select name="operator" id="operator">
+<select name="operator" id="operator" onchange=otherFunction(this)>
   <option value=""></option>
   <option value="*">*</option>
   <option value="X">X</option>
   <option value="Y">Y</option>
 </select>
+<script type=text/javascript>
+    function otherFunction(selectObject) {
+        
+        var dictionary = {{ dictionary|safe }};
+        
+        var selectObj = document.getElementById("grammarselect");
+        var selected = selectObj.value;
+        
+        var alg2Select = document.getElementById("alg2select");
+        while (alg2Select.firstChild) {
+            alg2Select.removeChild(alg2Select.firstChild);
+        }
+        var emptyOption = document.createElement("option");
+        emptyOption.value = "";
+        emptyOption.text = "";
+        alg2Select.appendChild(emptyOption);
+        
+        algebrasList = dictionary[selected];
+        
+        algebrasList.forEach(function(algebraString) {
+            var option = document.createElement("option");
+            option.value = algebraString;
+            option.text = algebraString;
+            alg2Select.appendChild(option);
+        });
+    }
+</script>
 </p>
 
 
 <p><label for="alg2">Choose Algebra 2:</label>
 
 <select id="alg2select" name="alg2" id="alg2">
+<option value=""></option>
 </select>
 </p>
 
