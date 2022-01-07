@@ -6,7 +6,7 @@ $ pip install Flask
 
 In einen Ordner das Python Skript einfügen und einen weiteren Ordner "templates" anlegen. In den Ordner "templates" die HTML Skripte einfügen. Das Python Skript ausführen, Website über Lokal Host starten.
 
-All html files are now stored in the templates folder, html files in the base folder are no longer used (we could delete them?).
+All html files are now stored in the templates folder, html files in the base folder are no longer used.
 To run the website on your local machine clone the git (alternatively download Bellmansgap.py and the "templates" folder in the same location). 
 
 Prerequisites:
