@@ -14,9 +14,7 @@ You will need python3 and Flask in order for this to work.
 
 In Ubuntu 20.04 you can install them using the following commands: 
 
-sudo apt-get update 
-
-sudo apt-get install python3.8 python3-pip 
+sudo apt-get update <br> sudo apt-get install python3.8 python3-pip 
 
 sudo pip install Flask 
 
