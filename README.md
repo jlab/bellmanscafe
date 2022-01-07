@@ -12,12 +12,16 @@ To run the website on your local machine clone the git (alternatively download B
 Prerequisites:
 You will need python3 and Flask in order for this to work. 
 
-In Ubuntu 20.04 you can install them using the following commands: \n
-sudo apt-get update \n
-sudo apt-get install python3.8 python3-pip \n
-sudo pip install Flask \n
+In Ubuntu 20.04 you can install them using the following commands: 
 
-In your Linux terminal navigate to the folder that Bellmansgap.py and the templates folder have been downloaded to and run Bellmansgap.py by typing: \n
+sudo apt-get update 
+
+sudo apt-get install python3.8 python3-pip 
+
+sudo pip install Flask 
+
+In your Linux terminal navigate to the folder that Bellmansgap.py and the templates folder have been downloaded to and run Bellmansgap.py by typing: 
+
 python3 Bellmansgap.py
 
 In the terminal hold CTRL and click on "http://127.0.0.1:5000/", the website should open as a new tab in your browser (we tested this on Google Chrome).
