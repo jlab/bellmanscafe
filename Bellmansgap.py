@@ -1,4 +1,4 @@
-import os, subprocess, glob, json
+import os, subprocess, signal, glob, json
 from flask import Flask, redirect, url_for, render_template, request, session
 
 app = Flask(__name__)
@@ -12,22 +12,20 @@ alg1=""
 operator=""
 alg2=""
 res=""
-grafiles= sorted(glob.glob('*.gap'))
-gra= grafiles[0].split(".")[0]
-print(grafiles)
-print(gra+"!")
-algebras=[]
+dirstr=""
+grafiles= glob.glob('*.gap')
+sortedgrafiles= sorted(grafiles)
+gra=""
+dictionary={}
 for grafile in grafiles:
-	#newlist = []
+	newlist = []
 	with open(grafile) as myfile:
 	    for myline in myfile:
+	    	# this only works if algebras are separated by new lines in the .gap files
 	    	splitline = myline.split(" ")
 	    	if splitline[0] == "algebra":
-	    		algebras.append(splitline[1])
-	    		#newlist.append(splitline[1])
-	#algebras.append(newlist)
-algebras = sorted(algebras)
-print(algebras)
+	    		newlist.append(splitline[1])
+	dictionary[grafile.split(".")[0]] = newlist
 
 @app.route("/", methods=["POST", "GET"])
 def login():
@@ -61,7 +59,8 @@ def bellman():
         global alg2
         global res
         global grafiles
-        global algebras
+        global dirstr
+        global dictionary
         
         ex= request.form.get('ex')
         gra= request.form.get('gra')
@@ -70,37 +69,45 @@ def bellman():
         alg2= request.form.get('alg2')
     
     #Algebra
-    if ex != "" and gra != "" and alg1 != "" and operator == "" and alg2 == "":
+    if ex != "" and gra != "" and alg1 != "" and alg2 == "":
         
         dirstr="computed"
         if not os.path.exists (dirstr+"/"+alg1+"_gapc.cc"):
             if not os.path.exists(dirstr):
                 os.makedirs(dirstr)
-            subprocess.run('gapc -p '+'alg_'+alg1+' -o '+dirstr+'/'+alg1+'_gapc.cc '+gra+'.gap'+' 2>&1', shell=True)
-        os.chdir("./computed")
+            pro1 = subprocess.run('gapc -p '+alg1+' -o '+dirstr+'/'+alg1+'_gapc.cc '+gra+'.gap'+' 2>&1', shell=True)
+            #if pro1.returncode != 0:
+            	#print(pro1.stderr)
+        os.chdir("./"+dirstr)
         
-        subprocess.run("make -f "+alg1+"_gapc.mf"+" 2>&1", shell=True)
-        res = subprocess.run("./"+alg1+"_gapc "+ex+" 2>&1", shell=True, capture_output=True)
+        pro2 = subprocess.run("make -f "+alg1+"_gapc.mf"+" 2>&1", shell=True)
+        pro3 = subprocess.run("./"+alg1+"_gapc "+ex+" 2>&1", shell=True, capture_output=True)
+        res = pro3.stdout.decode()
+        os.chdir("..")
         
         return redirect(url_for("result"))
         
         #Algebraprodukt
     elif ex != "" and gra != "" and alg1 != "" and operator != "" and alg2 != "":
         
-        
-        if not os.path.exists ("computed/"+alg1+"_"+alg2+"_gapc.cc"):
-            if not os.path.exists("computed"):
-                os.makedirs("computed")
-            subprocess.run('gapc -p '+'alg_'+alg1+operator+alg2+' -o '+dirstr+'/'+alg1+'_'+alg2+'_gapc.cc '+gra+'.gap'+' 2>&1', shell=True)
-        os.chdir("./computed")
+        dirstr="computed"
+        if not os.path.exists (dirstr+"/"+alg1+"_"+alg2+"_gapc.cc"):
+            if not os.path.exists(dirstr):
+                os.makedirs(dirstr)
+            pro1 = subprocess.run('gapc -p '+alg1+operator+alg2+' -o '+dirstr+'/'+alg1+'_'+alg2+'_gapc.cc '+gra+'.gap'+' 2>&1', shell=True)
+            #if pro1.returncode != 0:
+            	#print(pro1.stderr)
+        os.chdir("./"+dirstr)
 
-        subprocess.run("make -f "+alg1+"_"+alg2+"_gapc.mf"+" 2>&1", shell=True)
-        res = subprocess.run("./"+alg1+"_"+alg2+"_gapc "+ex+" 2>&1", shell=True, capture_output=True)
+        pro2 = subprocess.run("make -f "+alg1+"_"+alg2+"_gapc.mf"+" 2>&1", shell=True)
+        pro3 = subprocess.run("./"+alg1+"_"+alg2+"_gapc "+ex+" 2>&1", shell=True, capture_output=True)
+        res = pro3.stdout.decode()
+        os.chdir("..")
         
         return redirect(url_for("result"))
 
 
-    return render_template("bellman.html", gra=gra, grafiles=json.dumps(grafiles), algebras=json.dumps(algebras))
+    return render_template("bellman.html", gra=gra, grafiles=json.dumps(grafiles), dictionary=json.dumps(dictionary))
 
 @app.route("/result")
 def result():
