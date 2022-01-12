@@ -16,13 +16,17 @@ dirstr=""
 gapfiles= glob.glob('*.gap')
 sortedgapfiles= sorted(gapfiles)
 gra=""
+program=""
 gramdict={}
 algdict={}
+infotextsdict={}
 for grafile in gapfiles:
     gramlist = []
     alglist = []
+    commentslist = []
     with open(grafile) as myfile:
         is_in_comment = False
+        current_comment = ""
         # this only works if algebras are separated by new lines in the .gap files
         for myline in myfile:
             
@@ -30,11 +34,17 @@ for grafile in gapfiles:
             # and end with '*/\n' on another line
             if myline.startswith('/*'):
                 is_in_comment = True
+                myline = myline.split("/*")[1]
             if myline.endswith('*/\n'):
                 is_in_comment = False
+                current_comment += myline.split("*/\n")[0]
+                commentslist.append(current_comment)
+                current_comment = ""
             if is_in_comment:
+                current_comment += myline
                 continue
             if myline.startswith("//"):
+                commentslist.append(myline.split("//")[1])
                 continue
             splitline = myline.split(" ")
             if splitline[0] == "grammar":
@@ -43,6 +53,7 @@ for grafile in gapfiles:
                 alglist.append(splitline[1])
     gramdict[grafile.split(".")[0]] = gramlist
     algdict[grafile.split(".")[0]] = alglist
+    infotextsdict[grafile.split(".")[0]] = commentslist
 
 @app.route("/", methods=["POST", "GET"])
 def login():
@@ -70,6 +81,7 @@ def home():
 def bellman():
     if request.method == 'POST':
         global ex
+        global program
         global gra
         global alg1
         global operator
@@ -78,24 +90,27 @@ def bellman():
         global gapfiles
         global dirstr
         global algdict
+        global infotextsdict
         
         ex= request.form.get('ex')
+        program= request.form.get('program')
         gra= request.form.get('gra')
         alg1= request.form.get('alg1')
         operator= request.form.get('operator')
         alg2= request.form.get('alg2')
     
     #Algebra
-    if ex != "" and gra != "" and alg1 != "" and alg2 == "":
+    if ex != "" and program != "" and gra != "" and alg1 != "" and alg2 == "":
         
-        dirstr="computed"
+        dirstr="computed_"+program
         if not os.path.exists (dirstr+"/"+alg1+"_gapc.cc"):
             if not os.path.exists(dirstr):
                 os.makedirs(dirstr)
-            pro1 = subprocess.run('gapc -p '+alg1+' -o '+dirstr+'/'+alg1+'_gapc.cc '+gra+'.gap'+' 2>&1', shell=True)
+            pro1 = subprocess.run('gapc -p '+alg1+' -o '+dirstr+'/'+alg1+'_gapc.cc '+program+'.gap'+' 2>&1', shell=True)
             #if pro1.returncode != 0:
             	#print(pro1.stderr)
         os.chdir("./"+dirstr)
+        print(os. getcwd())
         
         pro2 = subprocess.run("make -f "+alg1+"_gapc.mf"+" 2>&1", shell=True)
         
@@ -103,16 +118,16 @@ def bellman():
         res = pro3.stdout.splitlines()
         os.chdir("..")
         
-        return render_template("bellman.html", result=res, gra=gra, gapfiles=json.dumps(gapfiles), gramdict=json.dumps(gramdict), algdict=json.dumps(algdict))
+        return render_template("bellman.html", result=res, program=program, gra=gra, gapfiles=json.dumps(gapfiles), gramdict=json.dumps(gramdict), algdict=json.dumps(algdict), infotextsdict=json.dumps(infotextsdict))
         
         #Algebraprodukt
-    elif ex != "" and gra != "" and alg1 != "" and operator != "" and alg2 != "":
+    elif ex != "" and program != "" and gra != "" and alg1 != "" and operator != "" and alg2 != "":
         
-        dirstr="computed"
+        dirstr="computed_"+program
         if not os.path.exists (dirstr+"/"+alg1+"_"+alg2+"_gapc.cc"):
             if not os.path.exists(dirstr):
                 os.makedirs(dirstr)
-            pro1 = subprocess.run('gapc -p '+alg1+operator+alg2+' -o '+dirstr+'/'+alg1+'_'+alg2+'_gapc.cc '+gra+'.gap'+' 2>&1', shell=True)
+            pro1 = subprocess.run('gapc -p '+alg1+operator+alg2+' -o '+dirstr+'/'+alg1+'_'+alg2+'_gapc.cc '+program+'.gap'+' 2>&1', shell=True)
             #if pro1.returncode != 0:
             	#print(pro1.stderr)
         os.chdir("./"+dirstr)
@@ -122,10 +137,10 @@ def bellman():
         res = pro3.stdout.splitlines()
         os.chdir("..")
         
-        return render_template("bellman.html", result=res, gra=gra, gapfiles=json.dumps(gapfiles), gramdict=json.dumps(gramdict), algdict=json.dumps(algdict))
+        return render_template("bellman.html", result=res, program=program, gra=gra, gapfiles=json.dumps(gapfiles), gramdict=json.dumps(gramdict), algdict=json.dumps(algdict), infotextsdict=json.dumps(infotextsdict))
 
 
-    return render_template("bellman.html", gra=gra, gapfiles=json.dumps(gapfiles), gramdict=json.dumps(gramdict), algdict=json.dumps(algdict))
+    return render_template("bellman.html", program=program, gra=gra, gapfiles=json.dumps(gapfiles), gramdict=json.dumps(gramdict), algdict=json.dumps(algdict), infotextsdict=json.dumps(infotextsdict))
 
 @app.route("/result")
 def result():
