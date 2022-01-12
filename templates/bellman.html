@@ -39,6 +39,9 @@ Bellman's Cafe
             } 
             var operat = document.getElementById("operator")
             operat.selectedIndex = 0;
+            
+            var textbox = document.getElementById("textbox");
+            textbox.innerHTML = "<p>Infotext:</p>";
         }
         
         var grammarsList = gramdict[selected];
@@ -72,8 +75,25 @@ Bellman's Cafe
             option.text = algebraString;
             alg1Select.appendChild(option);
         });
+    var infotextsdict = {{ infotextsdict|safe }};
+    var infotextslist = infotextsdict[selected];
+    var textbox = document.getElementById("textbox");
+    
+    textbox.innerHTML = "<p>Infotext:</p>";
+    
+    infotextslist.forEach(function(infotext) {
+            textbox.innerHTML += infotext;
+        });
     }
 </script>
+    
+    <div id="textbox">
+    <p>
+        Infotext:
+    </p>    
+    </div>
+    
+    <br>
     
     <p><label for="gra">Choose Grammar:</label>
 
