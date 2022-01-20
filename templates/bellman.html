@@ -23,12 +23,12 @@ Bellman's Cafe
   </script>
 </select>
 <script type=text/javascript>
-    function progFunction(selectObject) {
+    function progFunction(selectProgramObject) {
         var gramdict = {{ gramdict|safe }};
         var algdict = {{ algdict|safe }};
-        var selected = selectObject.value;
+        var selectedProgram = selectProgramObject.value;
         
-        if(selected == ""){
+        if(selectedProgram == ""){
           var alg1Select = document.getElementById("alg1select");
             while (alg1Select.firstChild) {
                 alg1Select.removeChild(alg1Select.firstChild);
@@ -44,8 +44,8 @@ Bellman's Cafe
             textbox.innerHTML = "<p>Infotext:</p>";
         }
         
-        var grammarsList = gramdict[selected];
-        var algebrasList = algdict[selected];
+        var grammarsList = gramdict[selectedProgram];
+        var algebrasList = algdict[selectedProgram];
         
         
         var grammarSelect = document.getElementById("grammarselect");
@@ -76,7 +76,7 @@ Bellman's Cafe
             alg1Select.appendChild(option);
         });
     var infotextsdict = {{ infotextsdict|safe }};
-    var infotextslist = infotextsdict[selected];
+    var infotextslist = infotextsdict[selectedProgram];
     var textbox = document.getElementById("textbox");
     
     textbox.innerHTML = "<p>Infotext:</p>";
@@ -143,16 +143,61 @@ Bellman's Cafe
 <select name="operator" id="operator" onchange=operatorFunction(this)>
   <option value=""></option>
   <option value="*">*</option>
-  <option value="X">X</option>
-  <option value="Y">Y</option>
+  <option value="/">/</option>
+  <option value="%">%</option>
+  <option value="^">^</option>
+  <option value=".">.</option>
+  <option value="|">|</option>
 </select>
+
+    <div id="operatorinfo">
+    <p>
+        Info:
+    </p>    
+    </div>
+    
+    <br>
+
 <script type=text/javascript>
-    function operatorFunction(selectObject) {
+    function operatorFunction(operatorSelectObject) {
+        
+        var operatorinfo = document.getElementById("operatorinfo");
+    
+        operatorinfo.innerHTML = "<p>Info:</p>";
+    
+        var selectedOperator = operatorSelectObject.value;
+        
+        switch (selectedOperator) {
+            case "":
+                operatorinfo.innerHTML = "<p>Info:</p>";
+                break;
+            case "*":
+                operatorinfo.innerHTML += "&nbsp;&nbsp;* : The lexicographic product.";
+                break;
+            case "/":
+                operatorinfo.innerHTML += "&nbsp;&nbsp;/ : The interleaved product.";
+                break;
+            case "%":
+                operatorinfo.innerHTML += "&nbsp;&nbsp;% : The cartesian product.";
+                break;
+            case "^":
+                operatorinfo.innerHTML += "&nbsp;&nbsp;^ : The Pareto product.";
+                break;
+            case ".":
+                operatorinfo.innerHTML += "&nbsp;&nbsp;. : The take-one product. The difference to the lexicographic product is that only one co-optimal result is chosen in the case of co-optimal results.";
+                break;
+            case "|":
+                operatorinfo.innerHTML += "&nbsp;&nbsp;| : The overlay product. With !A | B!, $A$ is used in the forward computation and $B$ is used during backtracing.";
+                break;
+            default:
+                operatorinfo.innerHTML = "<p>Info:</p>";
+            
+        }
         
         var algdict = {{ algdict|safe }};
         
-        var selectObj = document.getElementById("programselect");
-        var selected = selectObj.value;
+        var selectProgramObj = document.getElementById("programselect");
+        var selectedProgram = selectProgramObj.value;
         
         var alg2Select = document.getElementById("alg2select");
         while (alg2Select.firstChild) {
@@ -163,7 +208,7 @@ Bellman's Cafe
         emptyOption.text = "";
         alg2Select.appendChild(emptyOption);
         
-        algebrasList = algdict[selected];
+        algebrasList = algdict[selectedProgram];
         
         algebrasList.forEach(function(algebraString) {
             var option = document.createElement("option");
