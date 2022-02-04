@@ -2,15 +2,25 @@
 
 {% block head %}
 Bellman's Cafe
+<style>
+    #divleft {
+        width:50%;
+        float:left;
+    }
+    
+    #divright {
+        width:50%;
+        float:right;
+    }
+</style>
 {% endblock %}
 
 {% block body %}
 <h1>Welcome to Bellman's Cafe</h1>
+<div id="divleft">
 <form action="#" method="post">
-    <p>Enter an exercice:</p>
-    <p><input type="text" name="ex" placeholder = "For example: 1+2*3" /></p>
 
-    <p><label for="program">Choose Program:</label>
+<p><label for="program">Choose Program:</label>
 
 <select id="programselect" onchange=progFunction(this) name="program" id="program">
   <option value="">Choose a program</option>
@@ -22,6 +32,11 @@ Bellman's Cafe
     });
   </script>
 </select>
+
+<div id="exercise">
+    <p>Enter an exercice:</p>
+</div>
+
 <script type=text/javascript>
     function progFunction(selectProgramObject) {
         var gramdict = {{ gramdict|safe }};
@@ -42,6 +57,21 @@ Bellman's Cafe
             
             var textbox = document.getElementById("textbox");
             textbox.innerHTML = "<p>Infotext:</p>";
+            
+            var exercisediv = document.getElementById("exercise");
+            exercisediv.innerHTML="<p>Enter an exercice:</p>";
+        }
+        
+        var placeholderstring = "\"For example: 1+2*3\"";
+        var inputstringsnumberdict = {{ inputstringsnumberdict|safe }};
+        var n = inputstringsnumberdict[selectedProgram];
+        
+        var exercisediv = document.getElementById("exercise");
+        exercisediv.innerHTML="<p>Enter an exercice:</p>";
+        
+        for (let i = 1; i <= n; i++) {
+            
+            exercisediv.innerHTML+='<p><input type="text" id="ex"'+i+'" name="ex'+i+'" placeholder = '+placeholderstring+' /></p>';
         }
         
         var grammarsList = gramdict[selectedProgram];
@@ -86,6 +116,8 @@ Bellman's Cafe
         });
     }
 </script>
+
+
     
     <div id="textbox">
     <p>
@@ -229,19 +261,28 @@ Bellman's Cafe
 </p>
 
 <p><button type="submit" id=submit>Submit</button></p>
+</form>
+</div>
+<div id="divright">
+<p>Result:</p>
 <script type=text/javascript>
+    var inputreminder = {{ inputreminderlist|safe }}
+    var inputreminderstring = "<div> Your Input: "+{{exlist|safe}}+"</div>";
+    inputreminder.forEach(function(line) {
+            inputreminderstring = "<span> "+inputreminderstring + line + " </span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+        });
+    inputreminderstring += "<br><br>"
     var result = {{ result|safe }}
     var resultstring = "";
-    var counter = 1;
     result.forEach(function(programoutput) {
             programoutput.forEach(function(line){
                 resultstring = resultstring + line + "<br>";
             });
             resultstring = resultstring + "<br>";
         });
+    resultstring = inputreminderstring + resultstring;
     document.write(resultstring);
 </script>
-</form>
-
+</div>
 
 {% endblock %}
