@@ -6,11 +6,13 @@ def parsegapfiles(gapfiles):
   gramdict={}
   algdict={}
   infotextsdict={}
+  inputstringsnumberdict={}
   outputdict = {}
   for grafile in gapfiles:
     gramlist = []
     alglist = []
     commentslist = []
+    number_of_inputstrings = 1
     with open(grafile) as myfile:
         is_in_comment = False
         current_comment = ""
@@ -38,10 +40,18 @@ def parsegapfiles(gapfiles):
                 gramlist.append(splitline[1])
             if splitline[0] == "algebra":
                 alglist.append(splitline[1])
+            if splitline[0] == "input":
+            	if "raw" in myline.casefold():
+            		number_of_inputstrings = myline.count("raw")
+            	elif "rna" in myline.casefold():
+            		number_of_inputstrings = myline.count("rna")
+            	
     gramdict[grafile.split(".")[0]] = gramlist
     algdict[grafile.split(".")[0]] = alglist
     infotextsdict[grafile.split(".")[0]] = commentslist
+    inputstringsnumberdict[grafile.split(".")[0]] = number_of_inputstrings
   outputdict["gramdict"] = gramdict
   outputdict["algdict"] = algdict
   outputdict["infotextsdict"] = infotextsdict
+  outputdict["inputstringsnumberdict"] = inputstringsnumberdict
   return outputdict
