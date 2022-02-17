@@ -24,10 +24,16 @@ In the terminal hold CTRL and click on "http://127.0.0.1:5000/", the website sho
 
 You can now use the website as you wish.
 
-Packages on the Ubuntu 20.04.3 server (Feb 17 2022):
+Packages on the Ubuntu 20.04.3 server (Feb 17 2022), installed via apt/apt-get (except flask, which was install via pip3):
+
 git 2.25.1
+
 python3 3.8.10
+
 pip 20.0.2 (Python 3.8)
-flask 2.0.3 (pip)
-nginx 1.18.0 (Ubuntu)
-gunicorn
+
+flask 2.0.3 (pip3)
+
+nginx 1.18.0
+
+gunicorn 20.0.4
