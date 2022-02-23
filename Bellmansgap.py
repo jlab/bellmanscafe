@@ -33,6 +33,8 @@ inputstringsnumberdict = returndict["inputstringsnumberdict"]
 
 inputreminderlist=[]
 
+operator_letter = ""
+
 @app.route("/", methods=["POST", "GET"])
 def login():
     if request.method == "POST":
@@ -72,6 +74,7 @@ def bellman():
         global infotextsdict
         global inputstringsnumberdict
         global inputreminderlist
+        global operator_letter
         
         program= request.form.get('program')
         exlist=[]
@@ -104,8 +107,22 @@ def bellman():
     #Algebraprodukt
     elif len(exlist) != 0 and program != "" and gra != "" and alg1 != "" and operator != "" and alg2 != "":
         
+        #"*" "/" "%" "^" "." "|"
+        if operator == "*":
+        	operator_letter="l"
+        elif operator == "/":
+        	operator_letter = "i"
+        elif operator == "%":
+        	operator_letter = "c"
+        elif operator == "^":
+        	operator_letter = "p"
+        elif operator == ".":
+        	operator_letter = "t"
+        elif operator == "|":
+        	operator_letter = "o"
+        
         command = ""+alg1+operator+alg2
-        name= alg1+"_"+alg2
+        name= alg1+"_"+operator_letter+"_"+alg2
         res = calculategapc(program, command, name, exlist)
         
         return render_template("bellman.html", result=res, program=program, gra=gra, gapfiles=json.dumps(gapfiles), gramdict=json.dumps(gramdict), algdict=json.dumps(algdict), infotextsdict=json.dumps(infotextsdict), inputstringsnumberdict = inputstringsnumberdict, inputreminderlist=inputreminderlist, exlist=exlist)
@@ -118,6 +135,7 @@ def calculategapc(program, command, name, exlist):
     dirstr="computed_"+program
     res = []
     print("Program: ",program," Exlist: ",exlist)
+    
     commandstring = 'gapc -p '+command+' -o '+dirstr+'/'+name+'_gapc.cc '+program+'.gap'+' 2>&1'
     pro1_returncode = 0
     if not os.path.exists (dirstr+"/"+name+"_gapc.cc"):
@@ -135,7 +153,9 @@ def calculategapc(program, command, name, exlist):
     	list1.append(infostring)
     	res.append(list1)
     
+    
     os.chdir("./"+dirstr)
+    
     
     commandstring = "make -f "+name+"_gapc.mf"+" 2>&1"
     if pro1_returncode != 0:
@@ -162,6 +182,7 @@ def calculategapc(program, command, name, exlist):
         if pro2.returncode != 0:
             erororororor = ""
         else :
+        
             pro3 = subprocess.run(commandlist, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             list3 = pro3.stdout.splitlines()
             list3.insert(0, "Command: " + commandstring)
