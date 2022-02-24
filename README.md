@@ -1,5 +1,5 @@
 # bellmanscafe
-Interactive GAPc Website: [bellmanscafe.jlab.bio](bellmanscafe.jlab.bio)
+Interactive GAPc Website: [bellmanscafe.jlab.bio](http://bellmanscafe.jlab.bio)
 
 
 $ pip install Flask
