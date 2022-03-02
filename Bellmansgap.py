@@ -35,26 +35,9 @@ inputreminderlist=[]
 
 operator_letter = ""
 
-@app.route("/", methods=["POST", "GET"])
-def login():
-    if request.method == "POST":
-        user = request.form["nm"]
-        session["user"] = user
-        return redirect(url_for("home"))
-    else:
-        if "user" in session:
-            return redirect(url_for("home"))
-        else:       
-            return render_template("login.html")
-
-
-@app.route("/home")
+@app.route("/")
 def home():
-    if "user" in session:
-        user = session["user"]
-        return render_template("index.html", usr=user)
-    else: 
-        return redirect(url_for("login"))
+    return render_template("index.html")
 
 
 @app.route("/bellman", methods=["GET", "POST"])
@@ -178,7 +161,9 @@ def calculategapc(program, command, name, exlist):
         #commandlist.append("2>&1")
         
         commandstring = "./"+name+"_gapc "+ex+" 2>&1"
-	    
+        #( ulimit -t 1; ./a.out )
+        commandstring = "( ulimit -t 0; " + commandstring + " )"
+	   
         if pro2.returncode != 0:
             erororororor = ""
         else :
@@ -194,11 +179,6 @@ def calculategapc(program, command, name, exlist):
 @app.route("/result")
 def result():
     return render_template('result.html', result=res)
-
-@app.route("/logout")
-def logout():
-    session.pop("user", None)
-    return redirect(url_for("login"))
 
 
 if __name__ == "__main__":
