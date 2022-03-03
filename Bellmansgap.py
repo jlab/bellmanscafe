@@ -169,7 +169,7 @@ def calculategapc(program, command, name, exlist):
             pro3 = subprocess.run(commandlist, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             list3 = pro3.stdout.splitlines()
             list3.insert(0, "<b>Command</b>: " + commandstring)
-            list3.insert(1, "<b>Output</b>:")
+            list3.insert(1, "<b>Output</b> :")
             res.append(list3)
 	    
     os.chdir("..")
