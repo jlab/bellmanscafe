@@ -127,11 +127,11 @@ def calculategapc(program, command, name, exlist):
         pro1 = subprocess.run(commandstring, shell=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         pro1_returncode = pro1.returncode
         list1 = pro1.stdout.splitlines()
-        list1.insert(0, "Command: " + commandstring)
+        list1.insert(0, "<b>Command</b>: " + commandstring)
         res.append(list1)
     else:
     	list1 = []
-    	list1.append("Command: " + commandstring)
+    	list1.append("<b>Command</b>: " + commandstring)
     	res.append(list1)
     
     
@@ -144,7 +144,7 @@ def calculategapc(program, command, name, exlist):
     else:
         pro2 = subprocess.run(commandstring, shell=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         list2 = pro2.stdout.splitlines()
-        list2.insert(0, "Command: " + commandstring)
+        list2.insert(0, "<b>Command</b>: " + commandstring)
         res.append(list2)
 	    
         commandlist = []
@@ -168,7 +168,8 @@ def calculategapc(program, command, name, exlist):
         
             pro3 = subprocess.run(commandlist, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             list3 = pro3.stdout.splitlines()
-            list3.insert(0, "Command: " + commandstring)
+            list3.insert(0, "<b>Command</b>: " + commandstring)
+            list3.insert(1, "<b>Output</b>:")
             res.append(list3)
 	    
     os.chdir("..")
