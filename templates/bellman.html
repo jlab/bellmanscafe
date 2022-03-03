@@ -1,0 +1,373 @@
+{% extends "base.html" %}
+
+{% block head %}
+Bellman's Cafe v1.1
+<style>
+    #divleft {
+        width:50%;
+        float:left;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+    
+    #divright {
+        width:50%;
+        float:right;
+    }
+/*
+html {
+    overflow:auto;
+}
+    
+body {
+    //height: auto;
+    min-height: 100vh;
+    overflow:auto;
+}
+
+#root {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+}
+*/
+   
+   
+.loader-wrapper {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #242f3f;
+  justify-content: center;
+  align-items: center;
+  opacity: 0.6;
+  display: flex;
+}
+.loader {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  position: relative;
+  border: 4px solid #Fff;
+  animation: loader 2s infinite ease;
+}
+.loader-inner {
+  vertical-align: top;
+  display: inline-block;
+  width: 100%;
+  background-color: #fff;
+  animation: loader-inner 2s infinite ease-in;
+}
+@keyframes loader {
+  0% { transform: rotate(0deg);}
+  25% { transform: rotate(180deg);}
+  50% { transform: rotate(180deg);}
+  75% { transform: rotate(360deg);}
+  100% { transform: rotate(360deg);}
+}
+@keyframes loader-inner {
+  0% { height: 0%;}
+  25% { height: 0%;}
+  50% { height: 100%;}
+  75% { height: 100%;}
+  100% { height: 0%;}
+} 
+
+</style>
+{% endblock %}
+
+{% block body %}
+
+<script>
+        
+        $(window).on("load",function(){
+          $(".loader-wrapper").fadeOut("slow");
+        });
+        
+        loader = document.getElementById("loader");
+        $('body').removeChild(loader);
+</script>
+
+<h1>Welcome to Bellman's Cafe</h1>
+<div id="divleft">
+<form action="#" method="post">
+
+<p><label for="program">Choose Program:</label>
+
+<select id="programselect" onchange=progFunction(this) name="program" id="program">
+  <option value="">Choose a program</option>
+  <script type=text/javascript>
+    var gapfiles = {{ gapfiles|safe }};
+    gapfiles.forEach(function(element) {
+        let program = element.substring(0, element.lastIndexOf('.')) || element;
+        document.write('<option value="'+program+'">'+program+'</option>');
+    });
+  </script>
+</select>
+
+    <div id="textbox">
+    <!--
+    <p>
+        Infotext:
+    </p>   
+    -->
+    </div>
+    
+    <br>
+
+<div id="exercise">
+    <!--<p>Your Input:</p>-->
+</div>
+
+<script type=text/javascript>
+    function progFunction(selectProgramObject) {
+        var gramdict = {{ gramdict|safe }};
+        var algdict = {{ algdict|safe }};
+        var selectedProgram = selectProgramObject.value;
+        
+        if(selectedProgram == ""){
+          var alg1Select = document.getElementById("alg1select");
+            while (alg1Select.firstChild) {
+                alg1Select.removeChild(alg1Select.firstChild);
+            }             
+          var alg2Select = document.getElementById("alg2select");
+            while (alg2Select.firstChild) {
+                alg2Select.removeChild(alg2Select.firstChild);
+            } 
+            var operat = document.getElementById("operator")
+            operat.selectedIndex = 0;
+            
+            var textbox = document.getElementById("textbox");
+            textbox.innerHTML = "<p>Infotext:</p>";
+            
+            var exercisediv = document.getElementById("exercise");
+            exercisediv.innerHTML="<p>Enter an exercise: (For example: 1+2*3)</p>";
+        }
+        
+        var example_value = "\"1+2*3\"";
+        var inputstringsnumberdict = {{ inputstringsnumberdict|safe }};
+        var n = inputstringsnumberdict[selectedProgram];
+        
+        var exercisediv = document.getElementById("exercise");
+        exercisediv.innerHTML="<p>Enter an exercise: (For example 1+2*3)</p>";
+        
+        for (let i = 1; i <= n; i++) {
+            
+            exercisediv.innerHTML+='<p><input type="text" id="ex"'+i+'" name="ex'+i+'" value = '+example_value+' /></p>';
+        }
+        
+        var grammarsList = gramdict[selectedProgram];
+        var algebrasList = algdict[selectedProgram];
+        
+        
+        var grammarSelect = document.getElementById("grammarselect");
+        while (grammarSelect.firstChild) {
+            grammarSelect.removeChild(grammarSelect.firstChild);
+        }
+        var defaultOption = document.createElement("option");
+        defaultOption.value = "";
+        defaultOption.text = "Choose a grammar";
+        grammarSelect.appendChild(defaultOption);
+        
+        grammarsList.forEach(function(grammarString) {
+            var option = document.createElement("option");
+            option.value = grammarString;
+            option.text = grammarString;
+            grammarSelect.appendChild(option);
+        });
+        
+        
+        var alg1Select = document.getElementById("alg1select");
+        while (alg1Select.firstChild) {
+            alg1Select.removeChild(alg1Select.firstChild);
+        }
+        algebrasList.forEach(function(algebraString) {
+            var option = document.createElement("option");
+            option.value = algebraString;
+            option.text = algebraString;
+            alg1Select.appendChild(option);
+        });
+    var infotextsdict = {{ infotextsdict|safe }};
+    var infotextslist = infotextsdict[selectedProgram];
+    var textbox = document.getElementById("textbox");
+    
+    textbox.innerHTML = "<p>Infotext:</p>";
+    textbox.style = "border:1px solid black;";
+    
+    infotextslist.forEach(function(infotext) {
+            textbox.innerHTML += infotext;
+        });
+    }
+</script>
+    
+<p><label for="gra">Choose Grammar:</label>
+
+<select id="grammarselect" onchange=gramFunction(this) name="gra" id="gra">
+  <option value="">Choose a grammar</option>
+</select>
+<!--
+<script type=text/javascript>
+    function gramFunction(selectObject) {
+        var algdict = {{ algdict|safe }};
+        var selected = selectObject.value;
+        
+        if(selected == ""){
+          var alg2Select = document.getElementById("alg2select");
+            while (alg2Select.firstChild) {
+                alg2Select.removeChild(alg2Select.firstChild);
+            } 
+            var operat = document.getElementById("operator")
+            operat.selectedIndex = 0;
+        }
+        
+        var algebrasList = algdict[selected];
+        
+        var alg1Select = document.getElementById("alg1select");
+        while (alg1Select.firstChild) {
+            alg1Select.removeChild(alg1Select.firstChild);
+        }
+        algebrasList.forEach(function(algebraString) {
+            var option = document.createElement("option");
+            option.value = algebraString;
+            option.text = algebraString;
+            alg1Select.appendChild(option);
+        });
+    }
+</script>
+-->
+</p>
+
+    <p><label for="alg1">Choose Algebra 1:</label>
+
+<select id="alg1select" name="alg1" id="alg1">
+</select>
+</p>
+
+<p><label for="operator">Produkt Operator:</label>
+
+<select name="operator" id="operator" onchange=operatorFunction(this)>
+  <option value=""></option>
+  <option value="*">*</option>
+  <option value="/">/</option>
+  <option value="%">%</option>
+  <option value="^">^</option>
+  <option value=".">.</option>
+  <option value="|">|</option>
+</select>
+
+    <div id="operatorinfo">
+    <p>
+        Info:
+    </p>    
+    </div>
+    
+    <br>
+
+<script type=text/javascript>
+    function operatorFunction(operatorSelectObject) {
+        
+        var operatorinfo = document.getElementById("operatorinfo");
+    
+        operatorinfo.innerHTML = "<p>Info:</p>";
+    
+        var selectedOperator = operatorSelectObject.value;
+        
+        switch (selectedOperator) {
+            case "":
+                operatorinfo.innerHTML = "<p>Info:</p>";
+                break;
+            case "*":
+                operatorinfo.innerHTML += "&nbsp;&nbsp;* : The lexicographic product.";
+                break;
+            case "/":
+                operatorinfo.innerHTML += "&nbsp;&nbsp;/ : The interleaved product.";
+                break;
+            case "%":
+                operatorinfo.innerHTML += "&nbsp;&nbsp;% : The cartesian product.";
+                break;
+            case "^":
+                operatorinfo.innerHTML += "&nbsp;&nbsp;^ : The Pareto product.";
+                break;
+            case ".":
+                operatorinfo.innerHTML += "&nbsp;&nbsp;. : The take-one product. The difference to the lexicographic product is that only one co-optimal result is chosen in the case of co-optimal results.";
+                break;
+            case "|":
+                operatorinfo.innerHTML += "&nbsp;&nbsp;| : The overlay product. With !A | B!, $A$ is used in the forward computation and $B$ is used during backtracing.";
+                break;
+            default:
+                operatorinfo.innerHTML = "<p>Info:</p>";
+            
+        }
+        
+        var algdict = {{ algdict|safe }};
+        
+        var selectProgramObj = document.getElementById("programselect");
+        var selectedProgram = selectProgramObj.value;
+        
+        var alg2Select = document.getElementById("alg2select");
+        while (alg2Select.firstChild) {
+            alg2Select.removeChild(alg2Select.firstChild);
+        }
+        var emptyOption = document.createElement("option");
+        emptyOption.value = "";
+        emptyOption.text = "";
+        alg2Select.appendChild(emptyOption);
+        
+        algebrasList = algdict[selectedProgram];
+        
+        algebrasList.forEach(function(algebraString) {
+            var option = document.createElement("option");
+            option.value = algebraString;
+            option.text = algebraString;
+            alg2Select.appendChild(option);
+        });
+    }
+</script>
+</p>
+
+
+<p><label for="alg2">Choose Algebra 2:</label>
+
+<select id="alg2select" name="alg2" id="alg2">
+<option value=""></option>
+</select>
+</p>
+
+<p><button type="submit" id=submit onclick="loadFunction();">Submit</button></p>
+
+<script type=text/javascript>
+function loadFunction() {
+    $('body').append('<div id="loader" class="loader-wrapper"><span class="loader"><span class="loader-inner"></span></span></div>');
+}
+</script>
+        
+</form>
+</div>
+
+<div id="divright">
+<p>Result:</p>
+<script type=text/javascript>
+    var inputreminder = {{ inputreminderlist|safe }}
+    var inputreminderstring = "<div> Your Input: "+{{exlist|safe}}+"</div>";
+    inputreminder.forEach(function(line) {
+            inputreminderstring = "<span> "+inputreminderstring + line + " </span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+        });
+    inputreminderstring += "<br><br>"
+    var result = {{ result|safe }}
+    var resultstring = "";
+    result.forEach(function(programoutput) {
+            programoutput.forEach(function(line){
+                resultstring = resultstring + line + "<br>";
+            });
+            resultstring = resultstring + "<br>";
+        });
+    resultstring = inputreminderstring + resultstring;
+    document.write(resultstring);
+</script>
+</div>
+
+{% endblock %}
