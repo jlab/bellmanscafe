@@ -6,12 +6,34 @@ Bellman's Cafe v1.1
     #divleft {
         width:50%;
         float:left;
+        padding-left: 20px;
+        padding-right: 20px;
     }
     
     #divright {
         width:50%;
         float:right;
     }
+/*
+html {
+    overflow:auto;
+}
+    
+body {
+    //height: auto;
+    min-height: 100vh;
+    overflow:auto;
+}
+
+#root {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+}
+*/
+   
    
 .loader-wrapper {
   width: 100%;
@@ -54,7 +76,7 @@ Bellman's Cafe v1.1
   75% { height: 100%;}
   100% { height: 0%;}
 } 
-    
+
 </style>
 {% endblock %}
 
@@ -87,8 +109,18 @@ Bellman's Cafe v1.1
   </script>
 </select>
 
+    <div id="textbox">
+    <!--
+    <p>
+        Infotext:
+    </p>   
+    -->
+    </div>
+    
+    <br>
+
 <div id="exercise">
-    <p>Enter an exercise:</p>
+    <!--<p>Your Input:</p>-->
 </div>
 
 <script type=text/javascript>
@@ -113,19 +145,19 @@ Bellman's Cafe v1.1
             textbox.innerHTML = "<p>Infotext:</p>";
             
             var exercisediv = document.getElementById("exercise");
-            exercisediv.innerHTML="<p>Enter an exercice:</p>";
+            exercisediv.innerHTML="<p>Enter an exercise: (For example: 1+2*3)</p>";
         }
         
-        var placeholderstring = "\"For example: 1+2*3\"";
+        var example_value = "\"1+2*3\"";
         var inputstringsnumberdict = {{ inputstringsnumberdict|safe }};
         var n = inputstringsnumberdict[selectedProgram];
         
         var exercisediv = document.getElementById("exercise");
-        exercisediv.innerHTML="<p>Enter an exercice:</p>";
+        exercisediv.innerHTML="<p>Enter an exercise: (For example 1+2*3)</p>";
         
         for (let i = 1; i <= n; i++) {
             
-            exercisediv.innerHTML+='<p><input type="text" id="ex"'+i+'" name="ex'+i+'" placeholder = '+placeholderstring+' /></p>';
+            exercisediv.innerHTML+='<p><input type="text" id="ex"'+i+'" name="ex'+i+'" value = '+example_value+' /></p>';
         }
         
         var grammarsList = gramdict[selectedProgram];
@@ -164,24 +196,15 @@ Bellman's Cafe v1.1
     var textbox = document.getElementById("textbox");
     
     textbox.innerHTML = "<p>Infotext:</p>";
+    textbox.style = "border:1px solid black;";
     
     infotextslist.forEach(function(infotext) {
             textbox.innerHTML += infotext;
         });
     }
 </script>
-
-
     
-    <div id="textbox">
-    <p>
-        Infotext:
-    </p>    
-    </div>
-    
-    <br>
-    
-    <p><label for="gra">Choose Grammar:</label>
+<p><label for="gra">Choose Grammar:</label>
 
 <select id="grammarselect" onchange=gramFunction(this) name="gra" id="gra">
   <option value="">Choose a grammar</option>
@@ -224,7 +247,7 @@ Bellman's Cafe v1.1
 </select>
 </p>
 
-<p><label for="operator">Algebra Produkt:</label>
+<p><label for="operator">Produkt Operator:</label>
 
 <select name="operator" id="operator" onchange=operatorFunction(this)>
   <option value=""></option>
