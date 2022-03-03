@@ -132,8 +132,6 @@ def calculategapc(program, command, name, exlist):
     else:
     	list1 = []
     	list1.append("Command: " + commandstring)
-    	infostring = "The file " + name + "_gapc.cc" + " already exists on the server, therefore computing it again using the gapc command is omitted."
-    	list1.append(infostring)
     	res.append(list1)
     
     
