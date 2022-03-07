@@ -18,7 +18,7 @@ dirstr=""
 gapfiles= glob.glob('*.gap')
 sortedgapfiles= sorted(gapfiles)
 gra=""
-program=""
+program="p"
 gramdict={}
 algdict={}
 infotextsdict={}
@@ -35,6 +35,8 @@ inputreminderlist=[]
 
 operator_letter = ""
 
+selected_values_dict = []
+
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -42,6 +44,16 @@ def home():
 
 @app.route("/bellman", methods=["GET", "POST"])
 def bellman():
+    
+    global selected_values_dict
+    selected_values_dict = {
+        "program":"",
+        "gra":"",
+        "alg1":"",
+        "operator":"",
+        "alg2":""
+        }
+    
     if request.method == 'POST':
         global ex
         global exlist
@@ -70,7 +82,18 @@ def bellman():
         operator= request.form.get('operator')
         alg2= request.form.get('alg2')
         
-              
+        selected_values_dict["program"] = request.form["program"]
+        for i in range(1,n+1):
+            requeststring = "ex"+str(i)
+            selected_values_dict[requeststring] = request.form.get(requeststring)
+        selected_values_dict["gra"] = request.form["gra"]
+        selected_values_dict["alg1"] = request.form["alg1"]
+        selected_values_dict["operator"] = request.form["operator"]
+        selected_values_dict["alg2"] = request.form["alg2"]
+        
+        print("dictionary Inhalt:")
+        print(selected_values_dict)
+        
         inputreminderlist = []
         inputreminderlist.append("Your program was: " + program)
         inputreminderlist.append("Your grammar was: " + gra)
@@ -85,7 +108,7 @@ def bellman():
         name= ""+alg1
         res = calculategapc(program, command, name, exlist)
         
-        return render_template("bellman.html", result=res, program=program, gra=gra, gapfiles=json.dumps(gapfiles), gramdict=json.dumps(gramdict), algdict=json.dumps(algdict), infotextsdict=json.dumps(infotextsdict), inputstringsnumberdict = inputstringsnumberdict, inputreminderlist=inputreminderlist, exlist=exlist)
+        return render_template("bellman.html", result=res, program=program, gra=gra, gapfiles=json.dumps(gapfiles), gramdict=json.dumps(gramdict), algdict=json.dumps(algdict), infotextsdict=json.dumps(infotextsdict), inputstringsnumberdict = inputstringsnumberdict, inputreminderlist=inputreminderlist, exlist=exlist, selected_values_dict=json.dumps(selected_values_dict))
         
     #Algebraprodukt
     elif len(exlist) != 0 and program != "" and gra != "" and alg1 != "" and operator != "" and alg2 != "":
@@ -108,10 +131,10 @@ def bellman():
         name= alg1+"_"+operator_letter+"_"+alg2
         res = calculategapc(program, command, name, exlist)
         
-        return render_template("bellman.html", result=res, program=program, gra=gra, gapfiles=json.dumps(gapfiles), gramdict=json.dumps(gramdict), algdict=json.dumps(algdict), infotextsdict=json.dumps(infotextsdict), inputstringsnumberdict = inputstringsnumberdict, inputreminderlist=inputreminderlist, exlist=exlist)
+        return render_template("bellman.html", result=res, program=program, gra=gra, gapfiles=json.dumps(gapfiles), gramdict=json.dumps(gramdict), algdict=json.dumps(algdict), infotextsdict=json.dumps(infotextsdict), inputstringsnumberdict = inputstringsnumberdict, inputreminderlist=inputreminderlist, exlist=exlist, selected_values_dict=json.dumps(selected_values_dict))
 
 
-    return render_template("bellman.html", program=program, gra=gra, gapfiles=json.dumps(gapfiles), gramdict=json.dumps(gramdict), algdict=json.dumps(algdict), infotextsdict=json.dumps(infotextsdict), inputstringsnumberdict = inputstringsnumberdict, inputreminderlist=inputreminderlist, exlist=exlist)
+    return render_template("bellman.html", program=program, gra=gra, gapfiles=json.dumps(gapfiles), gramdict=json.dumps(gramdict), algdict=json.dumps(algdict), infotextsdict=json.dumps(infotextsdict), inputstringsnumberdict = inputstringsnumberdict, inputreminderlist=inputreminderlist, exlist=exlist, selected_values_dict=json.dumps(selected_values_dict))
 
 
 def calculategapc(program, command, name, exlist):
@@ -127,11 +150,11 @@ def calculategapc(program, command, name, exlist):
         pro1 = subprocess.run(commandstring, shell=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         pro1_returncode = pro1.returncode
         list1 = pro1.stdout.splitlines()
-        list1.insert(0, "Command: " + commandstring)
+        list1.insert(0, "<b>Command</b>: " + commandstring)
         res.append(list1)
     else:
     	list1 = []
-    	list1.append("Command: " + commandstring)
+    	list1.append("<b>Command</b>: " + commandstring)
     	res.append(list1)
     
     
@@ -144,7 +167,7 @@ def calculategapc(program, command, name, exlist):
     else:
         pro2 = subprocess.run(commandstring, shell=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         list2 = pro2.stdout.splitlines()
-        list2.insert(0, "Command: " + commandstring)
+        list2.insert(0, "<b>Command</b>: " + commandstring)
         res.append(list2)
 	    
         commandlist = []
@@ -168,7 +191,8 @@ def calculategapc(program, command, name, exlist):
         
             pro3 = subprocess.run(commandlist, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             list3 = pro3.stdout.splitlines()
-            list3.insert(0, "Command: " + commandstring)
+            list3.insert(0, "<b>Command</b>: " + commandstring)
+            list3.insert(1, "<b>Output</b> :")
             res.append(list3)
 	    
     os.chdir("..")
