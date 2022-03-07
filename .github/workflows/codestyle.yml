@@ -30,7 +30,7 @@ jobs:
         conda create -q --yes -n bellmanscafe python=3.9 flake8
         conda init bash
         source ~/.bashrc
-        conda activate rnahybrid3
+        conda activate bellmanscafe
     - uses: actions/checkout@v2
 
     - name: codestyle check
