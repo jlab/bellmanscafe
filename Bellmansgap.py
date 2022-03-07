@@ -18,7 +18,7 @@ dirstr=""
 gapfiles= glob.glob('*.gap')
 sortedgapfiles= sorted(gapfiles)
 gra=""
-program="p"
+program=""
 gramdict={}
 algdict={}
 infotextsdict={}
@@ -86,10 +86,8 @@ def bellman():
         for i in range(1,n+1):
             requeststring = "ex"+str(i)
             selected_values_dict[requeststring] = request.form.get(requeststring)
-        selected_values_dict["gra"] = request.form["gra"]
-        selected_values_dict["alg1"] = request.form["alg1"]
-        selected_values_dict["operator"] = request.form["operator"]
-        selected_values_dict["alg2"] = request.form["alg2"]
+        for param in ["gra","alg1","operator","alg2"]:
+        	selected_values_dict[param] = request.form[param]
         
         print("dictionary Inhalt:")
         print(selected_values_dict)
