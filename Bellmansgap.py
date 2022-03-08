@@ -35,7 +35,7 @@ inputreminderlist=[]
 
 operator_letter = ""
 
-selected_values_dict = []
+user_for_inputs_dict = []
 
 @app.route("/")
 def home():
@@ -45,8 +45,8 @@ def home():
 @app.route("/bellman", methods=["GET", "POST"])
 def bellman():
     
-    global selected_values_dict
-    selected_values_dict = {
+    global user_for_inputs_dict
+    user_for_inputs_dict = {
         "program":"",
         "gra":"",
         "alg1":"",
@@ -82,15 +82,15 @@ def bellman():
         operator= request.form.get('operator')
         alg2= request.form.get('alg2')
         
-        selected_values_dict["program"] = request.form["program"]
+        user_for_inputs_dict["program"] = request.form["program"]
         for i in range(1,n+1):
             requeststring = "ex"+str(i)
-            selected_values_dict[requeststring] = request.form.get(requeststring)
+            user_for_inputs_dict[requeststring] = request.form.get(requeststring)
         for param in ["gra","alg1","operator","alg2"]:
-        	selected_values_dict[param] = request.form[param]
+        	user_for_inputs_dict[param] = request.form[param]
         
         print("dictionary Inhalt:")
-        print(selected_values_dict)
+        print(user_for_inputs_dict)
         
         inputreminderlist = []
         inputreminderlist.append("Your program was: " + program)
@@ -106,7 +106,7 @@ def bellman():
         name= ""+alg1
         res = calculategapc(program, command, name, exlist)
         
-        return render_template("bellman.html", result=res, program=program, gra=gra, gapfiles=json.dumps(gapfiles), gramdict=json.dumps(gramdict), algdict=json.dumps(algdict), infotextsdict=json.dumps(infotextsdict), inputstringsnumberdict = inputstringsnumberdict, inputreminderlist=inputreminderlist, exlist=exlist, selected_values_dict=json.dumps(selected_values_dict))
+        return render_template("bellman.html", result=res, program=program, gra=gra, gapfiles=json.dumps(gapfiles), gramdict=json.dumps(gramdict), algdict=json.dumps(algdict), infotextsdict=json.dumps(infotextsdict), inputstringsnumberdict = inputstringsnumberdict, inputreminderlist=inputreminderlist, exlist=exlist, user_for_inputs_dict=json.dumps(user_for_inputs_dict))
         
     #Algebraprodukt
     elif len(exlist) != 0 and program != "" and gra != "" and alg1 != "" and operator != "" and alg2 != "":
@@ -129,10 +129,10 @@ def bellman():
         name= alg1+"_"+operator_letter+"_"+alg2
         res = calculategapc(program, command, name, exlist)
         
-        return render_template("bellman.html", result=res, program=program, gra=gra, gapfiles=json.dumps(gapfiles), gramdict=json.dumps(gramdict), algdict=json.dumps(algdict), infotextsdict=json.dumps(infotextsdict), inputstringsnumberdict = inputstringsnumberdict, inputreminderlist=inputreminderlist, exlist=exlist, selected_values_dict=json.dumps(selected_values_dict))
+        return render_template("bellman.html", result=res, program=program, gra=gra, gapfiles=json.dumps(gapfiles), gramdict=json.dumps(gramdict), algdict=json.dumps(algdict), infotextsdict=json.dumps(infotextsdict), inputstringsnumberdict = inputstringsnumberdict, inputreminderlist=inputreminderlist, exlist=exlist, user_for_inputs_dict=json.dumps(user_for_inputs_dict))
 
 
-    return render_template("bellman.html", program=program, gra=gra, gapfiles=json.dumps(gapfiles), gramdict=json.dumps(gramdict), algdict=json.dumps(algdict), infotextsdict=json.dumps(infotextsdict), inputstringsnumberdict = inputstringsnumberdict, inputreminderlist=inputreminderlist, exlist=exlist, selected_values_dict=json.dumps(selected_values_dict))
+    return render_template("bellman.html", program=program, gra=gra, gapfiles=json.dumps(gapfiles), gramdict=json.dumps(gramdict), algdict=json.dumps(algdict), infotextsdict=json.dumps(infotextsdict), inputstringsnumberdict = inputstringsnumberdict, inputreminderlist=inputreminderlist, exlist=exlist, user_for_inputs_dict=json.dumps(user_for_inputs_dict))
 
 
 def calculategapc(program, command, name, exlist):

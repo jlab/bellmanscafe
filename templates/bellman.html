@@ -108,8 +108,8 @@ body {
         let program = element.substring(0, element.lastIndexOf('.')) || element;
         document.write('<option value="'+program+'">'+program+'</option>');
         /*
-        var selected_values_dict = {{ selected_values_dict|safe }};
-        var prevProgram = selected_values_dict["program"];
+        var user_for_inputs_dict = {{ user_for_inputs_dict|safe }};
+        var prevProgram = user_for_inputs_dict["program"];
         if ((prevProgram != "") && (program == prevProgram)) {
                 document.write('<option value="'+program+'" selected>'+program+'</option>');
                 progFunction(this);
@@ -123,8 +123,8 @@ body {
 
 <script type=text/javascript>
     /*
-    var selected_values_dict = {{ selected_values_dict|safe }};
-    if (selected_values_dict["program"] != "") {
+    var user_for_inputs_dict = {{ user_for_inputs_dict|safe }};
+    if (user_for_inputs_dict["program"] != "") {
         var programSel = document.getElementById("program");
         programSel.value = "elmamun";
         //progFunction(programSel);
@@ -178,12 +178,12 @@ body {
         var exercisediv = document.getElementById("exercise");
         exercisediv.innerHTML="<p>Your Input: (For example 1+2*3)</p>";
         
-        var selected_values_dict = {{ selected_values_dict|safe }};
+        var user_for_inputs_dict = {{ user_for_inputs_dict|safe }};
         
         for (let i = 1; i <= n; i++) {
             
-            if (selected_values_dict.hasOwnProperty("ex"+i)) {
-                example_value = selected_values_dict["ex"+i];
+            if (user_for_inputs_dict.hasOwnProperty("ex"+i)) {
+                example_value = user_for_inputs_dict["ex"+i];
             } else {
                 example_value = "\"1+2*3\"";
             }
@@ -347,27 +347,27 @@ body {
 <script type=text/javascript>
 
     function resetValuesFunction() {
-        var selected_values_dict = {{ selected_values_dict|safe }};
+        var user_for_inputs_dict = {{ user_for_inputs_dict|safe }};
         
         var progSelect = document.getElementById("programselect");
-        progSelect.value = selected_values_dict["program"];
+        progSelect.value = user_for_inputs_dict["program"];
         progFunction(progSelect);
         
         var inputstringsnumberdict = {{ inputstringsnumberdict|safe }};
-        var n = inputstringsnumberdict[selected_values_dict["program"]];
+        var n = inputstringsnumberdict[user_for_inputs_dict["program"]];
         
         var gramSelect = document.getElementById("grammarselect");
-        gramSelect.value = selected_values_dict["gra"];
+        gramSelect.value = user_for_inputs_dict["gra"];
         
         var alg1Sel = document.getElementById("alg1select");
-        alg1Sel.value = selected_values_dict["alg1"];
+        alg1Sel.value = user_for_inputs_dict["alg1"];
         
         var operatorSel = document.getElementById("operator");
-        operatorSel.value = selected_values_dict["operator"];
+        operatorSel.value = user_for_inputs_dict["operator"];
         operatorFunction(operatorSel);
         
         var alg2Sel = document.getElementById("alg2select");
-        alg2Sel.value = selected_values_dict["alg2"];
+        alg2Sel.value = user_for_inputs_dict["alg2"];
     }
     
     resetValuesFunction();
