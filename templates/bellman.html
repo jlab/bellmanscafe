@@ -46,9 +46,9 @@ body {
 */
    
 /*
-    .loader-wrapper, .loader and .loader-inner constitute the components of the loading animation that
-    is played when the submit button is clicked. 
-    @keyframes loader and @keyframes loader-inner are responsible for the animation itself.
+.loader-wrapper, .loader and .loader-inner constitute the components of the loading animation that
+is played when the submit button is clicked. 
+@keyframes loader and @keyframes loader-inner are responsible for the animation itself.
 */
 .loader-wrapper {
   width: 100%;
@@ -100,7 +100,8 @@ body {
 
 <script>
 
-        // This code snippet was originally used to play the loading animation, when the page is loading. It might be re-employed later
+        // This code snippet was originally used to play the loading animation, when the page is loading. 
+        // It might be re-employed later.
         /* 
         $(window).on("load",function(){
           $(".loader-wrapper").fadeOut("slow");
@@ -142,33 +143,9 @@ body {
         let program = element.substring(0, element.lastIndexOf('.')) || element;
         //for each program an option is then created as html
         document.write('<option value="'+program+'">'+program+'</option>');
-        
-        /* This snippet is a failed attempt at adding the selected value to options that were previously selected before the submit button was pressed.
-        var user_form_input = {{ user_form_input|safe }};
-        var prevProgram = user_form_input["program"];
-        if ((prevProgram != "") && (program == prevProgram)) {
-                document.write('<option value="'+program+'" selected>'+program+'</option>');
-                progFunction(this);
-            } else {
-                document.write('<option value="'+program+'">'+program+'</option>');
-            }
-        */
     });
   </script>
 </select>
-
-
-<script type=text/javascript>
-    /* This snippet is a another failed attempt at adding the selected value to options 
-        that were previously selected before the submit button was pressed.
-    var user_form_input = {{ user_form_input|safe }};
-    if (user_form_input["program"] != "") {
-        var programSel = document.getElementById("program");
-        programSel.value = "elmamun";
-        //progFunction(programSel);
-    }
-    */
-</script>
 
     <!-- The div for information on the programs is created as blank and will be filled on selection of a program.-->
     <div id="textbox">

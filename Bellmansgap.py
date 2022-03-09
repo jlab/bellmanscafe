@@ -239,7 +239,7 @@ def calculategapc(program, command, name, exlist):
             list3.insert(0, "<b>Command</b>: " + commandstring)
             list3.insert(1, "<b>Output</b> :")
             res.append(list3)
-    #after all three commands have been executed, we return to the original folder and the resulting list oof strings is returned
+    #after all three commands have been executed, we return to the original folder and the resulting list of strings is returned
     os.chdir("..")
     return res
 
