@@ -1,8 +1,14 @@
 {% extends "base.html" %}
 
+<!-- This section supplements the head section of the base.html file-->
 {% block head %}
-Bellman's Cafe v1.1
+Bellman's Cafe v1.3
 <style>
+/*
+    #divleft and #divright dissect the bellman page
+    into an input section(left) and a results section(right)
+    that are contained within the two divs.
+*/
     #divleft {
         width:50%;
         float:left;
@@ -14,7 +20,12 @@ Bellman's Cafe v1.1
         width:50%;
         float:right;
     }
-/*
+
+
+/* These styling choices were an attempt to fix 
+the loading animation not covering the entire scrollable screen, 
+but turned out to be unrelated to the problem.
+They might later be re-employed if other styling issues come up.
 html {
     overflow:auto;
 }
@@ -34,7 +45,11 @@ body {
 }
 */
    
-   
+/*
+.loader-wrapper, .loader and .loader-inner constitute the components of the loading animation that
+is played when the submit button is clicked. 
+@keyframes loader and @keyframes loader-inner are responsible for the animation itself.
+*/
 .loader-wrapper {
   width: 100%;
   height: 100%;
@@ -80,35 +95,59 @@ body {
 </style>
 {% endblock %}
 
+<!-- This section supplements the body section of the base.html file-->
 {% block body %}
 
 <script>
-        
+
+        // This code snippet was originally used to play the loading animation, when the page is loading. 
+        // It might be re-employed later.
+        /* 
         $(window).on("load",function(){
           $(".loader-wrapper").fadeOut("slow");
         });
+        */
         
+        //The loader element that contains the components of the loading animation is removed at the start of the page
+        //and is rebuilt when the submit button is clicked.
         loader = document.getElementById("loader");
         $('body').removeChild(loader);
 </script>
 
+<!-- Title of the page-->
 <h1>Welcome to Bellman's Cafe</h1>
+
+<!-- This div represents the input section(left side) of the page.-->
 <div id="divleft">
+
+<!-- In this form element combo-boxes can be selected and input can be typed, which is submitted via the post-method.-->
 <form action="#" method="post">
 
 <p><label for="program">Choose Program:</label>
 
+<!-- Selection box for the programs or .gap files themselves, on selection the progFunction() method is executed.-->
+<!-- Almost all of the combo-boxes unintentionally have two ids, which might be the cause of why a lot of attempts failed
+    to add the selected value to previously selected values.
+    Although a workaround was found the duplicate ids might later be removed for a cleaner code.-->
 <select id="programselect" onchange=progFunction(this) name="program" id="program">
+  <!-- The default option Choose a program-->
   <option value="">Choose a program</option>
+  <!-- In this script the options for programselect are created-->
   <script type=text/javascript>
+    //Jinja is used to recover the gapfiles list from the return values of @app.route("/bellman") of Bellmansgap.py.
     var gapfiles = {{ gapfiles|safe }};
+    //gapfiles contains the names of all the files in the working directory that end on ".gap"
     gapfiles.forEach(function(element) {
+        //each filename is stripped of everything after the ".", including the "." and saved in the variable program
+        //in case there was no "." in the filename, it is just saved normally
         let program = element.substring(0, element.lastIndexOf('.')) || element;
+        //for each program an option is then created as html
         document.write('<option value="'+program+'">'+program+'</option>');
     });
   </script>
 </select>
 
+    <!-- The div for information on the programs is created as blank and will be filled on selection of a program.-->
     <div id="textbox">
     <!--
     <p>
@@ -123,12 +162,18 @@ body {
     <!--<p>Your Input:</p>-->
 </div>
 
+<!-- This script contains the progFunction() that is executed when a selection is made in the programselect combo-box.-->
 <script type=text/javascript>
     function progFunction(selectProgramObject) {
+        //Via Jinja the variables gramdict and algdict are recovered from the Flask app.
         var gramdict = {{ gramdict|safe }};
         var algdict = {{ algdict|safe }};
+        //The selected value from the programselect is saved in a variable.
         var selectedProgram = selectProgramObject.value;
         
+        //If the default option "Choose a program", which has the value "" was selected, 
+        //the alg1select, alg2select, operator, textbox and exercise elements are emptied to
+        //return them to their default state.
         if(selectedProgram == ""){
           var alg1Select = document.getElementById("alg1select");
             while (alg1Select.firstChild) {
@@ -145,101 +190,138 @@ body {
             textbox.innerHTML = "<p>Infotext:</p>";
             
             var exercisediv = document.getElementById("exercise");
-            exercisediv.innerHTML="<p>Enter an exercise: (For example: 1+2*3)</p>";
+            exercisediv.innerHTML="<p>Your Input: (For example: 1+2*3)</p>";
         }
         
+        //Depending on the program the number of inputs can vary.
+        //The default example_value is for now fixed, but should later also vary by program.
         var example_value = "\"1+2*3\"";
+        
+        //The inputstringsnumberdict is recovered via Jinja and holds the number of inputs required for every parsed program.
         var inputstringsnumberdict = {{ inputstringsnumberdict|safe }};
+        //n is the number of inputs required for the selected program.
         var n = inputstringsnumberdict[selectedProgram];
         
+        //The exercise div is intialized with a paragraph.
         var exercisediv = document.getElementById("exercise");
-        exercisediv.innerHTML="<p>Enter an exercise: (For example 1+2*3)</p>";
+        exercisediv.innerHTML="<p>Your Input: (For example 1+2*3)</p>";
         
+        //user_form_input is recovered via Jinja and holds the values in the combo-boxes that were selected by the user 
+        //and the typed input from the exercise div, before submit was pressed.
+        //If submit hasn't been pressed yet this session, this dictionary is empty.
+        var user_form_input = {{ user_form_input|safe }};
+        
+        //A for loop iterating n times
         for (let i = 1; i <= n; i++) {
-            
+            //If previously entered input exists for the exercises, they are used, otherwise the default value is used and saved in example_value.
+            if (user_form_input.hasOwnProperty("ex"+i)) {
+                example_value = user_form_input["ex"+i];
+            } else {
+                example_value = "\"1+2*3\"";
+            }
+            //The exercise elements are created with html containing the example_value as value.
             exercisediv.innerHTML+='<p><input type="text" id="ex"'+i+'" name="ex'+i+'" value = '+example_value+' /></p>';
         }
         
+        
+        //The combo-boxes for grammar, algebras, operator as well as the textbox containing information about the program are created here.
+        
+        //The grammars and algebras that were parsed for this program are extracted from the dictionaries and saved in new variables.
         var grammarsList = gramdict[selectedProgram];
         var algebrasList = algdict[selectedProgram];
         
-        
+        //The grammarselect combo-box is first emptied.
         var grammarSelect = document.getElementById("grammarselect");
         while (grammarSelect.firstChild) {
             grammarSelect.removeChild(grammarSelect.firstChild);
         }
+        //The default option is created with a value of "" and appended.
         var defaultOption = document.createElement("option");
         defaultOption.value = "";
         defaultOption.text = "Choose a grammar";
         grammarSelect.appendChild(defaultOption);
         
+        //For each grammar in the grammarsList for this program an option is created and appended.
         grammarsList.forEach(function(grammarString) {
             var option = document.createElement("option");
             option.value = grammarString;
             option.text = grammarString;
             grammarSelect.appendChild(option);
         });
+        //The first option (after the default option) is selected.
+        grammarSelect.selectedIndex = 1;
         
-        
+        //The algebra 1 combo-box is emptied.
         var alg1Select = document.getElementById("alg1select");
         while (alg1Select.firstChild) {
             alg1Select.removeChild(alg1Select.firstChild);
         }
+        //For each algebra parsed for this program and element is created and appended.
         algebrasList.forEach(function(algebraString) {
             var option = document.createElement("option");
             option.value = algebraString;
             option.text = algebraString;
             alg1Select.appendChild(option);
         });
-    var infotextsdict = {{ infotextsdict|safe }};
-    var infotextslist = infotextsdict[selectedProgram];
-    var textbox = document.getElementById("textbox");
-    
-    textbox.innerHTML = "<p>Infotext:</p>";
-    textbox.style = "border:1px solid black;";
-    
-    infotextslist.forEach(function(infotext) {
-            textbox.innerHTML += infotext;
+        //Since the first option is always selected automatically, it still works, 
+        //but explicitly selecting the first option would in line with the rest of the code and
+        //should be added here later.
+        
+        //Since the operators stay the same and are not dependant on the program, the combo-box
+        //does not need to be emtpied and rebuilt.
+        //The first option of the operator combo-box is selected and its onchange-function is executed
+        //in order to trigger the display of information about the operator.
+        var operatorSelect = document.getElementById("operator");
+        operatorSelect.selectedIndex = 1;
+        operatorFunction(operatorSelect);
+        
+        //The algebra 2 combo-box is emptied.
+        var alg2Select = document.getElementById("alg2select");
+        while (alg2Select.firstChild) {
+            alg2Select.removeChild(alg2Select.firstChild);
+        }
+        //Since the user can choose to executed only one algebra, the algebra 2 combo-box has the empty option.
+        var emptyOption = document.createElement("option");
+        emptyOption.value = "";
+        emptyOption.text = "";
+        alg2Select.appendChild(emptyOption);
+        
+        algebrasList = algdict[selectedProgram];
+        //Each parsed algebra is then added to the options of the algebra 2 combo-box.
+        algebrasList.forEach(function(algebraString) {
+            var option = document.createElement("option");
+            option.value = algebraString;
+            option.text = algebraString;
+            alg2Select.appendChild(option);
         });
+        //The second algebra (after the empty option) is selected, making it different from the pre-selected algebra 1 option.
+        alg2Select.selectedIndex = 2;
+        
+        //An infotext corresponding to the selected program is added to the textbox div.
+        var infotextsdict = {{ infotextsdict|safe }};
+        var infotextslist = infotextsdict[selectedProgram];
+        var textbox = document.getElementById("textbox");
+        
+        textbox.innerHTML = "<p>Infotext:</p>";
+        //A black border around the textbox is added.
+        textbox.style = "border:1px solid black;";
+        
+        infotextslist.forEach(function(infotext) {
+                textbox.innerHTML += infotext;
+            });
     }
 </script>
     
+<!-- Empty combo-boxes are created for grammar and algebra 1, they will be filled once a program is selected.-->
 <p><label for="gra">Choose Grammar:</label>
 
+<!-- gramFunction() will be executed when the grammar selected is changed. However this is deprecated and will be changed.-->
 <select id="grammarselect" onchange=gramFunction(this) name="gra" id="gra">
   <option value="">Choose a grammar</option>
 </select>
-<!--
-<script type=text/javascript>
-    function gramFunction(selectObject) {
-        var algdict = {{ algdict|safe }};
-        var selected = selectObject.value;
-        
-        if(selected == ""){
-          var alg2Select = document.getElementById("alg2select");
-            while (alg2Select.firstChild) {
-                alg2Select.removeChild(alg2Select.firstChild);
-            } 
-            var operat = document.getElementById("operator")
-            operat.selectedIndex = 0;
-        }
-        
-        var algebrasList = algdict[selected];
-        
-        var alg1Select = document.getElementById("alg1select");
-        while (alg1Select.firstChild) {
-            alg1Select.removeChild(alg1Select.firstChild);
-        }
-        algebrasList.forEach(function(algebraString) {
-            var option = document.createElement("option");
-            option.value = algebraString;
-            option.text = algebraString;
-            alg1Select.appendChild(option);
-        });
-    }
-</script>
--->
+
 </p>
+
 
     <p><label for="alg1">Choose Algebra 1:</label>
 
@@ -247,6 +329,7 @@ body {
 </select>
 </p>
 
+<!-- The operator combo-box is created staticly since it does not change. operatorFunction() is executed when a new operator is selected.-->
 <p><label for="operator">Produkt Operator:</label>
 
 <select name="operator" id="operator" onchange=operatorFunction(this)>
@@ -259,23 +342,24 @@ body {
   <option value="|">|</option>
 </select>
 
-    <div id="operatorinfo">
-    <p>
-        Info:
-    </p>    
-    </div>
-    
-    <br>
+<!-- A div is created that will hold information on the selected operator.-->
+<div id="operatorinfo">
+<p>
+    Info:
+</p>    
+</div>
+
+<br>
 
 <script type=text/javascript>
     function operatorFunction(operatorSelectObject) {
         
         var operatorinfo = document.getElementById("operatorinfo");
-    
+        //The operatorinfo div is reset. (which might be unnecessary here)
         operatorinfo.innerHTML = "<p>Info:</p>";
-    
         var selectedOperator = operatorSelectObject.value;
         
+        //A static sentence is displayed for each of the operators.
         switch (selectedOperator) {
             case "":
                 operatorinfo.innerHTML = "<p>Info:</p>";
@@ -302,72 +386,98 @@ body {
                 operatorinfo.innerHTML = "<p>Info:</p>";
             
         }
-        
-        var algdict = {{ algdict|safe }};
-        
-        var selectProgramObj = document.getElementById("programselect");
-        var selectedProgram = selectProgramObj.value;
-        
-        var alg2Select = document.getElementById("alg2select");
-        while (alg2Select.firstChild) {
-            alg2Select.removeChild(alg2Select.firstChild);
-        }
-        var emptyOption = document.createElement("option");
-        emptyOption.value = "";
-        emptyOption.text = "";
-        alg2Select.appendChild(emptyOption);
-        
-        algebrasList = algdict[selectedProgram];
-        
-        algebrasList.forEach(function(algebraString) {
-            var option = document.createElement("option");
-            option.value = algebraString;
-            option.text = algebraString;
-            alg2Select.appendChild(option);
-        });
     }
 </script>
 </p>
 
-
+<!-- An empty combo-box is created for algebra 2, that will be filled when a program is selected.-->
 <p><label for="alg2">Choose Algebra 2:</label>
 
 <select id="alg2select" name="alg2" id="alg2">
-<option value=""></option>
+    <option value=""></option>
 </select>
 </p>
 
+<!-- This script resets the values of all the combo-boxes to the values that were selected before submit was pressed.
+    This is a workaround, since selecting the values upon creation of the combo-boxes did not work.
+    (Possibly due to multiple ids on the combo-boxes' html-elements.)-->
+<script type=text/javascript>
+
+    function resetValuesFunction() {
+        var user_form_input = {{ user_form_input|safe }};
+        
+        //The values of the combo-boxes are set to the values
+        //saved in user_form_input.
+        var progSelect = document.getElementById("programselect");
+        progSelect.value = user_form_input["program"];
+        //Since the value changing is not registered by onchange in this case,
+        //the onchange function progFunction() has to be executed manually.
+        progFunction(progSelect);
+        
+        var inputstringsnumberdict = {{ inputstringsnumberdict|safe }};
+        var n = inputstringsnumberdict[user_form_input["program"]];
+        
+        var gramSelect = document.getElementById("grammarselect");
+        gramSelect.value = user_form_input["gra"];
+        
+        var alg1Sel = document.getElementById("alg1select");
+        alg1Sel.value = user_form_input["alg1"];
+        
+        var operatorSel = document.getElementById("operator");
+        operatorSel.value = user_form_input["operator"];
+        //As is the case with the progFunction() of programselect, operatorFunction() has to be executed manually her too.
+        operatorFunction(operatorSel);
+        
+        var alg2Sel = document.getElementById("alg2select");
+        alg2Sel.value = user_form_input["alg2"];
+    }
+    //resetValuesFunction() is executed just before the submit button as well as after all other elements have been built.
+    resetValuesFunction();
+    
+</script>
+
+<!-- The submit button element. loadFunction() starts the loading animation and is executed when the submit button is clicked.-->
 <p><button type="submit" id=submit onclick="loadFunction();">Submit</button></p>
 
+<!-- This script contains the loadFunction().-->
 <script type=text/javascript>
-function loadFunction() {
-    $('body').append('<div id="loader" class="loader-wrapper"><span class="loader"><span class="loader-inner"></span></span></div>');
-}
+    function loadFunction() {
+        //The components of the loading animation are added to the body in html.
+        //The animation is then automatically started by the css-code, namely @keyframes loader and @keyframes loader-inner.
+        $('body').append('<div id="loader" class="loader-wrapper"><span class="loader"><span class="loader-inner"></span></span></div>');
+    }
 </script>
         
 </form>
 </div>
 
+<!-- divright contains the results section (right side) of the bellman page.-->
 <div id="divright">
-<p>Result:</p>
-<script type=text/javascript>
-    var inputreminder = {{ inputreminderlist|safe }}
-    var inputreminderstring = "<div> Your Input: "+{{exlist|safe}}+"</div>";
-    inputreminder.forEach(function(line) {
-            inputreminderstring = "<span> "+inputreminderstring + line + " </span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-        });
-    inputreminderstring += "<br><br>"
-    var result = {{ result|safe }}
-    var resultstring = "";
-    result.forEach(function(programoutput) {
-            programoutput.forEach(function(line){
-                resultstring = resultstring + line + "<br>";
+    <p>Result:</p>
+    <!-- This script creates the resultstring from the result retrieved from the Flask app and outputs it to divright.-->
+    <script type=text/javascript>
+        //The inputreminderlist is recovered via Jinja from the Flask app.
+        var inputreminder = {{ inputreminderlist|safe }}
+        //An inputreminderstring is built in a for loop, that contains information about the previously selected values and typed input.
+        var inputreminderstring = "";
+        inputreminder.forEach(function(line) {
+                inputreminderstring = "<span> "+inputreminderstring + line + " </span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
             });
-            resultstring = resultstring + "<br>";
-        });
-    resultstring = inputreminderstring + resultstring;
-    document.write(resultstring);
-</script>
+        inputreminderstring += "<br><br><div> Your Input was: "+{{exlist|safe}}+"</div><br>"
+        //The result from the third command in the Flask app is recovered via Jinja.
+        var result = {{ result|safe }}
+        //A resultstring is built from the result list and is added to the inputreminderstring.
+        var resultstring = "";
+        result.forEach(function(programoutput) {
+                programoutput.forEach(function(line){
+                    resultstring = resultstring + line + "<br>";
+                });
+                resultstring = resultstring + "<br>";
+            });
+        resultstring = inputreminderstring + resultstring;
+        //The completed resultstring is then written to divright.
+        document.write(resultstring);
+    </script>
 </div>
 
 {% endblock %}

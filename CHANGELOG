@@ -1,0 +1,4 @@
+v1.3:
+Default options for the other boxes are now automatically selected, when you select a program.
+Selected values are now remembered after hitting submit.
+Command and Output on the results section are now marked in bold.
