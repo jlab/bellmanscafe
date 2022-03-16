@@ -1,7 +1,7 @@
 v1.4:
 Algebras and algebra-product are in one line now.
 The result section is now in a scrollable bordered box at the bottom of the page.
-Unused html pages (result.html, support.html) have been removed from the repo.
+Unused html page result.html has been removed from the repo.
 The pages /home and /bellman now have a left side border of the same width.
 The button for opening the navigation is now to the left of the "Navigation" label in the navigation bar.
 Cleaned up some typos and text.
