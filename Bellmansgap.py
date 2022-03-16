@@ -338,10 +338,10 @@ def calculategapc(program, command, name, exlist):
     return res
 
 
-# route for the results page (deprecated)
-@app.route("/result")
-def result():
-    return render_template('result.html', result=res)
+# route for the support page
+@app.route("/support")
+def support():
+    return render_template('support.html')
 
 
 if __name__ == "__main__":
