@@ -5,6 +5,7 @@ Unused html page result.html has been removed from the repo.
 The pages /home and /bellman now have a left side border of the same width.
 The button for opening the navigation is now to the left of the "Navigation" label in the navigation bar.
 Cleaned up some typos and text.
+Added a banner at the top and a favicon for the tab.
 
 v1.3.1:
 Cleaned up python code for flake8 code-check.

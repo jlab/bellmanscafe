@@ -3,6 +3,8 @@
     <head>
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
         
+        <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+        
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="X-UA_Compativle" content="ie=edge">
@@ -10,9 +12,24 @@
               src="https://code.jquery.com/jquery-3.6.0.min.js"
               integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
               crossorigin="anonymous"></script>
+        
+        <div id="divbanner"></div>
+        
         {% block head %}{% endblock %}
     </head>
     <body>
+        <style>
+            #divbanner {
+                background-color: #AF6557;
+                background-image: url({{ url_for('static', filename='header_noTitle.png') }});                
+                min-width: 400px;
+                max-width: 2400px;
+                height: 105px;
+                position: relative;
+                //margin-bottom: 20px;
+            }
+        </style>
+        
         <nav class="navbar navbar-dark bg-dark"  style="padding-right: 87%;">
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
               <span class="navbar-toggler-icon"></span>
@@ -45,8 +62,6 @@
               -->
             </div>
           </nav>
-
-
           
 
         {% block body %}{% endblock %}
