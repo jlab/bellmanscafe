@@ -10,15 +10,27 @@ Bellman's Cafe v1.3
     that are contained within the two divs.
 */
     #divleft {
-        width:50%;
-        float:left;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+    
+    #textbox {
+        padding-left: 10px;
+        padding-right: 20px; 
+    }
+    
+    #divrightouter {
         padding-left: 20px;
         padding-right: 20px;
     }
     
     #divright {
-        width:50%;
-        float:right;
+        height:25vh;
+        width:95%;
+        border:1px solid #ccc;
+        overflow:auto;
+        padding-left: 10px;
+        padding-right: 20px;
     }
 
 
@@ -114,8 +126,10 @@ is played when the submit button is clicked.
         $('body').removeChild(loader);
 </script>
 
+<div style= "padding-left: 20px;padding-right: 20px;">
 <!-- Title of the page-->
 <h1>Welcome to Bellman's Cafe</h1>
+</div>
 
 <!-- This div represents the input section(left side) of the page.-->
 <div id="divleft">
@@ -123,7 +137,7 @@ is played when the submit button is clicked.
 <!-- In this form element combo-boxes can be selected and input can be typed, which is submitted via the post-method.-->
 <form action="#" method="post">
 
-<p><label for="program">Choose Program:</label>
+<p><label for="program">Program:</label>
 
 <!-- Selection box for the programs or .gap files themselves, on selection the progFunction() method is executed.-->
 <!-- Almost all of the combo-boxes unintentionally have two ids, which might be the cause of why a lot of attempts failed
@@ -313,7 +327,7 @@ is played when the submit button is clicked.
 </script>
     
 <!-- Empty combo-boxes are created for grammar and algebra 1, they will be filled once a program is selected.-->
-<p><label for="gra">Choose Grammar:</label>
+<p><label for="gra">Grammar:</label>
 
 <!-- gramFunction() will be executed when the grammar selected is changed. However this is deprecated and will be changed.-->
 <select id="grammarselect" onchange=gramFunction(this) name="gra" id="gra">
@@ -323,14 +337,14 @@ is played when the submit button is clicked.
 </p>
 
 
-    <p><label for="alg1">Choose Algebra 1:</label>
+    <span><label for="alg1">Algebra 1:</label>
 
 <select id="alg1select" name="alg1" id="alg1">
 </select>
-</p>
+</span>
 
 <!-- The operator combo-box is created staticly since it does not change. operatorFunction() is executed when a new operator is selected.-->
-<p><label for="operator">Produkt Operator:</label>
+<span><label for="operator">Product Operator:</label>
 
 <select name="operator" id="operator" onchange=operatorFunction(this)>
   <option value=""></option>
@@ -341,15 +355,6 @@ is played when the submit button is clicked.
   <option value=".">.</option>
   <option value="|">|</option>
 </select>
-
-<!-- A div is created that will hold information on the selected operator.-->
-<div id="operatorinfo">
-<p>
-    Info:
-</p>    
-</div>
-
-<br>
 
 <script type=text/javascript>
     function operatorFunction(operatorSelectObject) {
@@ -388,15 +393,23 @@ is played when the submit button is clicked.
         }
     }
 </script>
-</p>
+</span>
 
 <!-- An empty combo-box is created for algebra 2, that will be filled when a program is selected.-->
-<p><label for="alg2">Choose Algebra 2:</label>
+<span><label for="alg2">Algebra 2:</label>
 
 <select id="alg2select" name="alg2" id="alg2">
     <option value=""></option>
 </select>
-</p>
+</span>
+
+<!-- A div is created that will hold information on the selected operator.-->
+<div id="operatorinfo">
+<p>
+    Info:
+</p>    
+</div>
+<br>
 
 <!-- This script resets the values of all the combo-boxes to the values that were selected before submit was pressed.
     This is a workaround, since selecting the values upon creation of the combo-boxes did not work.
@@ -451,6 +464,7 @@ is played when the submit button is clicked.
 </form>
 </div>
 
+<div id="divrightouter">
 <!-- divright contains the results section (right side) of the bellman page.-->
 <div id="divright">
     <p>Result:</p>
@@ -478,6 +492,7 @@ is played when the submit button is clicked.
         //The completed resultstring is then written to divright.
         document.write(resultstring);
     </script>
+</div>
 </div>
 
 {% endblock %}
