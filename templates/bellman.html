@@ -480,9 +480,9 @@ is played when the submit button is clicked.
         //An inputreminderstring is built in a for loop, that contains information about the previously selected values and typed input.
         var inputreminderstring = "";
         inputreminder.forEach(function(line) {
-                inputreminderstring = "<span> "+inputreminderstring + line + " </span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+                inputreminderstring = inputreminderstring + line;
             });
-        inputreminderstring += "<br><br><div> Your Input was: "+{{exlist|safe}}+"</div><br>"
+        inputreminderstring += "<br><div> Your Input was: "+{{exlist|safe}}+"</div><br>"
         //The result from the third command in the Flask app is recovered via Jinja.
         var result = {{ result|safe }}
         //A resultstring is built from the result list and is added to the inputreminderstring.
