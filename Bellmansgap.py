@@ -121,11 +121,11 @@ def bellman():
         in the results part of the page
         '''
         inputreminderlist = []
-        inputreminderlist.append("Your program was: " + program)
-        inputreminderlist.append("Your grammar was: " + gra)
-        inputreminderlist.append("Your first algebra was: " + alg1)
-        inputreminderlist.append("Your operator was: " + operator)
-        inputreminderlist.append("Your second algebra was: " + alg2)
+        inputreminderlist.append("Your program was: " + program + "<br>")
+        inputreminderlist.append("Your grammar was: " + gra + "<br>")
+        inputreminderlist.append("Your first algebra was: " + alg1 + "<br>")
+        inputreminderlist.append("Your operator was: " + operator + "<br>")
+        inputreminderlist.append("Your second algebra was: " + alg2 + "<br>")
 
     # Algebra (single algebra)
     if len(exlist) != 0 and program != "" and gra != "" \
@@ -338,10 +338,10 @@ def calculategapc(program, command, name, exlist):
     return res
 
 
-# route for the results page (deprecated)
-@app.route("/result")
-def result():
-    return render_template('result.html', result=res)
+# route for the support page
+@app.route("/support")
+def support():
+    return render_template('support.html')
 
 
 if __name__ == "__main__":

@@ -1,3 +1,16 @@
+v1.4:
+Algebras and algebra-product are in one line now.
+The result section is now in a scrollable bordered box at the bottom of the page.
+Unused html page result.html has been removed from the repo.
+The pages /home and /bellman now have a left side border of the same width.
+The button for opening the navigation is now to the left of the "Navigation" label in the navigation bar.
+Cleaned up some typos and text.
+Added a banner at the top and a favicon for the tab.
+Reformatted input reminder text in the result section.
+
+v1.3.1:
+Cleaned up python code for flake8 code-check.
+
 v1.3:
 Default options for the other boxes are now automatically selected, when you select a program.
 Selected values are now remembered after hitting submit.
