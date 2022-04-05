@@ -13,7 +13,6 @@ app.secret_key = "xasdqfghuioiuwqenjdcbjhawbuomcujeq1217846421kopNSJJGWmc8u29"
 # Variablen
 exlist = []
 ex = ""
-gapfiles = ""
 gra = ""
 alg1 = ""
 operator = ""
@@ -27,12 +26,7 @@ dirstr = ""
 gapfiles = glob.glob('*.gap')
 sortedgapfiles = sorted(gapfiles)
 gapfiles = sortedgapfiles
-gra = ""
 program = ""
-gramdict = {}
-algdict = {}
-infotextsdict = {}
-returndict = {}
 
 returndict = parsegapfiles(gapfiles)
 
@@ -131,22 +125,27 @@ def bellman():
         in the results part of the page
         '''
         inputreminderlist = []
-        if (program != ""):
+        if program != "":
             inputreminderlist.append("Your program was: " + program + "<br>")
-        if (gra != ""):
+        if gra != "":
             inputreminderlist.append("Your grammar was: " + gra + "<br>")
-        if (alg1 != ""):
-            inputreminderlist.append("Your first algebra was: " + alg1 + "<br>")
-        if (operator != ""):
-            inputreminderlist.append("Your operator was: " + operator + "<br>")
-        if (alg2 != ""):
-            inputreminderlist.append("Your second algebra was: " + alg2 + "<br>")
-        if (operator2 != ""):
-            inputreminderlist.append("Your second operator was: " + operator2 + "<br>")
-        if (alg3 != ""):
-            inputreminderlist.append("Your third algebra was: " + alg3 + "<br>")
+        if alg1 != "":
+            inputreminderlist.append("Your first algebra was: "
+                                     + alg1 + "<br>")
+        if operator != "":
+            inputreminderlist.append("Your operator was: "
+                                     + operator + "<br>")
+        if alg2 != "":
+            inputreminderlist.append("Your second algebra was: "
+                                     + alg2 + "<br>")
+        if operator2 != "":
+            inputreminderlist.append("Your second operator was: "
+                                     + operator2 + "<br>")
+        if alg3 != "":
+            inputreminderlist.append("Your third algebra was: "
+                                     + alg3 + "<br>")
 
-        if (len(inputreminderlist) == 0):
+        if len(inputreminderlist) == 0:
             inputreminderlist.append("You have not selected anything.")
 
     # Algebra (single algebra)
@@ -220,7 +219,7 @@ def bellman():
 
     # Algebraprodukt (three algebras)
     elif len(exlist) != 0 and program != "" and gra != "" \
-             and alg1 != "" and operator != "" and alg2 != "" and alg3 != "":
+            and alg1 != "" and operator != "" and alg2 != "" and alg3 != "":
 
         # "*" "/" "%" "^" "." "|"
         if operator == "*":
@@ -308,8 +307,8 @@ def calculategapc(program, command, name, exlist):
     res = []
 
     # this is the executed commandstring
-    commandstring = 'gapc -p ' + command\
-                    + ' -o ' + dirstr + '/' + name + '_gapc.cc '\
+    commandstring = 'gapc -p ' + command \
+                    + ' -o ' + dirstr + '/' + name + '_gapc.cc ' \
                     + program + '.gap' + ' 2>&1'
     pro1_returncode = 0
 
