@@ -23,9 +23,8 @@ res = ""
 dirstr = ""
 # glob.glob('*.gap') returns a list of names of
 # all files in the directory that end on ".gap"
-gapfiles = glob.glob('*.gap')
-sortedgapfiles = sorted(gapfiles)
-gapfiles = sortedgapfiles
+# the list is then sorted
+gapfiles = sorted(glob.glob('*.gap'))
 program = ""
 
 returndict = parsegapfiles(gapfiles)
@@ -181,18 +180,15 @@ def bellman():
             and alg1 != "" and operator != "" and alg2 != "" and alg3 == "":
 
         # "*" "/" "%" "^" "." "|"
-        if operator == "*":
-            operator_letter = "l"
-        elif operator == "/":
-            operator_letter = "i"
-        elif operator == "%":
-            operator_letter = "c"
-        elif operator == "^":
-            operator_letter = "p"
-        elif operator == ".":
-            operator_letter = "t"
-        elif operator == "|":
-            operator_letter = "o"
+        map_operator_letter = {
+            '*': 'l',
+            '/': 'i',
+            '%': 'c',
+            '': 'p',
+            '.': 't',
+            '|': 'o'
+        }
+        operator_letter = map_operator_letter.get(operator, None)
 
         command = "" + alg1 + operator + alg2
         name = alg1 + "_" + operator_letter + "_" + alg2
@@ -222,32 +218,16 @@ def bellman():
             and alg1 != "" and operator != "" and alg2 != "" and alg3 != "":
 
         # "*" "/" "%" "^" "." "|"
-        if operator == "*":
-            operator_letter = "l"
-        elif operator == "/":
-            operator_letter = "i"
-        elif operator == "%":
-            operator_letter = "c"
-        elif operator == "^":
-            operator_letter = "p"
-        elif operator == ".":
-            operator_letter = "t"
-        elif operator == "|":
-            operator_letter = "o"
-
-        # "*" "/" "%" "^" "." "|"
-        if operator2 == "*":
-            operator_letter2 = "l"
-        elif operator2 == "/":
-            operator_letter2 = "i"
-        elif operator2 == "%":
-            operator_letter2 = "c"
-        elif operator2 == "^":
-            operator_letter2 = "p"
-        elif operator2 == ".":
-            operator_letter2 = "t"
-        elif operator2 == "|":
-            operator_letter2 = "o"
+        map_operator_letter = {
+            '*': 'l',
+            '/': 'i',
+            '%': 'c',
+            '': 'p',
+            '.': 't',
+            '|': 'o'
+        }
+        operator_letter = map_operator_letter.get(operator, None)
+        operator_letter2 = map_operator_letter.get(operator2, None)
 
         command = "" + alg1 + operator + alg2 + operator2 + alg3
         name = alg1 + "_" + operator_letter + "_" + alg2 \
