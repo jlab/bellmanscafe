@@ -5,32 +5,42 @@
 
 <script type=text/javascript>
     divbanner = document.getElementById('divbanner');
-    divbanner.innerHTML += "<center><FONT color='#ffffff' size='6'>Bellman's Cafe v1.5</FONT></center>";
+    divbanner.innerHTML += "<center><FONT color='#ffffff' size='6'>Bellman's Cafe v1.5.1</FONT></center>";
 </script>
 
 <style>
 /*
-    #divleft and #divright dissect the bellman page
-    into an input section(left) and a results section(right)
+    #divtop and #divbottom dissect the bellman page
+    into an input section(top) and a results section(bottom)
     that are contained within the two divs.
 */
-    #divleft {
+    #divtop {
         padding-left: 20px;
         padding-right: 20px;
     }
     
-    #textbox {
-        padding-left: 10px;
+    #divbox1, #divbox2 {
+        border:5px outset #AF6557;
+        margin-top: 15px;
+        margin-bottom: 20px;
+        padding-left: 5px;
+        padding-right: 20px;
+        padding-top: 5px;
+        padding-bottom: 10px;
+    }
+    
+    #textbox, #operatorinfo {
+        padding-left: 5px;
         padding-right: 20px; 
     }
     
-    #divrightouter {
+    #divbottomouter {
         padding-left: 20px;
         padding-right: 20px;
-        padding-bottom: 40px;
+        padding-bottom: 10px;
     }
     
-    #divright {
+    #divbottom {
         height:25vh;
         width:95%;
         border:1px solid #ccc;
@@ -132,19 +142,19 @@ is played when the submit button is clicked.
         $('body').removeChild(loader);
 </script>
 
-<div style= "padding-left: 20px;padding-right: 20px;">
+<div style= "padding-left: 20px;padding-right: 20px;padding-top: 20px;">
 <!-- Title of the page-->
 <h1>Welcome to Bellman's Cafe</h1>
 </div>
 
-<!-- This div represents the input section(left side) of the page.-->
-<div id="divleft">
+<!-- This div represents the input section(top side) of the page.-->
+<div id="divtop">
 
 <!-- In this form element combo-boxes can be selected and input can be typed, which is submitted via the post-method.-->
 <form action="#" method="post">
 
-<p><label for="program">Program:</label>
-
+<div id="divbox1">
+<p><label for="program"><FONT size='4'>Program:</FONT></label>
 <!-- Selection box for the programs or .gap files themselves, on selection the progFunction() method is executed.-->
 <!-- Almost all of the combo-boxes unintentionally have two ids, which might be the cause of why a lot of attempts failed
     to add the selected value to previously selected values.
@@ -166,9 +176,12 @@ is played when the submit button is clicked.
     });
   </script>
 </select>
+<div id ="tip">
+<FONT color = '#AF6557' size='4'><p>Please select a Program.</p></FONT>
+</div>
 
     <!-- The div for information on the programs is created as blank and will be filled on selection of a program.-->
-    <div id="textbox">
+    <div id="textbox" style="visibility:hidden">
     <!--
     <p>
         Infotext:
@@ -178,8 +191,9 @@ is played when the submit button is clicked.
     
     <br>
 
-<div id="exercise">
-    <!--<p>Your Input:</p>-->
+<div id="exercise" style="visibility:hidden">
+    <!--Your Input:-->
+</div>
 </div>
 
 <!-- This script contains the progFunction() that is executed when a selection is made in the programselect combo-box.-->
@@ -220,7 +234,7 @@ is played when the submit button is clicked.
             textbox.innerHTML = "<p>Infotext:</p>";
             
             var exercisediv = document.getElementById("exercise");
-            exercisediv.innerHTML="<p>Your Input: (For example: 1+2*3)</p>";
+            exercisediv.innerHTML="Your Input: (For example: 1+2*3)";
         }
         
         //Depending on the program the number of inputs can vary.
@@ -234,7 +248,7 @@ is played when the submit button is clicked.
         
         //The exercise div is intialized with a paragraph.
         var exercisediv = document.getElementById("exercise");
-        exercisediv.innerHTML="<p>Your Input: (For example 1+2*3)</p>";
+        exercisediv.innerHTML="Your Input: (For example 1+2*3)";
         
         //user_form_input is recovered via Jinja and holds the values in the combo-boxes that were selected by the user 
         //and the typed input from the exercise div, before submit was pressed.
@@ -251,6 +265,7 @@ is played when the submit button is clicked.
             }
             //The exercise elements are created with html containing the example_value as value.
             exercisediv.innerHTML+='<p><input type="text" id="ex"'+i+'" name="ex'+i+'" value = '+example_value+' /></p>';
+            exercisediv.style.visibility = 'visible';
         }
         
         
@@ -355,13 +370,27 @@ is played when the submit button is clicked.
         textbox.innerHTML = "<p>Infotext:</p>";
         //A black border around the textbox is added.
         textbox.style = "border:1px solid black;";
+        textbox.style.visibility = 'visible';
         
         infotextslist.forEach(function(infotext) {
                 textbox.innerHTML += infotext;
             });
+        // Make divbox2, submitButton and divbottom visible.
+        var divbox2 = document.getElementById("divbox2");
+        divbox2.style.visibility = 'visible';
+
+        var submitButton = document.getElementById("submit");
+        submitButton.style.visibility = 'visible';
+        var divbottomouter = document.getElementById("divbottomouter");
+        divbottomouter.style.visibility = 'visible';
+        
+        // Make tip disappear
+        var tip = document.getElementById("tip");
+        tip.style.display = 'none';
     }
 </script>
     
+<div id="divbox2" style="visibility:hidden">
 <!-- Empty combo-boxes are created for grammar and algebra 1, they will be filled once a program is selected.-->
 <p><label for="gra">Grammar:</label>
 
@@ -398,6 +427,9 @@ is played when the submit button is clicked.
         var operatorinfo = document.getElementById("operatorinfo");
         //The operatorinfo div is reset. (which might be unnecessary here)
         operatorinfo.innerHTML = "<p>Info:</p>";
+        operatorinfo.style = "border:1px solid black;";
+        operatorinfo.style.visibility = 'visible';
+        
         var selectedOperator = operatorSelectObject.value;
         
         //A static sentence is displayed for each of the operators.
@@ -461,12 +493,58 @@ is played when the submit button is clicked.
 </span>
 
 <!-- A div is created that will hold information on the selected operator.-->
-<div id="operatorinfo">
+<div id="operatorinfo" style="visibility:hidden">
 <p>
     Info:
 </p>    
 </div>
-<br>
+</div>
+
+<!-- The submit button element. loadFunction() starts the loading animation and is executed when the submit button is clicked.-->
+<p><button type="submit" id="submit" style="visibility:hidden" onclick="loadFunction();">Submit</button></p>
+
+<!-- This script contains the loadFunction().-->
+<script type=text/javascript>
+    function loadFunction() {
+        //The components of the loading animation are added to the body in html.
+        //The animation is then automatically started by the css-code, namely @keyframes loader and @keyframes loader-inner.
+        $('body').append('<div id="loader" class="loader-wrapper"><span class="loader"><span class="loader-inner"></span></span></div>');
+    }
+</script>
+        
+</form>
+</div>
+
+<div id="divbottomouter" style="visibility:hidden">
+<!-- divbottom contains the results section (bottom side) of the bellman page.-->
+<div id="divbottom">
+    <p>Result:</p>
+    <!-- This script creates the resultstring from the result retrieved from the Flask app and outputs it to divbottom.-->
+    <script type=text/javascript>
+        //The inputreminderlist is recovered via Jinja from the Flask app.
+        var inputreminder = {{ inputreminderlist|safe }}
+        //An inputreminderstring is built in a for loop, that contains information about the previously selected values and typed input.
+        var inputreminderstring = "";
+        inputreminder.forEach(function(line) {
+                inputreminderstring = inputreminderstring + line;
+            });
+        inputreminderstring += "<br><div> Your Input was: "+{{exlist|safe}}+"</div><br>"
+        //The result from the third command in the Flask app is recovered via Jinja.
+        var result = {{ result|safe }}
+        //A resultstring is built from the result list and is added to the inputreminderstring.
+        var resultstring = "";
+        result.forEach(function(programoutput) {
+                programoutput.forEach(function(line){
+                    resultstring = resultstring + line + "<br>";
+                });
+                resultstring = resultstring + "<br>";
+            });
+        resultstring = inputreminderstring + resultstring;
+        //The completed resultstring is then written to divbottom.
+        document.write(resultstring);
+    </script>
+</div>
+</div>
 
 <!-- This script resets the values of all the combo-boxes to the values that were selected before submit was pressed.
     This is a workaround, since selecting the values upon creation of the combo-boxes did not work.
@@ -509,53 +587,6 @@ is played when the submit button is clicked.
     }
     //resetValuesFunction() is executed just before the submit button as well as after all other elements have been built.
     resetValuesFunction();
-    
 </script>
-
-<!-- The submit button element. loadFunction() starts the loading animation and is executed when the submit button is clicked.-->
-<p><button type="submit" id=submit onclick="loadFunction();">Submit</button></p>
-
-<!-- This script contains the loadFunction().-->
-<script type=text/javascript>
-    function loadFunction() {
-        //The components of the loading animation are added to the body in html.
-        //The animation is then automatically started by the css-code, namely @keyframes loader and @keyframes loader-inner.
-        $('body').append('<div id="loader" class="loader-wrapper"><span class="loader"><span class="loader-inner"></span></span></div>');
-    }
-</script>
-        
-</form>
-</div>
-
-<div id="divrightouter">
-<!-- divright contains the results section (right side) of the bellman page.-->
-<div id="divright">
-    <p>Result:</p>
-    <!-- This script creates the resultstring from the result retrieved from the Flask app and outputs it to divright.-->
-    <script type=text/javascript>
-        //The inputreminderlist is recovered via Jinja from the Flask app.
-        var inputreminder = {{ inputreminderlist|safe }}
-        //An inputreminderstring is built in a for loop, that contains information about the previously selected values and typed input.
-        var inputreminderstring = "";
-        inputreminder.forEach(function(line) {
-                inputreminderstring = inputreminderstring + line;
-            });
-        inputreminderstring += "<br><div> Your Input was: "+{{exlist|safe}}+"</div><br>"
-        //The result from the third command in the Flask app is recovered via Jinja.
-        var result = {{ result|safe }}
-        //A resultstring is built from the result list and is added to the inputreminderstring.
-        var resultstring = "";
-        result.forEach(function(programoutput) {
-                programoutput.forEach(function(line){
-                    resultstring = resultstring + line + "<br>";
-                });
-                resultstring = resultstring + "<br>";
-            });
-        resultstring = inputreminderstring + resultstring;
-        //The completed resultstring is then written to divright.
-        document.write(resultstring);
-    </script>
-</div>
-</div>
 
 {% endblock %}

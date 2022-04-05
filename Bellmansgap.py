@@ -203,7 +203,7 @@ def bellman():
         unnecessary to return by now, further cleanup will follow
         '''
         return render_template(
-            "bellman.html", result=res,
+            'bellman.html', result=res,
             program=program, gra=gra,
             gapfiles=json.dumps(gapfiles),
             gramdict=json.dumps(gramdict),

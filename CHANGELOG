@@ -1,3 +1,9 @@
+v1.5.1:
+Visual update:
+Most elements are now hidden until you choose a program.
+The selections are now grouped into two colored boxes.
+Also renamed divleft to divtop and divright to divbottom in bellman.html.
+
 v1.5:
 It is now possible to calculate three algebras.
 The list of programs and the list of algebras are now sorted alphabetically.
