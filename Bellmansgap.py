@@ -250,7 +250,8 @@ def bellman():
             operator_letter2 = "o"
 
         command = "" + alg1 + operator + alg2 + operator2 + alg3
-        name = alg1 + "_" + operator_letter + "_" + alg2 + "_" + operator_letter2 + "_" + alg3
+        name = alg1 + "_" + operator_letter + "_" + alg2 \
+            + "_" + operator_letter2 + "_" + alg3
         res = calculategapc(program, command, name, exlist)
 
         '''
