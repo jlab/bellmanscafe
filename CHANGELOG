@@ -1,3 +1,9 @@
+v1.5:
+It is now possible to calculate three algebras.
+The list of programs and the list of algebras are now sorted alphabetically.
+Added some padding to the bottom of the page.
+The title of each page is now big, bold and white in the center at the top of the page.
+
 v1.4:
 Algebras and algebra-product are in one line now.
 The result section is now in a scrollable bordered box at the bottom of the page.

@@ -5,7 +5,7 @@
 
 <script type=text/javascript>
     divbanner = document.getElementById('divbanner');
-    divbanner.innerHTML += "Bellman's Cafe v1.4";
+    divbanner.innerHTML += "<center><FONT color='#ffffff' size='6'>Bellman's Cafe v1.5</FONT></center>";
 </script>
 
 <style>
@@ -27,6 +27,7 @@
     #divrightouter {
         padding-left: 20px;
         padding-right: 20px;
+        padding-bottom: 40px;
     }
     
     #divright {
@@ -191,19 +192,29 @@ is played when the submit button is clicked.
         var selectedProgram = selectProgramObject.value;
         
         //If the default option "Choose a program", which has the value "" was selected, 
-        //the alg1select, alg2select, operator, textbox and exercise elements are emptied to
+        //the alg1select, alg2select, alg3Select, operator, textbox and exercise elements are emptied to
         //return them to their default state.
         if(selectedProgram == ""){
-          var alg1Select = document.getElementById("alg1select");
+            var alg1Select = document.getElementById("alg1select");
             while (alg1Select.firstChild) {
                 alg1Select.removeChild(alg1Select.firstChild);
-            }             
-          var alg2Select = document.getElementById("alg2select");
-            while (alg2Select.firstChild) {
-                alg2Select.removeChild(alg2Select.firstChild);
-            } 
+            }   
+            
             var operat = document.getElementById("operator")
             operat.selectedIndex = 0;
+            
+            var alg2Select = document.getElementById("alg2select");
+            while (alg2Select.firstChild) {
+                alg2Select.removeChild(alg2Select.firstChild);
+            }  
+            
+            var operat2 = document.getElementById("operator2")
+            operat2.selectedIndex = 0;
+            
+            var alg3Select = document.getElementById("alg3select");
+            while (alg3Select.firstChild) {
+                alg3Select.removeChild(alg3Select.firstChild);
+            }
             
             var textbox = document.getElementById("textbox");
             textbox.innerHTML = "<p>Infotext:</p>";
@@ -247,7 +258,7 @@ is played when the submit button is clicked.
         
         //The grammars and algebras that were parsed for this program are extracted from the dictionaries and saved in new variables.
         var grammarsList = gramdict[selectedProgram];
-        var algebrasList = algdict[selectedProgram];
+        var algebrasList = algdict[selectedProgram].sort();
         
         //The grammarselect combo-box is first emptied.
         var grammarSelect = document.getElementById("grammarselect");
@@ -299,22 +310,42 @@ is played when the submit button is clicked.
         while (alg2Select.firstChild) {
             alg2Select.removeChild(alg2Select.firstChild);
         }
-        //Since the user can choose to executed only one algebra, the algebra 2 combo-box has the empty option.
+        
+        //For the second operator the operator is only selected, but the infotext is not updated.
+        var operatorSelect2 = document.getElementById("operator2");
+        operatorSelect2.selectedIndex = 1;
+        
+        //The algebra 3 combo-box is emptied.
+        var alg3Select = document.getElementById("alg3select");
+        while (alg3Select.firstChild) {
+            alg3Select.removeChild(alg3Select.firstChild);
+        }
+        //Since the user can choose to executed only one algebra, the algebra 2 and 3 combo-boxes have the empty option.
         var emptyOption = document.createElement("option");
         emptyOption.value = "";
         emptyOption.text = "";
         alg2Select.appendChild(emptyOption);
+        var emptyOption2 = document.createElement("option");
+        emptyOption2.value = "";
+        emptyOption2.text = "";
+        alg3Select.appendChild(emptyOption2);
         
-        algebrasList = algdict[selectedProgram];
-        //Each parsed algebra is then added to the options of the algebra 2 combo-box.
+        algebrasList = algdict[selectedProgram].sort();
+        //Each parsed algebra is then added to the options of the algebra 2 and 3 combo-boxes.
         algebrasList.forEach(function(algebraString) {
             var option = document.createElement("option");
             option.value = algebraString;
             option.text = algebraString;
             alg2Select.appendChild(option);
+            var option2 = document.createElement("option");
+            option2.value = algebraString;
+            option2.text = algebraString;
+            alg3Select.appendChild(option2);
         });
-        //The second algebra (after the empty option) is selected, making it different from the pre-selected algebra 1 option.
+        //The second algebra (after the empty option) is selected for combo-box 2, making it different from the pre-selected algebra 1 option.
+        // And the third is selected for combo-box 3, making it different from the other two.
         alg2Select.selectedIndex = 2;
+        alg3Select.selectedIndex = 0;
         
         //An infotext corresponding to the selected program is added to the textbox div.
         var infotextsdict = {{ infotextsdict|safe }};
@@ -407,6 +438,27 @@ is played when the submit button is clicked.
     <option value=""></option>
 </select>
 </span>
+<span>&nbsp;</span>
+
+<span><label for="operator2">Product Operator 2:</label>
+
+<select name="operator2" id="operator2">
+  <option value=""></option>
+  <option value="*">*</option>
+  <option value="/">/</option>
+  <option value="%">%</option>
+  <option value="^">^</option>
+  <option value=".">.</option>
+  <option value="|">|</option>
+</select>
+</span>
+
+<span><label for="alg3">Algebra 3:</label>
+
+<select id="alg3select" name="alg3" id="alg3">
+    <option value=""></option>
+</select>
+</span>
 
 <!-- A div is created that will hold information on the selected operator.-->
 <div id="operatorinfo">
@@ -448,6 +500,12 @@ is played when the submit button is clicked.
         
         var alg2Sel = document.getElementById("alg2select");
         alg2Sel.value = user_form_input["alg2"];
+        
+        var operator2Sel = document.getElementById("operator2");
+        operator2Sel.value = user_form_input["operator2"];
+        
+        var alg3Sel = document.getElementById("alg3select");
+        alg3Sel.value = user_form_input["alg3"];
     }
     //resetValuesFunction() is executed just before the submit button as well as after all other elements have been built.
     resetValuesFunction();
