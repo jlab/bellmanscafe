@@ -5,7 +5,7 @@
 
 <script type=text/javascript>
     divbanner = document.getElementById('divbanner');
-    divbanner.innerHTML += "<center><FONT color='#ffffff' size='6'>Bellman's Cafe v1.5.1</FONT></center>";
+    divbanner.innerHTML += "<center><FONT color='#ffffff' size='6'>Bellman's Cafe v1.5.2</FONT></center>";
 </script>
 
 <style>
@@ -41,7 +41,7 @@
     }
     
     #divbottom {
-        height:25vh;
+        height:65vh;
         width:95%;
         border:1px solid #ccc;
         overflow:auto;
@@ -151,7 +151,7 @@ is played when the submit button is clicked.
 <div id="divtop">
 
 <!-- In this form element combo-boxes can be selected and input can be typed, which is submitted via the post-method.-->
-<form action="#" method="post">
+<form method="post">
 
 <div id="divbox1">
 <p><label for="program"><FONT size='4'>Program:</FONT></label>
@@ -587,6 +587,7 @@ is played when the submit button is clicked.
     }
     //resetValuesFunction() is executed just before the submit button as well as after all other elements have been built.
     resetValuesFunction();
+    document.getElementById('divbottom').scrollIntoView();
 </script>
 
 {% endblock %}
