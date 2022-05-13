@@ -13,24 +13,19 @@ app.secret_key = "xasdqfghuioiuwqenjdcbjhawbuomcujeq1217846421kopNSJJGWmc8u29"
 # Variablen
 exlist = []
 ex = ""
-gapfiles = ""
 gra = ""
 alg1 = ""
 operator = ""
 alg2 = ""
+operator2 = ""
+alg3 = ""
 res = ""
 dirstr = ""
 # glob.glob('*.gap') returns a list of names of
 # all files in the directory that end on ".gap"
-gapfiles = glob.glob('*.gap')
-# sortedgapfiles is currently unused
-sortedgapfiles = sorted(gapfiles)
-gra = ""
+# the list is then sorted
+gapfiles = sorted(glob.glob('*.gap'))
 program = ""
-gramdict = {}
-algdict = {}
-infotextsdict = {}
-returndict = {}
 
 returndict = parsegapfiles(gapfiles)
 
@@ -42,6 +37,7 @@ inputstringsnumberdict = returndict["inputstringsnumberdict"]
 inputreminderlist = []
 
 operator_letter = ""
+operator_letter2 = ""
 
 user_form_input = []
 
@@ -63,7 +59,9 @@ def bellman():
         "gra": "",
         "alg1": "",
         "operator": "",
-        "alg2": ""
+        "alg2": "",
+        "operator2": "",
+        "alg3": ""
     }
 
     # This if statement only occurs
@@ -80,6 +78,8 @@ def bellman():
         global alg1
         global operator
         global alg2
+        global operator2
+        global alg3
         global res
         global gapfiles
         global dirstr
@@ -88,6 +88,7 @@ def bellman():
         global inputstringsnumberdict
         global inputreminderlist
         global operator_letter
+        global operator_letter2
 
         # values from the form/combo-boxes are saved in the variables here
         # some of it might be old and unnecessary by now
@@ -101,6 +102,8 @@ def bellman():
         alg1 = request.form.get('alg1')
         operator = request.form.get('operator')
         alg2 = request.form.get('alg2')
+        operator2 = request.form.get('operator2')
+        alg3 = request.form.get('alg3')
 
         '''
          each of the inputs are saved (again)
@@ -112,7 +115,7 @@ def bellman():
         for i in range(1, n + 1):
             requeststring = "ex" + str(i)
             user_form_input[requeststring] = request.form.get(requeststring)
-        for param in ["gra", "alg1", "operator", "alg2"]:
+        for param in ["gra", "alg1", "operator", "alg2", "operator2", "alg3"]:
             user_form_input[param] = request.form[param]
 
         '''
@@ -121,15 +124,32 @@ def bellman():
         in the results part of the page
         '''
         inputreminderlist = []
-        inputreminderlist.append("Your program was: " + program + "<br>")
-        inputreminderlist.append("Your grammar was: " + gra + "<br>")
-        inputreminderlist.append("Your first algebra was: " + alg1 + "<br>")
-        inputreminderlist.append("Your operator was: " + operator + "<br>")
-        inputreminderlist.append("Your second algebra was: " + alg2 + "<br>")
+        if program != "":
+            inputreminderlist.append("Your program was: " + program + "<br>")
+        if gra != "":
+            inputreminderlist.append("Your grammar was: " + gra + "<br>")
+        if alg1 != "":
+            inputreminderlist.append("Your first algebra was: "
+                                     + alg1 + "<br>")
+        if operator != "":
+            inputreminderlist.append("Your operator was: "
+                                     + operator + "<br>")
+        if alg2 != "":
+            inputreminderlist.append("Your second algebra was: "
+                                     + alg2 + "<br>")
+        if operator2 != "":
+            inputreminderlist.append("Your second operator was: "
+                                     + operator2 + "<br>")
+        if alg3 != "":
+            inputreminderlist.append("Your third algebra was: "
+                                     + alg3 + "<br>")
+
+        if len(inputreminderlist) == 0:
+            inputreminderlist.append("You have not selected anything.")
 
     # Algebra (single algebra)
     if len(exlist) != 0 and program != "" and gra != "" \
-            and alg1 != "" and alg2 == "":
+            and alg1 != "" and alg2 == "" and alg3 == "":
 
         # calculategapc() is used to return the result to the variable res
         command = "" + alg1
@@ -155,26 +175,63 @@ def bellman():
             inputreminderlist=inputreminderlist, exlist=exlist,
             user_form_input=json.dumps(user_form_input))
 
-    # Algebraprodukt (two or more algebras)
+    # Algebraprodukt (two algebras)
     elif len(exlist) != 0 and program != "" and gra != "" \
-            and alg1 != "" and operator != "" and alg2 != "":
+            and alg1 != "" and operator != "" and alg2 != "" and alg3 == "":
 
         # "*" "/" "%" "^" "." "|"
-        if operator == "*":
-            operator_letter = "l"
-        elif operator == "/":
-            operator_letter = "i"
-        elif operator == "%":
-            operator_letter = "c"
-        elif operator == "^":
-            operator_letter = "p"
-        elif operator == ".":
-            operator_letter = "t"
-        elif operator == "|":
-            operator_letter = "o"
+        map_operator_letter = {
+            '*': 'l',
+            '/': 'i',
+            '%': 'c',
+            '': 'p',
+            '.': 't',
+            '|': 'o'
+        }
+        operator_letter = map_operator_letter.get(operator, None)
 
         command = "" + alg1 + operator + alg2
         name = alg1 + "_" + operator_letter + "_" + alg2
+        res = calculategapc(program, command, name, exlist)
+
+        '''
+        variables that are important for building
+        the result part of the page and the previous
+        selection of the combo-boxes
+        is returned back to the html page here
+        some of these variables might be outdated and
+        unnecessary to return by now, further cleanup will follow
+        '''
+        return render_template(
+            'bellman.html', result=res,
+            program=program, gra=gra,
+            gapfiles=json.dumps(gapfiles),
+            gramdict=json.dumps(gramdict),
+            algdict=json.dumps(algdict),
+            infotextsdict=json.dumps(infotextsdict),
+            inputstringsnumberdict=inputstringsnumberdict,
+            inputreminderlist=inputreminderlist, exlist=exlist,
+            user_form_input=json.dumps(user_form_input))
+
+    # Algebraprodukt (three algebras)
+    elif len(exlist) != 0 and program != "" and gra != "" \
+            and alg1 != "" and operator != "" and alg2 != "" and alg3 != "":
+
+        # "*" "/" "%" "^" "." "|"
+        map_operator_letter = {
+            '*': 'l',
+            '/': 'i',
+            '%': 'c',
+            '': 'p',
+            '.': 't',
+            '|': 'o'
+        }
+        operator_letter = map_operator_letter.get(operator, None)
+        operator_letter2 = map_operator_letter.get(operator2, None)
+
+        command = "" + alg1 + operator + alg2 + operator2 + alg3
+        name = alg1 + "_" + operator_letter + "_" + alg2 \
+            + "_" + operator_letter2 + "_" + alg3
         res = calculategapc(program, command, name, exlist)
 
         '''
@@ -231,8 +288,8 @@ def calculategapc(program, command, name, exlist):
     res = []
 
     # this is the executed commandstring
-    commandstring = 'gapc -p ' + command\
-                    + ' -o ' + dirstr + '/' + name + '_gapc.cc '\
+    commandstring = 'gapc -p ' + command \
+                    + ' -o ' + dirstr + '/' + name + '_gapc.cc ' \
                     + program + '.gap' + ' 2>&1'
     pro1_returncode = 0
 
@@ -306,7 +363,7 @@ def calculategapc(program, command, name, exlist):
         # and is not directly used for executing the subprocess
         commandstring = "./" + name + "_gapc " + ex + " 2>&1"
         # ( ulimit -t 1; ./a.out )
-        commandstring = "( ulimit -t 0; " + commandstring + " )"
+        # commandstring = "( ulimit -t 0; " + commandstring + " )"
 
         # if an error occured in process 2, then process 3 will not be executed
         if pro2.returncode != 0:
