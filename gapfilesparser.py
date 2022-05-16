@@ -52,7 +52,12 @@ def parsegapfiles(gapfiles):
                     elif "rna" in myline.casefold():
                         number_of_inputstrings = myline.count("rna")
                 if splitline[0] == "import":
-                    headerslist.append(splitline[1])
+                    if "," in myline:
+                        line = "".join(splitline[1:])
+                        for header in line.split(","):
+                            headerslist.append(header)
+                    else:
+                        headerslist.append(splitline[1])
 
         gramdict[grafile.split(".")[0]] = gramlist
         algdict[grafile.split(".")[0]] = alglist

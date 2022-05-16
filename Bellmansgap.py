@@ -56,31 +56,6 @@ def download_file(filename):
     p = filename
     return send_file(p, as_attachment=True)
 
-# route for downloading multiple files
-@app.route('/<filename>/download_all/<files>')
-def download_all(files, filename):
-    '''
-    memory_file = BytesIO()
-    with zipfile.ZipFile(memory_file, 'w') as zf:
-        for individualFile in files:
-            data = zipfile.ZipInfo(individualFile['fileName'])
-            data.date_time = time.localtime(time.time())[:6]
-            data.compress_type = zipfile.ZIP_DEFLATED
-            zf.writestr(data, individualFile['fileData'])
-    memory_file.seek(0)
-    return send_file(memory_file, attachment_filename='capsule.zip', as_attachment=True)
-    '''
-    zipFileName = filename+'_headers.zip'
-    zipf = zipfile.ZipFile(zipFileName,'w', zipfile.ZIP_DEFLATED)
-    for aFile in files:
-        zipf.write(aFile)
-    zipf.close()
-    return send_file('headers.zip',
-            mimetype = 'zip',
-            attachment_filename= 'headers.zip',
-            as_attachment = True)
-    
-
 # route for the bellman page "/bellman"
 @app.route("/bellman", methods=["GET", "POST"])
 def bellman():
