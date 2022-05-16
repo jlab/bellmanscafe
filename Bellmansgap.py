@@ -2,7 +2,6 @@ import glob
 import json
 import os
 import subprocess
-import zipfile
 
 from flask import Flask, render_template, request, send_file
 
@@ -55,6 +54,7 @@ def home():
 def download_file(filename):
     p = filename
     return send_file(p, as_attachment=True)
+
 
 # route for the bellman page "/bellman"
 @app.route("/bellman", methods=["GET", "POST"])
