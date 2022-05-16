@@ -2,8 +2,9 @@ import glob
 import json
 import os
 import subprocess
+import zipfile
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_file
 
 from gapfilesparser import parsegapfiles
 
@@ -33,6 +34,7 @@ gramdict = returndict["gramdict"]
 algdict = returndict["algdict"]
 infotextsdict = returndict["infotextsdict"]
 inputstringsnumberdict = returndict["inputstringsnumberdict"]
+headersdict = returndict["headersdict"]
 
 inputreminderlist = []
 
@@ -47,6 +49,37 @@ user_form_input = []
 def home():
     return render_template("index.html")
 
+
+# route for downloading a file
+@app.route("/<filename>/download")
+def download_file(filename):
+    p = filename
+    return send_file(p, as_attachment=True)
+
+# route for downloading multiple files
+@app.route('/<filename>/download_all/<files>')
+def download_all(files, filename):
+    '''
+    memory_file = BytesIO()
+    with zipfile.ZipFile(memory_file, 'w') as zf:
+        for individualFile in files:
+            data = zipfile.ZipInfo(individualFile['fileName'])
+            data.date_time = time.localtime(time.time())[:6]
+            data.compress_type = zipfile.ZIP_DEFLATED
+            zf.writestr(data, individualFile['fileData'])
+    memory_file.seek(0)
+    return send_file(memory_file, attachment_filename='capsule.zip', as_attachment=True)
+    '''
+    zipFileName = filename+'_headers.zip'
+    zipf = zipfile.ZipFile(zipFileName,'w', zipfile.ZIP_DEFLATED)
+    for aFile in files:
+        zipf.write(aFile)
+    zipf.close()
+    return send_file('headers.zip',
+            mimetype = 'zip',
+            attachment_filename= 'headers.zip',
+            as_attachment = True)
+    
 
 # route for the bellman page "/bellman"
 @app.route("/bellman", methods=["GET", "POST"])
@@ -86,6 +119,7 @@ def bellman():
         global algdict
         global infotextsdict
         global inputstringsnumberdict
+        global headersdict
         global inputreminderlist
         global operator_letter
         global operator_letter2
@@ -172,6 +206,7 @@ def bellman():
             algdict=json.dumps(algdict),
             infotextsdict=json.dumps(infotextsdict),
             inputstringsnumberdict=inputstringsnumberdict,
+            headersdict=json.dumps(headersdict),
             inputreminderlist=inputreminderlist, exlist=exlist,
             user_form_input=json.dumps(user_form_input))
 
@@ -210,6 +245,7 @@ def bellman():
             algdict=json.dumps(algdict),
             infotextsdict=json.dumps(infotextsdict),
             inputstringsnumberdict=inputstringsnumberdict,
+            headersdict=json.dumps(headersdict),
             inputreminderlist=inputreminderlist, exlist=exlist,
             user_form_input=json.dumps(user_form_input))
 
@@ -250,6 +286,7 @@ def bellman():
             algdict=json.dumps(algdict),
             infotextsdict=json.dumps(infotextsdict),
             inputstringsnumberdict=inputstringsnumberdict,
+            headersdict=json.dumps(headersdict),
             inputreminderlist=inputreminderlist, exlist=exlist,
             user_form_input=json.dumps(user_form_input))
 
@@ -267,6 +304,7 @@ def bellman():
         algdict=json.dumps(algdict),
         infotextsdict=json.dumps(infotextsdict),
         inputstringsnumberdict=inputstringsnumberdict,
+        headersdict=json.dumps(headersdict),
         inputreminderlist=inputreminderlist, exlist=exlist,
         user_form_input=json.dumps(user_form_input))
 
