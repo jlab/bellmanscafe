@@ -55,9 +55,9 @@ def parsegapfiles(gapfiles):
                     if "," in myline:
                         line = "".join(splitline[1:])
                         for header in line.split(","):
-                            headerslist.append(header)
+                            headerslist.append(header.strip(" '\"\t\r\n"))
                     else:
-                        headerslist.append(splitline[1])
+                        headerslist.append(splitline[1].strip(" '\"\t\r\n"))
 
         gramdict[grafile.split(".")[0]] = gramlist
         algdict[grafile.split(".")[0]] = alglist

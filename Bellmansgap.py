@@ -1,6 +1,7 @@
 import glob
 import json
 import os
+import shutil
 import subprocess
 
 from flask import Flask, render_template, request, send_file
@@ -332,6 +333,15 @@ def calculategapc(program, command, name, exlist):
         list1 = []
         list1.append("<b>Command</b>: " + commandstring)
         res.append(list1)
+
+    # The header files necessary for execution will be
+    # copied to the destination folder (and overwritten).
+
+    for f in headersdict[program]:
+        print("The program: ", program)
+        print("The header: ", f)
+        shutil.copy(f, dirstr)
+
 
     # further commands will be executed
     # from within the directory to which
