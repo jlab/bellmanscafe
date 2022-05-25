@@ -55,11 +55,14 @@ def parsegapfiles(gapfiles):
                     if "," in myline:
                         line = "".join(splitline[1:])
                         for header in line.split(","):
-                            if header.startswith('"') and header.strip(" \t\r\n").endswith(".hh,"):
+                            if header.startswith('"') and \
+                                    header.strip(" \t\r\n").endswith(".hh,"):
                                 headerslist.append(header.strip(" '\"\t\r\n"))
                     else:
-                        if splitline[1].startswith('"') and splitline[1].strip(" \t\r\n").endswith('.hh"'):
-                            headerslist.append(splitline[1].strip(" '\"\t\r\n"))
+                        if splitline[1].startswith('"') and \
+                                splitline[1].strip(" \t\r\n").endswith('.hh"'):
+                            headerslist.append(
+                                splitline[1].strip(" '\"\t\r\n"))
 
         gramdict[grafile.split(".")[0]] = gramlist
         algdict[grafile.split(".")[0]] = alglist
