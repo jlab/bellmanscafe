@@ -341,8 +341,6 @@ def calculategapc(program, command, name, exlist):
         print("The program: ", program)
         print("The header: ", f)
         shutil.copy(f, dirstr)
-
-
     # further commands will be executed
     # from within the directory to which
     # the files have been saved
