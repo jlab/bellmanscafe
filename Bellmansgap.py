@@ -235,7 +235,7 @@ def bellman():
                 user_form_input=json.dumps(user_form_input))
 
     # More than one algebra:
-    if (len(not_empty_algs_indices) >= 2 
+    if (len(not_empty_algs_indices) >= 2
             and len(not_empty_operators_indices) >= 1):
 
         # Only continue if exercises(which is the input of the user)
