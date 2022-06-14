@@ -16,10 +16,12 @@ exlist = []
 ex = ""
 gra = ""
 alg1 = ""
-operator = ""
+operator1 = ""
 alg2 = ""
 operator2 = ""
 alg3 = ""
+algslist = []
+operatorslist = []
 res = ""
 dirstr = ""
 # glob.glob('*.gap') returns a list of names of
@@ -67,7 +69,7 @@ def bellman():
         "program": "",
         "gra": "",
         "alg1": "",
-        "operator": "",
+        "operator1": "",
         "alg2": "",
         "operator2": "",
         "alg3": ""
@@ -85,10 +87,12 @@ def bellman():
         global program
         global gra
         global alg1
-        global operator
+        global operator1
         global alg2
         global operator2
         global alg3
+        global algslist
+        global operatorslist
         global res
         global gapfiles
         global dirstr
@@ -103,30 +107,68 @@ def bellman():
         # values from the form/combo-boxes are saved in the variables here
         # some of it might be old and unnecessary by now
         program = request.form.get('program')
+
+        # Since multiple inputs are possible an exlist is created
+        # containing all submitted inputs.
         exlist = []
         n = inputstringsnumberdict[program]
         for i in range(1, n + 1):
             requeststring = "ex" + str(i)
             exlist.append(request.form.get(requeststring))
+
         gra = request.form.get('gra')
+
+        # Since up to 5 algebras are possible an algslist
+        # is created containing all submitted algebras.
+        algslist = [""] * 5
+
+        for i in range(1, len(algslist)+1):
+            requeststring = "alg" + str(i)
+            if (requeststring in request.form):
+                algslist[i-1] = request.form.get(requeststring)
+
+
         alg1 = request.form.get('alg1')
-        operator = request.form.get('operator')
+        operator1 = request.form.get('operator1')
         alg2 = request.form.get('alg2')
         operator2 = request.form.get('operator2')
         alg3 = request.form.get('alg3')
 
+        # Since up to 4 operators are possible an operatorslist
+        # is created containing all submitted operators.
+        operatorslist = [""] * 5
+        # The operator at position 0 will correspond to algebra1,
+        # and is therefore alway an empty string.
+        # Otherwise the operator at position 1 will correspond
+        # to the algebra at position 1, which is algebra2, and so on.
+        # This results in each operator being paired with an algebra,
+        # with algebra1 always having an empty operator.
+        for i in range(1, len(operatorslist)):
+            requeststring = "operator" + str(i)
+            if (requeststring in request.form):
+                operatorslist[i] = request.form.get(requeststring)
+            else:
+                operatorslist[i] = ""
+
         '''
-         each of the inputs are saved (again)
+         each of the inputs are saved (again),
          the dictionary user_form_input
          is later returned to the html page in order
          to display the selection that the user had made before pressing submit
         '''
-        user_form_input["program"] = request.form["program"]
+        for param in ["program", "gra"]:
+            user_form_input[param] = request.form[param]
         for i in range(1, n + 1):
             requeststring = "ex" + str(i)
             user_form_input[requeststring] = request.form.get(requeststring)
-        for param in ["gra", "alg1", "operator", "alg2", "operator2", "alg3"]:
-            user_form_input[param] = request.form[param]
+        for j in range(1, len(algslist)+1):
+            requeststring = "alg" + str(j)
+            if requeststring in request.form:
+                user_form_input[requeststring] = request.form.get(requeststring)
+        for k in range(1, len(operatorslist)+1):
+            requeststring = "operator" + str(k)
+            if requeststring in request.form:
+                user_form_input[requeststring] = request.form.get(requeststring)
 
         '''
         additionally a list of strings is built to display
@@ -138,133 +180,128 @@ def bellman():
             inputreminderlist.append("Your program was: " + program + "<br>")
         if gra != "":
             inputreminderlist.append("Your grammar was: " + gra + "<br>")
-        if alg1 != "":
-            inputreminderlist.append("Your first algebra was: "
-                                     + alg1 + "<br>")
-        if operator != "":
-            inputreminderlist.append("Your operator was: "
-                                     + operator + "<br>")
-        if alg2 != "":
-            inputreminderlist.append("Your second algebra was: "
-                                     + alg2 + "<br>")
-        if operator2 != "":
-            inputreminderlist.append("Your second operator was: "
-                                     + operator2 + "<br>")
-        if alg3 != "":
-            inputreminderlist.append("Your third algebra was: "
-                                     + alg3 + "<br>")
 
+        for l in range(1, len(algslist)+1):
+            print(l)
+            print(operatorslist)
+            print(algslist)
+            if (l==1):
+                inputreminderlist.append("Your algebra "+str(l)+" was: "
+                                         + algslist[l-1] + "<br>")
+            elif (algslist[l-1] != "" and operatorslist[l-1] != ""):
+                inputreminderlist.append("Your operator "+str(l-1)+" was: "
+                                         + operatorslist[l-1] + "<br>")
+                inputreminderlist.append("Your algebra " + str(l) + " was: "
+                                         + algslist[l - 1] + "<br>")
         if len(inputreminderlist) == 0:
             inputreminderlist.append("You have not selected anything.")
 
-    # Algebra (single algebra)
-    if len(exlist) != 0 and program != "" and gra != "" \
-            and alg1 != "" and alg2 == "" and alg3 == "":
+    # List of indices of algs that have been selected
+    not_empty_algs_indices = [i for i in range(len(algslist)) if algslist[i] != ""]
+    # List of indices of operators that have been selected
+    not_empty_operators_indices = [i for i in range(len(operatorslist)) if operatorslist[i] != ""]
+    # Since there is never an operator before algebra1, the position 0
+    # will never appear in not_empty_operators_indices.
 
-        # calculategapc() is used to return the result to the variable res
-        command = "" + alg1
-        name = "" + alg1
-        res = calculategapc(program, command, name, exlist)
+    # For exactly one algebra
+    if (len(not_empty_algs_indices) == 1):
+        if len(exlist) != 0 and program != "" and gra != "":
+            # calculategapc() is used to return the result to the variable res
+            command = "" + algslist[not_empty_algs_indices[0]]
+            name = "" + algslist[not_empty_algs_indices[0]]
+            res = calculategapc(program, command, name, exlist)
 
-        '''
-        variables that are important for building
-        the result part of the page and the previous
-        selection of the combo-boxes
-        is returned back to the html page here
-        some of these variables might be outdated and
-        unnecessary to return by now, further cleanup will follow
-        '''
-        return render_template(
-            "bellman.html", result=res,
-            program=program, gra=gra,
-            gapfiles=json.dumps(gapfiles),
-            gramdict=json.dumps(gramdict),
-            algdict=json.dumps(algdict),
-            infotextsdict=json.dumps(infotextsdict),
-            inputstringsnumberdict=inputstringsnumberdict,
-            headersdict=json.dumps(headersdict),
-            inputreminderlist=inputreminderlist, exlist=exlist,
-            user_form_input=json.dumps(user_form_input))
+            '''
+            variables that are important for building
+            the result part of the page and the previous
+            selection of the combo-boxes
+            is returned back to the html page here
+            some of these variables might be outdated and
+            unnecessary to return by now, further cleanup will follow
+            '''
+            return render_template(
+                "bellman.html", result=res,
+                program=program, gra=gra,
+                gapfiles=json.dumps(gapfiles),
+                gramdict=json.dumps(gramdict),
+                algdict=json.dumps(algdict),
+                infotextsdict=json.dumps(infotextsdict),
+                inputstringsnumberdict=inputstringsnumberdict,
+                headersdict=json.dumps(headersdict),
+                inputreminderlist=inputreminderlist, exlist=exlist,
+                user_form_input=json.dumps(user_form_input))
 
-    # Algebraprodukt (two algebras)
-    elif len(exlist) != 0 and program != "" and gra != "" \
-            and alg1 != "" and operator != "" and alg2 != "" and alg3 == "":
+    # More than one algebra:
+    if (len(not_empty_algs_indices) >= 2 \
+            and len(not_empty_operators_indices) >= 1):
 
-        # "*" "/" "%" "^" "." "|"
-        map_operator_letter = {
-            '*': 'l',
-            '/': 'i',
-            '%': 'c',
-            '': 'p',
-            '.': 't',
-            '|': 'o'
-        }
-        operator_letter = map_operator_letter.get(operator, None)
+        # Only continue if exercises(which is the input of the user)
+        # and program and grammar are selected.
+        if len(exlist) != 0 and program != "" and gra != "":
+            command = ""
+            name = ""
 
-        command = "" + alg1 + operator + alg2
-        name = alg1 + "_" + operator_letter + "_" + alg2
-        res = calculategapc(program, command, name, exlist)
+            # Operator letter map for the name
+            # "*" "/" "%" "^" "." "|"
+            map_operator_letter = {
+                '*': 'l',
+                '/': 'i',
+                '%': 'c',
+                '^': 'p',
+                '.': 't',
+                '|': 'o'
+            }
 
-        '''
-        variables that are important for building
-        the result part of the page and the previous
-        selection of the combo-boxes
-        is returned back to the html page here
-        some of these variables might be outdated and
-        unnecessary to return by now, further cleanup will follow
-        '''
-        return render_template(
-            'bellman.html', result=res,
-            program=program, gra=gra,
-            gapfiles=json.dumps(gapfiles),
-            gramdict=json.dumps(gramdict),
-            algdict=json.dumps(algdict),
-            infotextsdict=json.dumps(infotextsdict),
-            inputstringsnumberdict=inputstringsnumberdict,
-            headersdict=json.dumps(headersdict),
-            inputreminderlist=inputreminderlist, exlist=exlist,
-            user_form_input=json.dumps(user_form_input))
+            # Iteration through all indices that correspond
+            # to an algebra that is not "" and was therefore
+            # selected and assembling command and name.
+            for index in not_empty_algs_indices:
+                # For the very first algebra in the list,
+                # regardless of its predecessing operator,
+                # only the algebra is added to command and name.
+                if not_empty_algs_indices.index(index) == 0:
+                    command += algslist[index]
+                    name += algslist[index]
+                # Then if the algebras index is in the
+                # not_empty_operator_indices the operator
+                # and algebra are added to command and name.
+                # Otherwise the algebra can not be
+                # evaluated (without an operator) and is not added
+                # to command or name.
+                elif (index in not_empty_operators_indices):
+                    command += operatorslist[index]\
+                               + algslist[index]
+                    # For the name the operator has to be
+                    # converted to a letter for the file name.
+                    operator_letter = \
+                        map_operator_letter.get(
+                            operatorslist[index], None)
+                    name += "_" + operator_letter\
+                            + "_" + algslist[index]
 
-    # Algebraprodukt (three algebras)
-    elif len(exlist) != 0 and program != "" and gra != "" \
-            and alg1 != "" and operator != "" and alg2 != "" and alg3 != "":
+            # Once the command and name are assembled,
+            # they are used to calculate the result.
+            res = calculategapc(program, command, name, exlist)
 
-        # "*" "/" "%" "^" "." "|"
-        map_operator_letter = {
-            '*': 'l',
-            '/': 'i',
-            '%': 'c',
-            '': 'p',
-            '.': 't',
-            '|': 'o'
-        }
-        operator_letter = map_operator_letter.get(operator, None)
-        operator_letter2 = map_operator_letter.get(operator2, None)
-
-        command = "" + alg1 + operator + alg2 + operator2 + alg3
-        name = alg1 + "_" + operator_letter + "_" + alg2 \
-            + "_" + operator_letter2 + "_" + alg3
-        res = calculategapc(program, command, name, exlist)
-
-        '''
-        variables that are important for building
-        the result part of the page and the previous
-        selection of the combo-boxes
-        is returned back to the html page here
-        some of these variables might be outdated and
-        unnecessary to return by now, further cleanup will follow
-        '''
-        return render_template(
-            "bellman.html", result=res,
-            program=program, gra=gra,
-            gapfiles=json.dumps(gapfiles),
-            gramdict=json.dumps(gramdict),
-            algdict=json.dumps(algdict),
-            infotextsdict=json.dumps(infotextsdict),
-            inputstringsnumberdict=inputstringsnumberdict,
-            headersdict=json.dumps(headersdict),
-            inputreminderlist=inputreminderlist, exlist=exlist,
-            user_form_input=json.dumps(user_form_input))
+            '''
+            variables that are important for building
+            the result part of the page and the previous
+            selection of the combo-boxes
+            is returned back to the html page here
+            some of these variables might be outdated and
+            unnecessary to return by now, further cleanup will follow
+            '''
+            return render_template(
+                "bellman.html", result=res,
+                program=program, gra=gra,
+                gapfiles=json.dumps(gapfiles),
+                gramdict=json.dumps(gramdict),
+                algdict=json.dumps(algdict),
+                infotextsdict=json.dumps(infotextsdict),
+                inputstringsnumberdict=inputstringsnumberdict,
+                headersdict=json.dumps(headersdict),
+                inputreminderlist=inputreminderlist, exlist=exlist,
+                user_form_input=json.dumps(user_form_input))
 
     '''
     if this return statement is reached
