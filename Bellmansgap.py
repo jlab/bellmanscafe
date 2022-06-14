@@ -127,7 +127,6 @@ def bellman():
             if (requeststring in request.form):
                 algslist[i-1] = request.form.get(requeststring)
 
-
         alg1 = request.form.get('alg1')
         operator1 = request.form.get('operator1')
         alg2 = request.form.get('alg2')
@@ -164,11 +163,13 @@ def bellman():
         for j in range(1, len(algslist)+1):
             requeststring = "alg" + str(j)
             if requeststring in request.form:
-                user_form_input[requeststring] = request.form.get(requeststring)
+                user_form_input[requeststring] = \
+                    request.form.get(requeststring)
         for k in range(1, len(operatorslist)+1):
             requeststring = "operator" + str(k)
             if requeststring in request.form:
-                user_form_input[requeststring] = request.form.get(requeststring)
+                user_form_input[requeststring] = \
+                    request.form.get(requeststring)
 
         '''
         additionally a list of strings is built to display
@@ -181,25 +182,27 @@ def bellman():
         if gra != "":
             inputreminderlist.append("Your grammar was: " + gra + "<br>")
 
-        for l in range(1, len(algslist)+1):
-            print(l)
+        for i in range(1, len(algslist)+1):
+            print(i)
             print(operatorslist)
             print(algslist)
-            if (l==1):
-                inputreminderlist.append("Your algebra "+str(l)+" was: "
-                                         + algslist[l-1] + "<br>")
-            elif (algslist[l-1] != "" and operatorslist[l-1] != ""):
-                inputreminderlist.append("Your operator "+str(l-1)+" was: "
-                                         + operatorslist[l-1] + "<br>")
-                inputreminderlist.append("Your algebra " + str(l) + " was: "
-                                         + algslist[l - 1] + "<br>")
+            if i == 1:
+                inputreminderlist.append("Your algebra "+str(i)+" was: "
+                                         + algslist[i-1] + "<br>")
+            elif (algslist[i-1] != "" and operatorslist[i-1] != ""):
+                inputreminderlist.append("Your operator "+str(i-1)+" was: "
+                                         + operatorslist[i-1] + "<br>")
+                inputreminderlist.append("Your algebra " + str(i) + " was: "
+                                         + algslist[i - 1] + "<br>")
         if len(inputreminderlist) == 0:
             inputreminderlist.append("You have not selected anything.")
 
     # List of indices of algs that have been selected
-    not_empty_algs_indices = [i for i in range(len(algslist)) if algslist[i] != ""]
+    not_empty_algs_indices = \
+        [i for i in range(len(algslist)) if algslist[i] != ""]
     # List of indices of operators that have been selected
-    not_empty_operators_indices = [i for i in range(len(operatorslist)) if operatorslist[i] != ""]
+    not_empty_operators_indices = \
+        [i for i in range(len(operatorslist)) if operatorslist[i] != ""]
     # Since there is never an operator before algebra1, the position 0
     # will never appear in not_empty_operators_indices.
 
@@ -232,7 +235,7 @@ def bellman():
                 user_form_input=json.dumps(user_form_input))
 
     # More than one algebra:
-    if (len(not_empty_algs_indices) >= 2 \
+    if (len(not_empty_algs_indices) >= 2 
             and len(not_empty_operators_indices) >= 1):
 
         # Only continue if exercises(which is the input of the user)
