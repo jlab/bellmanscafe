@@ -3,9 +3,10 @@
 <!-- This section supplements the head section of the base.html file-->
 {% block head %}
 
+<!-- This script adds a title to the banner at the top of the page. -->
 <script type=text/javascript>
     divbanner = document.getElementById('divbanner');
-    divbanner.innerHTML += "<center><FONT color='#ffffff' size='6'>Bellman's Cafe v1.5.2</FONT></center>";
+    divbanner.innerHTML += "<center><FONT color='#ffffff' size='6'>Bellman's Cafe v1.6</FONT></center>";
 </script>
 
 <style>
@@ -14,6 +15,16 @@
     into an input section(top) and a results section(bottom)
     that are contained within the two divs.
 */
+    #gapFileDownload, #headerFileDownload {
+         visibility:hidden;
+         background-color:#edeae8;
+         border-width: 1px;
+         border-radius: 5px;
+         border-style: dotted;
+         border-color: #AF6557;
+         margin-right: 0.25em;
+    }
+    
     #divtop {
         padding-left: 20px;
         padding-right: 20px;
@@ -176,20 +187,28 @@ is played when the submit button is clicked.
     });
   </script>
 </select>
+
+<span id="Downloads">
+<!-- This link is used to download the selected gap file and is hidden until a gap file was selected. -->
+<a href="" id="gapFileDownload" download>Download the gap file</a>
+<!-- For each header file imported in the gap file, a link will be added here.-->
+</span>
+
+<!-- This div contains the hint Please select a program and is only shown before any program was selected.-->
 <div id ="tip">
 <FONT color = '#AF6557' size='4'><p>Please select a Program.</p></FONT>
 </div>
 
-    <!-- The div for information on the programs is created as blank and will be filled on selection of a program.-->
-    <div id="textbox" style="visibility:hidden">
-    <!--
-    <p>
-        Infotext:
-    </p>   
-    -->
-    </div>
-    
-    <br>
+<!-- The div for information on the programs is created as blank and will be filled on selection of a program.-->
+<div id="textbox" style="visibility:hidden">
+<!--
+<p>
+    Infotext:
+</p>   
+-->
+</div>
+
+<br>
 
 <div id="exercise" style="visibility:hidden">
     <!--Your Input:-->
@@ -387,6 +406,31 @@ is played when the submit button is clicked.
         // Make tip disappear
         var tip = document.getElementById("tip");
         tip.style.display = 'none';
+        
+        // Set download link to selectedProgram + ".gap" and set its visibility to visible.
+        var gapFileName = selectedProgram + ".gap";
+        var gapFileDownloadLink = document.getElementById("gapFileDownload")
+        gapFileDownloadLink.href = "{{url_for('download_file', filename='replaceString')}}".replace("replaceString", gapFileName);
+        gapFileDownloadLink.innerHTML = "Download " + gapFileName;
+        gapFileDownloadLink.style.visibility = 'visible';
+        
+        //Remove all siblings of gapFileDownloadLink in the span.
+        var downloadsSpan = document.getElementById("Downloads");
+        while (gapFileDownloadLink.nextSibling) {
+            downloadsSpan.removeChild(gapFileDownloadLink.nextSibling);
+        }
+        
+        // Create download links for each header and add them to the span.
+        var headersdict = {{ headersdict|safe }}
+        var headerslist = headersdict[selectedProgram];
+        for (var index in headerslist) {
+            var headerFileDownloadLink = document.createElement('a');
+            headerFileDownloadLink.id = "headerFileDownload";
+            headerFileDownloadLink.href = "{{url_for('download_file', filename='replaceString')}}".replace("replaceString", headerslist[index].trim().replace(/['"]+/g, ''));
+            headerFileDownloadLink.innerHTML = "Download " + headerslist[index].trim().replace(/['"]+/g, '');
+            headerFileDownloadLink.style.visibility = 'visible';
+            downloadsSpan.appendChild(headerFileDownloadLink);
+        }
     }
 </script>
     

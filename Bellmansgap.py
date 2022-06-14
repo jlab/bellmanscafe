@@ -1,9 +1,10 @@
 import glob
 import json
 import os
+import shutil
 import subprocess
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_file
 
 from gapfilesparser import parsegapfiles
 
@@ -33,6 +34,7 @@ gramdict = returndict["gramdict"]
 algdict = returndict["algdict"]
 infotextsdict = returndict["infotextsdict"]
 inputstringsnumberdict = returndict["inputstringsnumberdict"]
+headersdict = returndict["headersdict"]
 
 inputreminderlist = []
 
@@ -46,6 +48,13 @@ user_form_input = []
 @app.route("/")
 def home():
     return render_template("index.html")
+
+
+# route for downloading a file
+@app.route("/<filename>/download")
+def download_file(filename):
+    p = filename
+    return send_file(p, as_attachment=True)
 
 
 # route for the bellman page "/bellman"
@@ -86,6 +95,7 @@ def bellman():
         global algdict
         global infotextsdict
         global inputstringsnumberdict
+        global headersdict
         global inputreminderlist
         global operator_letter
         global operator_letter2
@@ -172,6 +182,7 @@ def bellman():
             algdict=json.dumps(algdict),
             infotextsdict=json.dumps(infotextsdict),
             inputstringsnumberdict=inputstringsnumberdict,
+            headersdict=json.dumps(headersdict),
             inputreminderlist=inputreminderlist, exlist=exlist,
             user_form_input=json.dumps(user_form_input))
 
@@ -210,6 +221,7 @@ def bellman():
             algdict=json.dumps(algdict),
             infotextsdict=json.dumps(infotextsdict),
             inputstringsnumberdict=inputstringsnumberdict,
+            headersdict=json.dumps(headersdict),
             inputreminderlist=inputreminderlist, exlist=exlist,
             user_form_input=json.dumps(user_form_input))
 
@@ -250,6 +262,7 @@ def bellman():
             algdict=json.dumps(algdict),
             infotextsdict=json.dumps(infotextsdict),
             inputstringsnumberdict=inputstringsnumberdict,
+            headersdict=json.dumps(headersdict),
             inputreminderlist=inputreminderlist, exlist=exlist,
             user_form_input=json.dumps(user_form_input))
 
@@ -267,6 +280,7 @@ def bellman():
         algdict=json.dumps(algdict),
         infotextsdict=json.dumps(infotextsdict),
         inputstringsnumberdict=inputstringsnumberdict,
+        headersdict=json.dumps(headersdict),
         inputreminderlist=inputreminderlist, exlist=exlist,
         user_form_input=json.dumps(user_form_input))
 
@@ -320,6 +334,13 @@ def calculategapc(program, command, name, exlist):
         list1.append("<b>Command</b>: " + commandstring)
         res.append(list1)
 
+    # The header files necessary for execution will be
+    # copied to the destination folder (and overwritten).
+
+    for f in headersdict[program]:
+        print("The program: ", program)
+        print("The header: ", f)
+        shutil.copy(f, dirstr)
     # further commands will be executed
     # from within the directory to which
     # the files have been saved
