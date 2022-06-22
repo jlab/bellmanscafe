@@ -15,11 +15,6 @@ app.secret_key = "xasdqfghuioiuwqenjdcbjhawbuomcujeq1217846421kopNSJJGWmc8u29"
 exlist = []
 ex = ""
 gra = ""
-alg1 = ""
-operator1 = ""
-alg2 = ""
-operator2 = ""
-alg3 = ""
 algslist = []
 operatorslist = []
 res = ""
@@ -86,11 +81,6 @@ def bellman():
         global exlist
         global program
         global gra
-        global alg1
-        global operator1
-        global alg2
-        global operator2
-        global alg3
         global algslist
         global operatorslist
         global res
@@ -111,8 +101,7 @@ def bellman():
         # Since multiple inputs are possible an exlist is created
         # containing all submitted inputs.
         exlist = []
-        n = inputstringsnumberdict[program]
-        for i in range(1, n + 1):
+        for i in range(1, inputstringsnumberdict[program] + 1):
             requeststring = "ex" + str(i)
             exlist.append(request.form.get(requeststring))
 
@@ -126,12 +115,6 @@ def bellman():
             requeststring = "alg" + str(i)
             if (requeststring in request.form):
                 algslist[i-1] = request.form.get(requeststring)
-
-        alg1 = request.form.get('alg1')
-        operator1 = request.form.get('operator1')
-        alg2 = request.form.get('alg2')
-        operator2 = request.form.get('operator2')
-        alg3 = request.form.get('alg3')
 
         # Since up to 4 operators are possible an operatorslist
         # is created containing all submitted operators.
@@ -157,7 +140,7 @@ def bellman():
         '''
         for param in ["program", "gra"]:
             user_form_input[param] = request.form[param]
-        for i in range(1, n + 1):
+        for i in range(1, inputstringsnumberdict[program] + 1):
             requeststring = "ex" + str(i)
             user_form_input[requeststring] = request.form.get(requeststring)
         for j in range(1, len(algslist)+1):
@@ -183,9 +166,6 @@ def bellman():
             inputreminderlist.append("Your grammar was: " + gra + "<br>")
 
         for i in range(1, len(algslist)+1):
-            print(i)
-            print(operatorslist)
-            print(algslist)
             if i == 1:
                 inputreminderlist.append("Your algebra "+str(i)+" was: "
                                          + algslist[i-1] + "<br>")
@@ -210,8 +190,8 @@ def bellman():
     if (len(not_empty_algs_indices) == 1):
         if len(exlist) != 0 and program != "" and gra != "":
             # calculategapc() is used to return the result to the variable res
-            command = "" + algslist[not_empty_algs_indices[0]]
-            name = "" + algslist[not_empty_algs_indices[0]]
+            command = algslist[not_empty_algs_indices[0]]
+            name = algslist[not_empty_algs_indices[0]]
             res = calculategapc(program, command, name, exlist)
 
             '''

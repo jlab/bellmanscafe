@@ -745,26 +745,20 @@ is played when the submit button is clicked.
         
         var addAlgebraButton = document.getElementById("addAlgebraButton");
         
-        
-        if ("alg4" in user_form_input) {// && user_form_input["operator3"] != "") {
-            addAlgebraFunction(addAlgebraButton);
-            alg4select = document.getElementById("alg4");
-            alg4select.value = user_form_input["alg4"];
-            if ("operator3" in user_form_input) {
-                operator3select = document.getElementById("operator3");
-                operator3select.value = user_form_input["operator3"];
+        const additionalAlgebraNumbers = [4, 5];
+        additionalAlgebraNumbers.forEach(function(number) {
+            var alg = "alg" + number;
+            var operator = "operator"+(number-1)
+            if (alg in user_form_input) {
+                addAlgebraFunction(addAlgebraButton);
+                alg4select = document.getElementById(alg);
+                alg4select.value = user_form_input[alg];
+                if (operator in user_form_input) {
+                    operator3select = document.getElementById(operator);
+                    operator3select.value = user_form_input[operator];
+                }
             }
-        }
-        
-        if ("alg5" in user_form_input) {// && user_form_input["operator4"] != "") {
-            addAlgebraFunction(addAlgebraButton);
-            alg5select = document.getElementById("alg5");
-            alg5select.value = user_form_input["alg5"];
-            if ("operator4" in user_form_input) {
-                operator4select = document.getElementById("operator4");
-                operator4select.value = user_form_input["operator4"];
-            }
-        }
+        });
         
         if (globalAlgebrasCounter >= 5 && globalOperatorsCounter >= 4) {
             addAlgebraButton.style.display = 'none';

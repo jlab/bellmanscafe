@@ -69,7 +69,6 @@ def parsegapfiles(gapfiles):
         infotextsdict[grafile.split(".")[0]] = commentslist
         inputstringsnumberdict[grafile.split(".")[0]] = number_of_inputstrings
         headersdict[grafile.split(".")[0]] = headerslist
-        print(headerslist)
     outputdict["gramdict"] = gramdict
     outputdict["algdict"] = algdict
     outputdict["infotextsdict"] = infotextsdict
