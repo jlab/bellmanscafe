@@ -1,3 +1,7 @@
+v1.8
+Visual update:
+The results section is now organized into tabs.
+
 v1.7
 The operator-infotextbox is now to the right of the algebras selection and contains info about all operators.
 Adding and calculating algebras up to a maxmimum of 5 is now possible.

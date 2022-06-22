@@ -6,7 +6,7 @@
 <!-- This script adds a title to the banner at the top of the page. -->
 <script type=text/javascript>
     divbanner = document.getElementById('divbanner');
-    divbanner.innerHTML += "<center><FONT color='#ffffff' size='6'>Bellman's Cafe v1.7</FONT></center>";
+    divbanner.innerHTML += "<center><FONT color='#ffffff' size='6'>Bellman's Cafe v1.8</FONT></center>";
 </script>
 
 <style>
@@ -78,9 +78,9 @@
     #divbottom {
         height:65vh;
         width:95%;
-        border:1px solid #ccc;
+        //border:1px solid #ccc;
         overflow:auto;
-        padding-left: 10px;
+        padding-left: 0px;
         padding-right: 20px;
     }
 
@@ -154,6 +154,87 @@ is played when the submit button is clicked.
   75% { height: 100%;}
   100% { height: 0%;}
 } 
+
+// This section contains css for the tabs
+// and is taken directly from:
+// https://makitweb.com/simple-tabbed-content-area-with-html-css-and-jquery/
+
+.tabs{
+    width:60%;
+    height:auto;
+    margin:0 auto;
+}
+
+/* tab list item */
+.tabs .tabs-list{
+    list-style:none;
+    margin:0px;
+    padding:0px;
+}
+.tabs .tabs-list li{
+    width:100px;
+    float:left;
+    margin:0px;
+    margin-right:2px;
+    padding:10px 5px;
+    text-align: center;
+    background-color:#AF6557;
+    border-radius:3px;
+}
+.tabs .tabs-list li:hover{
+    cursor:pointer;
+}
+.tabs .tabs-list li a{
+    text-decoration: none;
+    color:white;
+}
+
+/* Tab content section */
+.tabs .tab{
+    display:none;
+    width:96%;
+    min-height:250px;
+    height:auto;
+    border-radius:3px;
+    padding:20px 15px;
+    background-color:#FEE0D8;
+    color:darkslategray;
+    clear:both;
+}
+.tabs .tab h3{
+    border-bottom:3px solid #AF6557;
+    letter-spacing:1px;
+    font-weight:normal;
+    padding:5px;
+}
+.tabs .tab p{
+    line-height:20px;
+    letter-spacing: 1px;
+}
+
+/* When active state */
+.active{
+    display:block !important;
+}
+.tabs .tabs-list li.active{
+    background-color:#FEE0D8 !important;
+    color:black !important;
+}
+.active a{
+    color:black !important;
+}
+
+/* media query */
+@media screen and (max-width:360px){
+    .tabs{
+        margin:0;
+        width:96%;
+    }
+    .tabs .tabs-list li{
+        width:80px;
+    }
+}
+// End of tabs css section
 
 </style>
 {% endblock %}
@@ -418,14 +499,12 @@ is played when the submit button is clicked.
         infotextslist.forEach(function(infotext) {
                 textbox.innerHTML += infotext;
             });
-        // Make divbox2, submitButton and divbottom visible.
+        // Make divbox2 and submitButton visible.
         var divbox2 = document.getElementById("divbox2");
         divbox2.style.visibility = 'visible';
 
         var submitButton = document.getElementById("submit");
         submitButton.style.visibility = 'visible';
-        var divbottomouter = document.getElementById("divbottomouter");
-        divbottomouter.style.visibility = 'visible';
         
         // Make tip disappear
         var tip = document.getElementById("tip");
@@ -670,38 +749,110 @@ is played when the submit button is clicked.
 </script>
         
 </form>
+
 </div>
 
+<!-- divbottomouter contains divbottom and nothing more.
+    It is used to hide the results box by its visibility being hidden.
+    Its visibility is set to visible at the very end of the html file.-->
 <div id="divbottomouter" style="visibility:hidden">
-<!-- divbottom contains the results section (bottom side) of the bellman page.-->
-<div id="divbottom">
-    <p>Result:</p>
-    <!-- This script creates the resultstring from the result retrieved from the Flask app and outputs it to divbottom.-->
-    <script type=text/javascript>
-        //The inputreminderlist is recovered via Jinja from the Flask app.
-        var inputreminder = {{ inputreminderlist|safe }}
-        //An inputreminderstring is built in a for loop, that contains information about the previously selected values and typed input.
-        var inputreminderstring = "";
-        inputreminder.forEach(function(line) {
-                inputreminderstring = inputreminderstring + line;
-            });
-        inputreminderstring += "<br><div> Your Input was: "+{{exlist|safe}}+"</div><br>"
-        //The result from the third command in the Flask app is recovered via Jinja.
-        var result = {{ result|safe }}
-        //A resultstring is built from the result list and is added to the inputreminderstring.
-        var resultstring = "";
-        result.forEach(function(programoutput) {
-                programoutput.forEach(function(line){
+
+<!-- This html section constructs the tabs
+        and is (mostly) taken directly from: 
+        https://makitweb.com/simple-tabbed-content-area-with-html-css-and-jquery/-->
+        
+<!-- divbottom contains the results section (bottom side) of the bellman page.-->    
+    <div id="divbottom" class="tabs">
+        <ul class="tabs-list">
+            <li ><a href="#tab1">Input</a></li>
+            <li ><a href="#tab2">Gapc</a></li>
+            <li ><a href="#tab3">Make</a></li>
+            <li class="active"><a href="#tab4">Result</a></li>
+        </ul>
+
+        <div id="tab1" class="tab">
+            <p>
+            <!-- This script creates the inputreminderstring for Tab 1.-->
+            <script type=text/javascript>
+                //The inputreminderlist is recovered via Jinja from the Flask app.
+                var inputreminder = {{ inputreminderlist|safe }}
+                //An inputreminderstring is built in a for loop, that contains information about the previously selected values and typed input.
+                var inputreminderstring = "";
+                inputreminder.forEach(function(line) {
+                        inputreminderstring = inputreminderstring + line;
+                    });
+                inputreminderstring += "<br><div> Your Input was: "+{{exlist|safe}}+"</div><br>"
+                //The inputreminderstring is then written to Tab 1.
+                document.write(inputreminderstring);
+            </script> 
+            </p>
+        </div>
+        <div id="tab2" class="tab">
+            <p>
+            <script type=text/javascript>
+                var result = {{ result|safe }}
+                var resultstring = "";
+                result[0].forEach(function(line){
                     resultstring = resultstring + line + "<br>";
                 });
-                resultstring = resultstring + "<br>";
-            });
-        resultstring = inputreminderstring + resultstring;
-        //The completed resultstring is then written to divbottom.
-        document.write(resultstring);
-    </script>
+                document.write(resultstring);
+            </script>
+            </p>
+        </div>
+        <div id="tab3" class="tab">
+            <p>
+            <script type=text/javascript>
+                var result = {{ result|safe }}
+                var resultstring = "";
+                result[1].forEach(function(line){
+                    resultstring = resultstring + line + "<br>";
+                });
+                document.write(resultstring);
+            </script>
+            </p>
+        </div>
+        <div id="tab4" class="tab active">
+            <p>
+            <script type=text/javascript>
+                var result = {{ result|safe }}
+                var resultstring = "";
+                result[2].forEach(function(line){
+                    resultstring = resultstring + line + "<br>";
+                });
+                document.write(resultstring);
+            </script>
+            </p>
+        </div>
+    </div>
+    
+    <!-- End of tabs html section -->
+    
+
 </div>
-</div>
+
+<!-- Script for tab activation. 
+    This section is taken directly from:
+    https://makitweb.com/simple-tabbed-content-area-with-html-css-and-jquery/-->
+<script type="text/javascript">
+$(document).ready(function(){
+
+  $(".tabs-list li a").click(function(e){
+     e.preventDefault();
+  });
+
+  $(".tabs-list li").click(function(){
+     var tabid = $(this).find("a").attr("href");
+     $(".tabs-list li,.tabs div.tab").removeClass("active");   // removing active class from tab
+
+     $(".tab").hide();   // hiding open tab
+     $(tabid).show();    // show tab
+     $(this).addClass("active"); //  adding active class to clicked tab
+
+  });
+
+});
+</script>
+<!-- End of tabs javascript section -->
 
 <!-- This script resets the values of all the combo-boxes to the values that were selected before submit was pressed.
     This is a workaround, since selecting the values upon creation of the combo-boxes did not work.
@@ -768,6 +919,8 @@ is played when the submit button is clicked.
     }
     //resetValuesFunction() is executed just before the submit button as well as after all other elements have been built.
     resetValuesFunction();
+    var divbottomouter = document.getElementById("divbottomouter");
+    divbottomouter.style.visibility = 'visible';
     document.getElementById('divbottom').scrollIntoView();
 </script>
 
