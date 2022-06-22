@@ -45,6 +45,9 @@ operator_letter2 = ""
 
 user_form_input = []
 
+# number of allowed algebras
+MAX_ALGEBRAS = 5
+
 
 # route for the start page "/"
 @app.route("/")
@@ -120,7 +123,7 @@ def bellman():
 
         # Since up to 5 algebras are possible an algslist
         # is created containing all submitted algebras.
-        algslist = [""] * 5
+        algslist = [""] * MAX_ALGEBRAS
 
         for i in range(1, len(algslist)+1):
             requeststring = "alg" + str(i)
@@ -135,7 +138,7 @@ def bellman():
 
         # Since up to 4 operators are possible an operatorslist
         # is created containing all submitted operators.
-        operatorslist = [""] * 5
+        operatorslist = [""] * MAX_ALGEBRAS
         # The operator at position 0 will correspond to algebra1,
         # and is therefore alway an empty string.
         # Otherwise the operator at position 1 will correspond
@@ -372,8 +375,6 @@ def calculategapc(program, command, name, exlist):
     # copied to the destination folder (and overwritten).
 
     for f in headersdict[program]:
-        print("The program: ", program)
-        print("The header: ", f)
         shutil.copy(f, dirstr)
     # further commands will be executed
     # from within the directory to which
