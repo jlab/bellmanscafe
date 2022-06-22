@@ -6,7 +6,7 @@
 <!-- This script adds a title to the banner at the top of the page. -->
 <script type=text/javascript>
     divbanner = document.getElementById('divbanner');
-    divbanner.innerHTML += "<center><FONT color='#ffffff' size='6'>Bellman's Cafe v1.6</FONT></center>";
+    divbanner.innerHTML += "<center><FONT color='#ffffff' size='6'>Bellman's Cafe v1.7</FONT></center>";
 </script>
 
 <style>
@@ -22,7 +22,10 @@
          border-radius: 5px;
          border-style: dotted;
          border-color: #AF6557;
+         margin-left: 0.3em;
          margin-right: 0.25em;
+         padding-left: 4px;
+         padding-right: 4px;
     }
     
     #divtop {
@@ -40,9 +43,30 @@
         padding-bottom: 10px;
     }
     
-    #textbox, #operatorinfo {
+    #textbox {
         padding-left: 5px;
         padding-right: 20px; 
+    }
+    
+    #algsOpInfo {
+        display: flex;
+    }
+    
+    #algebrasdiv {
+        padding-left: 5px;
+        padding-right: 20px;
+        width: 50%;  
+    }
+    
+    #operatorinfo {
+        padding-left: 5px;
+        padding-right: 20px;
+        width: 50%;
+    }
+        
+    #clearfix {
+        clear: both;
+        font-size: 1px;
     }
     
     #divbottomouter {
@@ -233,7 +257,7 @@ is played when the submit button is clicked.
                 alg1Select.removeChild(alg1Select.firstChild);
             }   
             
-            var operat = document.getElementById("operator")
+            var operat = document.getElementById("operator1")
             operat.selectedIndex = 0;
             
             var alg2Select = document.getElementById("alg2select");
@@ -335,7 +359,7 @@ is played when the submit button is clicked.
         //does not need to be emtpied and rebuilt.
         //The first option of the operator combo-box is selected and its onchange-function is executed
         //in order to trigger the display of information about the operator.
-        var operatorSelect = document.getElementById("operator");
+        var operatorSelect = document.getElementById("operator1");
         operatorSelect.selectedIndex = 1;
         operatorFunction(operatorSelect);
         
@@ -432,9 +456,13 @@ is played when the submit button is clicked.
             downloadsSpan.appendChild(headerFileDownloadLink);
         }
     }
+    var globalAlgebrasCounter = 3;
+    var globalOperatorsCounter = 2;
 </script>
     
 <div id="divbox2" style="visibility:hidden">
+<div id="algsOpInfo">
+<div id="algebrasdiv">
 <!-- Empty combo-boxes are created for grammar and algebra 1, they will be filled once a program is selected.-->
 <p><label for="gra">Grammar:</label>
 
@@ -445,17 +473,17 @@ is played when the submit button is clicked.
 
 </p>
 
-
-    <span><label for="alg1">Algebra 1:</label>
+<div><label for="alg1">Algebra 1:</label>
 
 <select id="alg1select" name="alg1" id="alg1">
 </select>
-</span>
+</div>
 
+<div>
 <!-- The operator combo-box is created staticly since it does not change. operatorFunction() is executed when a new operator is selected.-->
-<span><label for="operator">Product Operator:</label>
+<span><label for="operator1">Product Operator 1:</label>
 
-<select name="operator" id="operator" onchange=operatorFunction(this)>
+<select name="operator1" id="operator1" onchange=operatorFunction(this)>
   <option value=""></option>
   <option value="*">*</option>
   <option value="/">/</option>
@@ -470,39 +498,12 @@ is played when the submit button is clicked.
         
         var operatorinfo = document.getElementById("operatorinfo");
         //The operatorinfo div is reset. (which might be unnecessary here)
-        operatorinfo.innerHTML = "<p>Info:</p>";
+        //operatorinfo.innerHTML = "<p>Info:</p>";
         operatorinfo.style = "border:1px solid black;";
         operatorinfo.style.visibility = 'visible';
         
         var selectedOperator = operatorSelectObject.value;
         
-        //A static sentence is displayed for each of the operators.
-        switch (selectedOperator) {
-            case "":
-                operatorinfo.innerHTML = "<p>Info:</p>";
-                break;
-            case "*":
-                operatorinfo.innerHTML += "&nbsp;&nbsp;* : The lexicographic product.";
-                break;
-            case "/":
-                operatorinfo.innerHTML += "&nbsp;&nbsp;/ : The interleaved product.";
-                break;
-            case "%":
-                operatorinfo.innerHTML += "&nbsp;&nbsp;% : The cartesian product.";
-                break;
-            case "^":
-                operatorinfo.innerHTML += "&nbsp;&nbsp;^ : The Pareto product.";
-                break;
-            case ".":
-                operatorinfo.innerHTML += "&nbsp;&nbsp;. : The take-one product. The difference to the lexicographic product is that only one co-optimal result is chosen in the case of co-optimal results.";
-                break;
-            case "|":
-                operatorinfo.innerHTML += "&nbsp;&nbsp;| : The overlay product. With !A | B!, $A$ is used in the forward computation and $B$ is used during backtracing.";
-                break;
-            default:
-                operatorinfo.innerHTML = "<p>Info:</p>";
-            
-        }
     }
 </script>
 </span>
@@ -515,7 +516,9 @@ is played when the submit button is clicked.
 </select>
 </span>
 <span>&nbsp;</span>
+</div>
 
+<div>
 <span><label for="operator2">Product Operator 2:</label>
 
 <select name="operator2" id="operator2">
@@ -535,14 +538,124 @@ is played when the submit button is clicked.
     <option value=""></option>
 </select>
 </span>
+</div>
+<button type="button" id="addAlgebraButton" onclick="addAlgebraFunction(this)">+ Additional Algebra</button>
 
+<script>
+    function addAlgebraFunction(addAlgebraButton) {
+        //The global counters for algebras and operators are incremented.
+        globalAlgebrasCounter += 1;
+        globalOperatorsCounter += 1;
+        
+        //New div is created that will hold new operator select and algebra select.
+        var newAlgebraDiv = document.createElement("div");
+        newAlgebraDiv.id = "algebradiv" + globalAlgebrasCounter;
+        
+        //Creating operator span
+        var operatorSpan = document.createElement("span");
+        operatorSpan.style.paddingRight = "2px";
+        
+        //A label is added for the operator.
+        const operatorLabel = document.createElement("label");
+        operatorLabel.innerHTML = "Product Operator " +  globalOperatorsCounter + ":";
+        operatorLabel.setAttribute("for", "operator" + globalOperatorsCounter);
+        operatorSpan.appendChild(operatorLabel);
+        
+        //New operator select is created and appended to the div.
+        var newOperatorSelect = document.createElement("select");
+        newOperatorSelect.id = "operator"+globalOperatorsCounter;
+        newOperatorSelect.name = "operator"+globalOperatorsCounter;
+        newOperatorSelect.style.marginLeft = "4px";
+        
+        //Adding options to newOperatorSelect.
+        var options = ["*", "/", "%", "^", ".", "|"];
+        options.forEach(function(operator) {
+            var opt = document.createElement("option");
+            opt.value = operator;
+            opt.innerHTML = operator;
+            newOperatorSelect.appendChild(opt);
+        });
+        
+        operatorSpan.appendChild(newOperatorSelect);
+        
+        //Adding operatorSpan to the div
+        newAlgebraDiv.appendChild(operatorSpan);
+        
+        
+        //Creating algebraselect span
+        var algSpan = document.createElement("span");
+        algSpan.style.paddingLeft = "2px";
+        
+        //A label is added for the select element (corresponding to the number of Algebras).
+        const label = document.createElement("label");
+        label.innerHTML = "Algebra " +  globalAlgebrasCounter + ":";
+        label.setAttribute("for", "alg" + globalAlgebrasCounter);
+        algSpan.appendChild(label);
+        
+        //New algebra select is created and appended to the div.
+        var newAlgebraSelect = document.createElement("select");
+        newAlgebraSelect.id = "alg"+globalAlgebrasCounter;
+        newAlgebraSelect.name = "alg"+globalAlgebrasCounter;
+        newAlgebraSelect.style.marginLeft = "4px";
+        algSpan.appendChild(newAlgebraSelect);
+        
+        //Adding algSpan to the div
+        newAlgebraDiv.appendChild(algSpan);
+        
+        // selectedProgram is extracted from the progSelect.
+        var progSelect = document.getElementById("programselect");
+        var selectedProgram = progSelect.value;
+        
+        //algdict is imported from flask via Jinja
+        var algdict = {{ algdict|safe }};
+        
+        //First an empty option is added:
+        var emptyOption = document.createElement("option");
+        emptyOption.value = "";
+        emptyOption.text = "";
+        newAlgebraSelect.appendChild(emptyOption);
+        
+        //newAlgebraSelect is populated with the algebrasList from the selectedProgram.
+        algebrasList = algdict[selectedProgram].sort();
+        algebrasList.forEach(function(algebraString) {
+            var option = document.createElement("option");
+            option.value = algebraString;
+            option.text = algebraString;
+            newAlgebraSelect.appendChild(option);
+        });
+        
+        
+        // The new algebra div is finally inserted before the addAlgebraButton.
+        var parent = addAlgebraButton.parentElement;
+        parent.insertBefore(newAlgebraDiv, addAlgebraButton);
+        
+        if (globalAlgebrasCounter >= 5) {
+            addAlgebraButton.style.display = "none";
+        }
+    }
+</script>
+
+</div>
 <!-- A div is created that will hold information on the selected operator.-->
 <div id="operatorinfo" style="visibility:hidden">
-<p>
-    Info:
-</p>    
+
+* : The lexicographic product.
+<br>
+/ : The interleaved product.
+<br>
+% : The cartesian product.
+<br>
+^ : The Pareto product.
+<br>
+. : The take-one product. The difference to the lexicographic product is that only one co-optimal result is chosen in the case of co-optimal results.
+<br>
+| : The overlay product. With !A | B!, $A$ is used in the forward computation and $B$ is used during backtracing.
+    
 </div>
 </div>
+
+</div>
+
 
 <!-- The submit button element. loadFunction() starts the loading animation and is executed when the submit button is clicked.-->
 <p><button type="submit" id="submit" style="visibility:hidden" onclick="loadFunction();">Submit</button></p>
@@ -615,8 +728,8 @@ is played when the submit button is clicked.
         var alg1Sel = document.getElementById("alg1select");
         alg1Sel.value = user_form_input["alg1"];
         
-        var operatorSel = document.getElementById("operator");
-        operatorSel.value = user_form_input["operator"];
+        var operatorSel = document.getElementById("operator1");
+        operatorSel.value = user_form_input["operator1"];
         //As is the case with the progFunction() of programselect, operatorFunction() has to be executed manually her too.
         operatorFunction(operatorSel);
         
@@ -628,6 +741,30 @@ is played when the submit button is clicked.
         
         var alg3Sel = document.getElementById("alg3select");
         alg3Sel.value = user_form_input["alg3"];
+        
+        
+        var addAlgebraButton = document.getElementById("addAlgebraButton");
+        
+        const additionalAlgebraNumbers = [4, 5];
+        additionalAlgebraNumbers.forEach(function(number) {
+            var alg = "alg" + number;
+            var operator = "operator"+(number-1)
+            if (alg in user_form_input) {
+                addAlgebraFunction(addAlgebraButton);
+                alg4select = document.getElementById(alg);
+                alg4select.value = user_form_input[alg];
+                if (operator in user_form_input) {
+                    operator3select = document.getElementById(operator);
+                    operator3select.value = user_form_input[operator];
+                }
+            }
+        });
+        
+        if (globalAlgebrasCounter >= 5 && globalOperatorsCounter >= 4) {
+            addAlgebraButton.style.display = 'none';
+        }
+        
+        
     }
     //resetValuesFunction() is executed just before the submit button as well as after all other elements have been built.
     resetValuesFunction();
