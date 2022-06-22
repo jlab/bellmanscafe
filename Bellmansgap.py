@@ -22,7 +22,7 @@ operator2 = ""
 alg3 = ""
 algslist = []
 operatorslist = []
-res = ""
+res = []
 dirstr = ""
 # glob.glob('*.gap') returns a list of names of
 # all files in the directory that end on ".gap"
@@ -149,12 +149,11 @@ def bellman():
             else:
                 operatorslist[i] = ""
 
-        '''
-         each of the inputs are saved (again),
-         the dictionary user_form_input
-         is later returned to the html page in order
-         to display the selection that the user had made before pressing submit
-        '''
+
+        # each of the inputs are saved (again),
+        # the dictionary user_form_input
+        # is later returned to the html page in order
+        # to display the selection that the user had made before pressing submit
         for param in ["program", "gra"]:
             user_form_input[param] = request.form[param]
         for i in range(1, n + 1):
@@ -171,11 +170,9 @@ def bellman():
                 user_form_input[requeststring] = \
                     request.form.get(requeststring)
 
-        '''
-        additionally a list of strings is built to display
-        the previous selection (before pressing submit)
-        in the results part of the page
-        '''
+        # additionally a list of strings is built to display
+        # the previous selection (before pressing submit)
+        # in the results part of the page
         inputreminderlist = []
         if program != "":
             inputreminderlist.append("Your program was: " + program + "<br>")
@@ -183,9 +180,6 @@ def bellman():
             inputreminderlist.append("Your grammar was: " + gra + "<br>")
 
         for i in range(1, len(algslist)+1):
-            print(i)
-            print(operatorslist)
-            print(algslist)
             if i == 1:
                 inputreminderlist.append("Your algebra "+str(i)+" was: "
                                          + algslist[i-1] + "<br>")
@@ -214,14 +208,12 @@ def bellman():
             name = "" + algslist[not_empty_algs_indices[0]]
             res = calculategapc(program, command, name, exlist)
 
-            '''
-            variables that are important for building
-            the result part of the page and the previous
-            selection of the combo-boxes
-            is returned back to the html page here
-            some of these variables might be outdated and
-            unnecessary to return by now, further cleanup will follow
-            '''
+            # variables that are important for building
+            # the result part of the page and the previous
+            # selection of the combo-boxes
+            # are returned back to the html page here
+            # some of these variables might be outdated and
+            # unnecessary to return by now, further cleanup will follow
             return render_template(
                 "bellman.html", result=res,
                 program=program, gra=gra,
@@ -286,14 +278,12 @@ def bellman():
             # they are used to calculate the result.
             res = calculategapc(program, command, name, exlist)
 
-            '''
-            variables that are important for building
-            the result part of the page and the previous
-            selection of the combo-boxes
-            is returned back to the html page here
-            some of these variables might be outdated and
-            unnecessary to return by now, further cleanup will follow
-            '''
+            # variables that are important for building
+            # the result part of the page and the previous
+            # selection of the combo-boxes
+            # are returned back to the html page here
+            # some of these variables might be outdated and
+            # unnecessary to return by now, further cleanup will follow
             return render_template(
                 "bellman.html", result=res,
                 program=program, gra=gra,
@@ -306,13 +296,11 @@ def bellman():
                 inputreminderlist=inputreminderlist, exlist=exlist,
                 user_form_input=json.dumps(user_form_input))
 
-    '''
-    if this return statement is reached
-    then at least one combo-box necessary
-    for execution was not selected/left on the default value
-    some of these variables might be outdated
-    and unnecessary to return by now, further cleanup will follow
-    '''
+    # if this return statement is reached
+    # then at least one combo-box necessary
+    # for execution was not selected/left on the default value
+    # some of these variables might be outdated
+    # and unnecessary to return by now, further cleanup will follow
     return render_template(
         "bellman.html", program=program,
         gra=gra, gapfiles=json.dumps(gapfiles),
@@ -373,6 +361,10 @@ def calculategapc(program, command, name, exlist):
         list1 = []
         list1.append("<b>Command</b>: " + commandstring)
         res.append(list1)
+        list2 = ["An error has occured during the execution of the gapc command."]
+        res.append(list2)
+        list3 = ["An error has occured during the execution of the gapc command."]
+        res.append(list3)
 
     # The header files necessary for execution will be
     # copied to the destination folder (and overwritten).
@@ -392,7 +384,10 @@ def calculategapc(program, command, name, exlist):
     # this is however not handled yet,
     # rather the rest of the code is just not executed in that case
     if pro1_returncode != 0:
-        print("There was an error")
+        list2 = ["An error has occured during the execution of the gapc command."]
+        res.append(list2)
+        list3 = ["An error has occured during the execution of the gapc command."]
+        res.append(list3)
     else:
         # if no error occured in process 1,
         # process 2 is started via subprocess.run
@@ -428,7 +423,8 @@ def calculategapc(program, command, name, exlist):
 
         # if an error occured in process 2, then process 3 will not be executed
         if pro2.returncode != 0:
-            print("An error has occured at subprocess #2!")
+            list3 = ["An error has occured during the execution of the make command."]
+            res.append(list3)
         else:
             '''
             using a commandlist instead of a commandstring
