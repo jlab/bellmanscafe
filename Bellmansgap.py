@@ -149,11 +149,11 @@ def bellman():
             else:
                 operatorslist[i] = ""
 
-
         # each of the inputs are saved (again),
         # the dictionary user_form_input
         # is later returned to the html page in order
-        # to display the selection that the user had made before pressing submit
+        # to display the selection that the
+        # user had made before pressing submit
         for param in ["program", "gra"]:
             user_form_input[param] = request.form[param]
         for i in range(1, n + 1):
@@ -361,9 +361,11 @@ def calculategapc(program, command, name, exlist):
         list1 = []
         list1.append("<b>Command</b>: " + commandstring)
         res.append(list1)
-        list2 = ["An error has occured during the execution of the gapc command."]
+        list2 = ["An error has occured during "
+                 "the execution of the gapc command."]
         res.append(list2)
-        list3 = ["An error has occured during the execution of the gapc command."]
+        list3 = ["An error has occured during "
+                 "the execution of the gapc command."]
         res.append(list3)
 
     # The header files necessary for execution will be
@@ -384,9 +386,11 @@ def calculategapc(program, command, name, exlist):
     # this is however not handled yet,
     # rather the rest of the code is just not executed in that case
     if pro1_returncode != 0:
-        list2 = ["An error has occured during the execution of the gapc command."]
+        list2 = ["An error has occured during the "
+                 "execution of the gapc command."]
         res.append(list2)
-        list3 = ["An error has occured during the execution of the gapc command."]
+        list3 = ["An error has occured during the "
+                 "execution of the gapc command."]
         res.append(list3)
     else:
         # if no error occured in process 1,
@@ -423,7 +427,8 @@ def calculategapc(program, command, name, exlist):
 
         # if an error occured in process 2, then process 3 will not be executed
         if pro2.returncode != 0:
-            list3 = ["An error has occured during the execution of the make command."]
+            list3 = ["An error has occured during the execution "
+                     "of the make command."]
             res.append(list3)
         else:
             '''
