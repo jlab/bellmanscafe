@@ -347,12 +347,6 @@ def calculategapc(program, command, name, exlist):
         list1 = []
         list1.append("<b>Command</b>: " + commandstring)
         res.append(list1)
-        list2 = ["An error has occured during "
-                 "the execution of the gapc command."]
-        res.append(list2)
-        list3 = ["An error has occured during "
-                 "the execution of the gapc command."]
-        res.append(list3)
 
     # The header files necessary for execution will be
     # copied to the destination folder (and overwritten).
