@@ -8,4 +8,4 @@ cp ./*.hh ../bellmanscafe/
 echo "Success."
 echo "Update was performed at: " >> /home/lfrey/bellmanscafe/gapfiles_updates.log
 date >> /home/lfrey/bellmanscafe/gapfiles_updates.log
-echo "---------" >> /home/lfrey/bellmanscafe/gapfiles_updates-log
+echo "---------" >> /home/lfrey/bellmanscafe/gapfiles_updates.log
