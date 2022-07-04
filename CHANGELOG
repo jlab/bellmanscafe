@@ -1,3 +1,7 @@
+v1.9
+Internally moved css code to a separate file.
+Enabling automatically updating .gap and .hh files via a cronjob on a shell script.
+
 v1.8
 Visual update:
 The results section is now organized into tabs.
