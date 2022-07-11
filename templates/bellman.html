@@ -236,7 +236,7 @@ function progFunction(selectProgramObject) {
     while (alg3Select.firstChild) {
         alg3Select.removeChild(alg3Select.firstChild);
     }
-    //Since the user can choose to executed only one algebra, the algebra 2 and 3 combo-boxes have the empty option.
+    //Since the user can choose to execute only one algebra, the algebra 2 and 3 combo-boxes have the empty option.
     var emptyOption = document.createElement("option");
     emptyOption.value = "";
     emptyOption.text = "";
@@ -644,6 +644,7 @@ $(document).ready(function(){
 <script type=text/javascript>
 
     function resetValuesFunction() {
+        var max_num_algebras = 5;
         var user_form_input = {{ user_form_input|safe }};
         
         //The values of the combo-boxes are set to the values
@@ -701,7 +702,7 @@ $(document).ready(function(){
             }
         }
         
-        if (globalAlgebrasCounter >= 5 && globalOperatorsCounter >= 4) {
+        if (globalAlgebrasCounter >= max_num_algebras && globalOperatorsCounter >= max_num_algebras-1) {
             addAlgebraButton.style.display = 'none';
         }
         
