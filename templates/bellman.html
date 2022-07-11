@@ -3,12 +3,11 @@
 <!-- This section supplements the head section of the base.html file-->
 {% block head %}
 
-<!-- Ich mach grad pull requests mit Euch. -->
-
 <!-- This script adds a title to the banner at the top of the page. -->
 <script type=text/javascript>
+    version = "v1.9"
     divbanner = document.getElementById('divbanner');
-    divbanner.innerHTML += "<center><FONT color='#ffffff' size='6'>Bellman's Cafe v1.9</FONT></center>";
+    divbanner.innerHTML += "<center><FONT color='#ffffff' size='6'>Bellman's Cafe "+ version +"</FONT></center>";
 </script>
 
 <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
