@@ -151,10 +151,11 @@ is played when the submit button is clicked.
   100% { height: 0%;}
 } 
 
-// This section contains css for the tabs of the results section
-// and is taken directly from:
-// https://makitweb.com/simple-tabbed-content-area-with-html-css-and-jquery/
-
+/* 
+    This section contains css for the tabs of the results section
+    and is taken directly from:
+    https://makitweb.com/simple-tabbed-content-area-with-html-css-and-jquery/
+*/
 .tabs{
     width:60%;
     height:auto;
@@ -230,4 +231,4 @@ is played when the submit button is clicked.
         width:80px;
     }
 }
-// End of tabs css section
+/* End of tabs css section */
