@@ -316,8 +316,8 @@ def calculategapc(program, command, name, exlist):
     res = []
 
     # this is the executed commandstring
-    commandstring = 'gapc -p ' + command \
-                    + ' -o ' + dirstr + '/' + name + '_gapc.cc ' \
+    commandstring = 'gapc -p "' + command \
+                    + '" -o ' + dirstr + '/' + name + '_gapc.cc ' \
                     + program + '.gap' + ' 2>&1'
     pro1_returncode = 0
 
