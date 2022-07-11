@@ -8,6 +8,11 @@ from flask import Flask, render_template, request, send_file
 
 from gapfilesparser import parsegapfiles
 
+# the Cafe shall let users interact with a collection of Bellman's GAP
+# programs like Needleman-Wunsch or ElMamun. The FP_GAPUSERSOURCES variable
+# must point to the path containing these sources.
+PREFIX_GAPUSERSOURCES = "../ADP_collection/"
+
 app = Flask(__name__)
 app.secret_key = "xasdqfghuioiuwqenjdcbjhawbuomcujeq1217846421kopNSJJGWmc8u29"
 
@@ -22,10 +27,11 @@ dirstr = ""
 # glob.glob('*.gap') returns a list of names of
 # all files in the directory that end on ".gap"
 # the list is then sorted
-gapfiles = sorted(glob.glob('*.gap'))
+FP_GAPFILES = glob.glob(os.path.join(PREFIX_GAPUSERSOURCES,'*.gap'))
+gapfiles = sorted(list(map(os.path.basename, FP_GAPFILES)))
 program = ""
 
-returndict = parsegapfiles(gapfiles)
+returndict = parsegapfiles(FP_GAPFILES)
 
 gramdict = returndict["gramdict"]
 algdict = returndict["algdict"]
@@ -54,7 +60,7 @@ def home():
 @app.route("/<filename>/download")
 def download_file(filename):
     p = filename
-    return send_file(p, as_attachment=True)
+    return send_file(os.path.join(PREFIX_GAPUSERSOURCES, p), as_attachment=True)
 
 
 # route for the bellman page "/bellman"
@@ -316,9 +322,9 @@ def calculategapc(program, command, name, exlist):
     res = []
 
     # this is the executed commandstring
-    commandstring = 'gapc -p ' + command \
-                    + ' -o ' + dirstr + '/' + name + '_gapc.cc ' \
-                    + program + '.gap' + ' 2>&1'
+    commandstring = 'gapc -p "' + command \
+                    + '" -o ' + dirstr + '/' + name + '_gapc.cc ' \
+                    + os.path.join(PREFIX_GAPUSERSOURCES, program) + '.gap' + ' 2>&1'
     pro1_returncode = 0
 
     # gapc Command
@@ -352,7 +358,7 @@ def calculategapc(program, command, name, exlist):
     # copied to the destination folder (and overwritten).
 
     for f in headersdict[program]:
-        shutil.copy(f, dirstr)
+        shutil.copy(os.path.join(PREFIX_GAPUSERSOURCES, f), dirstr)
     # further commands will be executed
     # from within the directory to which
     # the files have been saved

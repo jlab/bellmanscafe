@@ -1,3 +1,5 @@
+import os
+
 '''
 This method parses the gap files and returns
 a dictionary containing information about the grammars, algebras, number of
@@ -64,11 +66,14 @@ def parsegapfiles(gapfiles):
                             headerslist.append(
                                 splitline[1].strip(" '\"\t\r\n"))
 
-        gramdict[grafile.split(".")[0]] = gramlist
-        algdict[grafile.split(".")[0]] = alglist
-        infotextsdict[grafile.split(".")[0]] = commentslist
-        inputstringsnumberdict[grafile.split(".")[0]] = number_of_inputstrings
-        headersdict[grafile.split(".")[0]] = headerslist
+        # name of the use selected program is basename of the *.gap source file
+        # name minus file ending
+        programname = os.path.basename(grafile).split(".")[0]
+        gramdict[programname] = gramlist
+        algdict[programname] = alglist
+        infotextsdict[programname] = commentslist
+        inputstringsnumberdict[programname] = number_of_inputstrings
+        headersdict[programname] = headerslist
     outputdict["gramdict"] = gramdict
     outputdict["algdict"] = algdict
     outputdict["infotextsdict"] = infotextsdict
