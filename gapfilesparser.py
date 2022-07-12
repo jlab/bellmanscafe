@@ -104,8 +104,8 @@ def get_gapc_version(app):
     return version
 
 
-def get_adpcollection_commithash(app, fp_repo: str):
-    """Obtain current commit hash of the ADP_collection repository.
+def get_repo_commithash(app, fp_repo: str):
+    """Obtain current commit hash of a Git repository.
 
     Parameters
     ----------
@@ -117,12 +117,12 @@ def get_adpcollection_commithash(app, fp_repo: str):
 
     Returns
     -------
-    str : the ADP_collection commit hash.
+    str : the Git repo commit hash.
     """
     cmd = 'git show --format="%H" | head -n 1'
     p_version = subprocess.run(cmd, shell=True, text=True,
-                               stdout=subprocess.PIPE)
+                               stdout=subprocess.PIPE, cwd=fp_repo)
     version = p_version.stdout.strip()
-    app.logger.debug('obtain repo commit hash via "%s" = %s' % (
-        cmd, version))
+    app.logger.debug('obtain repo (%s) commit hash via "%s" = %s' % (
+        fp_repo, cmd, version))
     return version

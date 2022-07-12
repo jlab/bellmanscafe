@@ -9,7 +9,7 @@ import logging
 from flask import Flask, render_template, request, send_file
 
 from gapfilesparser import parsegapfiles, get_gapc_version, \
-                           get_adpcollection_commithash
+                           get_repo_commithash
 
 
 # the Cafe shall let users interact with a collection of Bellman's GAP
@@ -35,7 +35,8 @@ logging.basicConfig(
 # compiler will automatically lead to new cache
 GAPC_VERSION = get_gapc_version(app)
 PREFIX_CACHE = os.path.join(PREFIX_CACHE, 'gapc_v%s' % GAPC_VERSION)
-REPO_VERSION = get_adpcollection_commithash(app, PREFIX_GAPUSERSOURCES)
+REPO_VERSION = get_repo_commithash(app, PREFIX_GAPUSERSOURCES)
+CAFE_VERSION = get_repo_commithash(app, "./")
 
 # Variablen
 exlist = []
@@ -246,7 +247,8 @@ def bellman():
                 inputreminderlist=inputreminderlist, exlist=exlist,
                 user_form_input=json.dumps(user_form_input),
                 gapc_version=GAPC_VERSION,
-                repo_hash=REPO_VERSION)
+                repo_hash=REPO_VERSION,
+                cafe_hash=CAFE_VERSION)
 
     # More than one algebra:
     if (len(not_empty_algs_indices) >= 2
@@ -324,7 +326,8 @@ def bellman():
                 inputreminderlist=inputreminderlist, exlist=exlist,
                 user_form_input=json.dumps(user_form_input),
                 gapc_version=GAPC_VERSION,
-                repo_hash=REPO_VERSION)
+                repo_hash=REPO_VERSION,
+                cafe_hash=CAFE_VERSION)
 
     # if this return statement is reached
     # then at least one combo-box necessary
@@ -342,7 +345,8 @@ def bellman():
         inputreminderlist=inputreminderlist, exlist=exlist,
         user_form_input=json.dumps(user_form_input),
         gapc_version=GAPC_VERSION,
-        repo_hash=REPO_VERSION)
+        repo_hash=REPO_VERSION,
+        cafe_hash=CAFE_VERSION)
 
 
 def compile_and_run_gapc(instance: str, fp_gapfile: str, prefix_cache,
@@ -374,7 +378,7 @@ def compile_and_run_gapc(instance: str, fp_gapfile: str, prefix_cache,
     # update global commit hash of user repository as it might change during
     # server run time through cron jobs
     global REPO_VERSION
-    REPO_VERSION = get_adpcollection_commithash(app, PREFIX_GAPUSERSOURCES)
+    REPO_VERSION = get_repo_commithash(app, PREFIX_GAPUSERSOURCES)
 
     hash_instance = hashlib.md5(instance.encode('utf-8')).hexdigest()
     fp_workdir = os.path.join(prefix_cache, hash_instance)
