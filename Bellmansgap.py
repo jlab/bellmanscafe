@@ -4,9 +4,9 @@ import os
 import shutil
 import subprocess
 import hashlib
+import logging
 
 from flask import Flask, render_template, request, send_file
-from logging.config import dictConfig
 
 from gapfilesparser import parsegapfiles, get_gapc_version, \
                            get_adpcollection_commithash
@@ -23,24 +23,13 @@ PREFIX_GAPUSERSOURCES = "../ADP_collection/"
 # instance with user inputs have to be run.
 PREFIX_CACHE = "DOCKER/bcafe_cache/"
 
-# configure logging, see https://flask.palletsprojects.com/en/2.1.x/logging/
-dictConfig({
-    'version': 1,
-    'formatters': {'default': {
-        'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
-    }},
-    'handlers': {'wsgi': {
-        'class': 'logging.StreamHandler',
-        'stream': 'ext://flask.logging.wsgi_errors_stream',
-        'formatter': 'default'
-    }},
-    'root': {
-        'level': 'INFO',
-        'handlers': ['wsgi']
-    }
-})
 app = Flask(__name__)
 app.secret_key = "xasdqfghuioiuwqenjdcbjhawbuomcujeq1217846421kopNSJJGWmc8u29"
+
+logging.basicConfig(
+    # filename='bellmansgap.log',
+    level=logging.DEBUG,
+    format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
 
 # obtain gapc version number to prefix cache prefix. Thus, updated gapc
 # compiler will automatically lead to new cache
