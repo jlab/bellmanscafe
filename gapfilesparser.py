@@ -1,4 +1,5 @@
 import os
+import subprocess
 
 '''
 This method parses the gap files and returns
@@ -80,3 +81,48 @@ def parsegapfiles(gapfiles):
     outputdict["inputstringsnumberdict"] = inputstringsnumberdict
     outputdict["headersdict"] = headersdict
     return outputdict
+
+
+def get_gapc_version(app):
+    """Obtain gapc version number via 'gapc --version' system call.
+
+    Parameters
+    ----------
+    app
+        The flask app to enable logging.
+
+    Returns
+    -------
+    str : the gapc version number
+    """
+    cmd = 'gapc --version | head -n 1 | cut -d " " -f 3'
+    p_version = subprocess.run(cmd, shell=True, text=True,
+                               stdout=subprocess.PIPE)
+    version = p_version.stdout.strip()
+    app.logger.debug('obtain gapc version number via "%s" = %s' % (
+        cmd, version))
+    return version
+
+
+def get_adpcollection_commithash(app, fp_repo: str):
+    """Obtain current commit hash of the ADP_collection repository.
+
+    Parameters
+    ----------
+    app
+        The flask app to enable logging.
+
+    fp_repo : str
+        Filepath to the repository.
+
+    Returns
+    -------
+    str : the ADP_collection commit hash.
+    """
+    cmd = 'git show --format="%H" | head -n 1'
+    p_version = subprocess.run(cmd, shell=True, text=True,
+                               stdout=subprocess.PIPE)
+    version = p_version.stdout.strip()
+    app.logger.debug('obtain repo commit hash via "%s" = %s' % (
+        cmd, version))
+    return version

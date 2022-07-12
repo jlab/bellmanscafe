@@ -7,7 +7,9 @@ import hashlib
 
 from flask import Flask, render_template, request, send_file
 
-from gapfilesparser import parsegapfiles
+from gapfilesparser import parsegapfiles, get_gapc_version, \
+                           get_adpcollection_commithash
+
 
 # the Cafe shall let users interact with a collection of Bellman's GAP
 # programs like Needleman-Wunsch or ElMamun. The FP_GAPUSERSOURCES variable
@@ -25,12 +27,9 @@ app.secret_key = "xasdqfghuioiuwqenjdcbjhawbuomcujeq1217846421kopNSJJGWmc8u29"
 
 # obtain gapc version number to prefix cache prefix. Thus, updated gapc
 # compiler will automatically lead to new cache
-cmd = 'gapc --version | head -n 1 | cut -d " " -f 3'
-p_version = subprocess.run(cmd, shell=True, text=True, stdout=subprocess.PIPE)
-GAPC_VERSION = p_version.stdout.strip()
-app.logger.debug('obtain gapc version number via "%s" = %s' % (
-    cmd, GAPC_VERSION))
+GAPC_VERSION = get_gapc_version(app)
 PREFIX_CACHE = os.path.join(PREFIX_CACHE, 'gapc_v%s' % GAPC_VERSION)
+REPO_VERSION = get_adpcollection_commithash(app, PREFIX_GAPUSERSOURCES)
 
 # Variablen
 exlist = []
@@ -239,7 +238,9 @@ def bellman():
                 inputstringsnumberdict=inputstringsnumberdict,
                 headersdict=json.dumps(headersdict),
                 inputreminderlist=inputreminderlist, exlist=exlist,
-                user_form_input=json.dumps(user_form_input))
+                user_form_input=json.dumps(user_form_input),
+                gapc_version=GAPC_VERSION,
+                repo_hash=REPO_VERSION)
 
     # More than one algebra:
     if (len(not_empty_algs_indices) >= 2
@@ -315,7 +316,9 @@ def bellman():
                 inputstringsnumberdict=inputstringsnumberdict,
                 headersdict=json.dumps(headersdict),
                 inputreminderlist=inputreminderlist, exlist=exlist,
-                user_form_input=json.dumps(user_form_input))
+                user_form_input=json.dumps(user_form_input),
+                gapc_version=GAPC_VERSION,
+                repo_hash=REPO_VERSION)
 
     # if this return statement is reached
     # then at least one combo-box necessary
@@ -331,7 +334,9 @@ def bellman():
         inputstringsnumberdict=inputstringsnumberdict,
         headersdict=json.dumps(headersdict),
         inputreminderlist=inputreminderlist, exlist=exlist,
-        user_form_input=json.dumps(user_form_input))
+        user_form_input=json.dumps(user_form_input),
+        gapc_version=GAPC_VERSION,
+        repo_hash=REPO_VERSION)
 
 
 def compile_and_run_gapc(instance: str, fp_gapfile: str, prefix_cache,
@@ -355,6 +360,16 @@ def compile_and_run_gapc(instance: str, fp_gapfile: str, prefix_cache,
     fps_headerfiles : [str]
         List of additional user header files, necessary for C++ compilation.
     """
+    # update the global gapc version number as the according ubuntu package
+    # might have changed during server execution time
+    global GAPC_VERSION
+    GAPC_VERSION = get_gapc_version(app)
+
+    # update global commit hash of user repository as it might change during
+    # server run time through cron jobs
+    global REPO_VERSION
+    REPO_VERSION = get_adpcollection_commithash(app, PREFIX_GAPUSERSOURCES)
+
     hash_instance = hashlib.md5(instance.encode('utf-8')).hexdigest()
     fp_workdir = os.path.join(prefix_cache, hash_instance)
     app.logger.debug('working directory is "%s"' % fp_workdir)
