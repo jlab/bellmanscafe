@@ -221,7 +221,9 @@ def bellman():
             # calculategapc() is used to return the result to the variable res
             command = algslist[not_empty_algs_indices[0]]
             name = algslist[not_empty_algs_indices[0]]
+
             res = compile_and_run_gapc(
+                gra,
                 command, os.path.join(PREFIX_GAPUSERSOURCES,
                                       program + ".gap"),
                 PREFIX_CACHE,
@@ -301,6 +303,7 @@ def bellman():
             # Once the command and name are assembled,
             # they are used to calculate the result.
             res = compile_and_run_gapc(
+                gra,
                 command,
                 os.path.join(PREFIX_GAPUSERSOURCES, program + ".gap"),
                 PREFIX_CACHE,
@@ -349,13 +352,17 @@ def bellman():
         cafe_hash=CAFE_VERSION)
 
 
-def compile_and_run_gapc(instance: str, fp_gapfile: str, prefix_cache,
-                         userinputs: [str], fps_headerfiles: [str] = []):
+def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
+                         prefix_cache, userinputs: [str],
+                         fps_headerfiles: [str] = []):
     """Compiles a binary for a given instance (aka algebra product).
 
     Parameters
     ----------
-    instance : str
+    grammar : str
+        The user selected grammar.
+
+    algproduct : str
         The algebra product to be compiled, e.g. "alg_score * alg_enum".
 
     fp_gapfile : str
@@ -380,14 +387,21 @@ def compile_and_run_gapc(instance: str, fp_gapfile: str, prefix_cache,
     global REPO_VERSION
     REPO_VERSION = get_repo_commithash(app, PREFIX_GAPUSERSOURCES)
 
+    # the instance is the application of the algebra product to the grammar
+    instance = '%s(%s)' % (grammar, algproduct)
     hash_instance = hashlib.md5(instance.encode('utf-8')).hexdigest()
     fp_workdir = os.path.join(prefix_cache, hash_instance)
-    app.logger.info('working directory is "%s"' % fp_workdir)
+    app.logger.info('working directory for instance "%s" is "%s"' % (
+        instance, fp_workdir))
 
     steps = {
+        # 0) inject instance bcafe to original *.gap source file (as it might
+        #    not be defined)
         # 1) transpiling via gapc
-        'gapc': 'gapc -p "%s" --plot-grammar 1 %s ' % (
-            instance, os.path.basename(fp_gapfile)),
+        'gapc': ('echo "instance bcafe=%s;" >> "%s" '
+                 '&& gapc -i "bcafe" --plot-grammar 1 %s ') % (
+            instance, os.path.basename(fp_gapfile),
+            os.path.basename(fp_gapfile)),
 
         # 2) convert grammar plot into gif
         'dot': 'dot -Tgif out.dot -o grammar.gif',
@@ -409,8 +423,14 @@ def compile_and_run_gapc(instance: str, fp_gapfile: str, prefix_cache,
         for fp_src in [fp_gapfile] + fps_headerfiles:
             fp_dst = os.path.join(fp_workdir, os.path.basename(fp_src))
             if os.path.exists(fp_dst):
-                p_diff = subprocess.run('diff %s %s' % (fp_src, fp_dst),
-                                        shell=True, text=True)
+                dst = fp_dst
+                if fp_src == fp_gapfile:
+                    # ignore last line of gap source file, since this is the
+                    # injected instance
+                    dst = '<(head %s -n -1)' % fp_dst
+                p_diff = subprocess.run(
+                    'diff %s %s' % (fp_src, dst), shell=True, text=True,
+                    executable='/bin/bash')
                 if p_diff.returncode != 0:
                     invalid_cache = True
         if invalid_cache:
