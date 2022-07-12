@@ -6,6 +6,7 @@ import subprocess
 import hashlib
 
 from flask import Flask, render_template, request, send_file
+from logging.config import dictConfig
 
 from gapfilesparser import parsegapfiles, get_gapc_version, \
                            get_adpcollection_commithash
@@ -22,6 +23,22 @@ PREFIX_GAPUSERSOURCES = "../ADP_collection/"
 # instance with user inputs have to be run.
 PREFIX_CACHE = "DOCKER/bcafe_cache/"
 
+# configure logging, see https://flask.palletsprojects.com/en/2.1.x/logging/
+dictConfig({
+    'version': 1,
+    'formatters': {'default': {
+        'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+    }},
+    'handlers': {'wsgi': {
+        'class': 'logging.StreamHandler',
+        'stream': 'ext://flask.logging.wsgi_errors_stream',
+        'formatter': 'default'
+    }},
+    'root': {
+        'level': 'INFO',
+        'handlers': ['wsgi']
+    }
+})
 app = Flask(__name__)
 app.secret_key = "xasdqfghuioiuwqenjdcbjhawbuomcujeq1217846421kopNSJJGWmc8u29"
 
@@ -372,7 +389,7 @@ def compile_and_run_gapc(instance: str, fp_gapfile: str, prefix_cache,
 
     hash_instance = hashlib.md5(instance.encode('utf-8')).hexdigest()
     fp_workdir = os.path.join(prefix_cache, hash_instance)
-    app.logger.debug('working directory is "%s"' % fp_workdir)
+    app.logger.info('working directory is "%s"' % fp_workdir)
 
     steps = {
         # 1) transpiling via gapc
@@ -405,17 +422,17 @@ def compile_and_run_gapc(instance: str, fp_gapfile: str, prefix_cache,
                     invalid_cache = True
         if invalid_cache:
             shutil.rmtree(fp_workdir)
-            app.logger.debug('delete outdated cache dir "%s"' % fp_workdir)
+            app.logger.info('delete outdated cache dir "%s"' % fp_workdir)
 
     if not os.path.exists(fp_workdir):
         os.makedirs(fp_workdir, exist_ok=True)
-        app.logger.debug('create working directory "%s"' % fp_workdir)
+        app.logger.info('create working directory "%s"' % fp_workdir)
 
         # copy *.gap and header source files into working directory
         for fp_src in [fp_gapfile] + fps_headerfiles:
             fp_dst = os.path.join(fp_workdir, os.path.basename(fp_src))
             shutil.copy(fp_src, fp_dst)
-            app.logger.debug('copy file "%s" to %s' % (fp_src, fp_dst))
+            app.logger.info('copy file "%s" to %s' % (fp_src, fp_dst))
 
         for name, cmd in steps.items():
             if name == "run":
@@ -423,11 +440,11 @@ def compile_and_run_gapc(instance: str, fp_gapfile: str, prefix_cache,
                 # part of the cache
                 continue
             subprocess.run(cmd, shell=True, text=True, cwd=fp_workdir)
-            app.logger.debug('executing (in %s) %s' % (fp_workdir, cmd))
+            app.logger.info('executing (in %s) "%s"' % (fp_workdir, cmd))
 
     # execute the binary with user input(s)
     subprocess.run(steps['run'], shell=True, text=True, cwd=fp_workdir)
-    app.logger.debug('executing (in %s) %s' % (fp_workdir, steps['run']))
+    app.logger.info('executing (in %s) "%s"' % (fp_workdir, steps['run']))
 
     report = []
     for name, cmd in steps.items():
