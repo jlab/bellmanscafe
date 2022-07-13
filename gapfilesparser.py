@@ -1,3 +1,6 @@
+import os
+import subprocess
+
 '''
 This method parses the gap files and returns
 a dictionary containing information about the grammars, algebras, number of
@@ -64,14 +67,62 @@ def parsegapfiles(gapfiles):
                             headerslist.append(
                                 splitline[1].strip(" '\"\t\r\n"))
 
-        gramdict[grafile.split(".")[0]] = gramlist
-        algdict[grafile.split(".")[0]] = alglist
-        infotextsdict[grafile.split(".")[0]] = commentslist
-        inputstringsnumberdict[grafile.split(".")[0]] = number_of_inputstrings
-        headersdict[grafile.split(".")[0]] = headerslist
+        # name of the use selected program is basename of the *.gap source file
+        # name minus file ending
+        programname = os.path.basename(grafile).split(".")[0]
+        gramdict[programname] = gramlist
+        algdict[programname] = alglist
+        infotextsdict[programname] = commentslist
+        inputstringsnumberdict[programname] = number_of_inputstrings
+        headersdict[programname] = headerslist
     outputdict["gramdict"] = gramdict
     outputdict["algdict"] = algdict
     outputdict["infotextsdict"] = infotextsdict
     outputdict["inputstringsnumberdict"] = inputstringsnumberdict
     outputdict["headersdict"] = headersdict
     return outputdict
+
+
+def get_gapc_version(app):
+    """Obtain gapc version number via 'gapc --version' system call.
+
+    Parameters
+    ----------
+    app
+        The flask app to enable logging.
+
+    Returns
+    -------
+    str : the gapc version number
+    """
+    cmd = 'gapc --version | head -n 1 | cut -d " " -f 3'
+    p_version = subprocess.run(cmd, shell=True, text=True,
+                               stdout=subprocess.PIPE)
+    version = p_version.stdout.strip()
+    app.logger.debug('obtain gapc version number via "%s" = %s' % (
+        cmd, version))
+    return version
+
+
+def get_repo_commithash(app, fp_repo: str):
+    """Obtain current commit hash of a Git repository.
+
+    Parameters
+    ----------
+    app
+        The flask app to enable logging.
+
+    fp_repo : str
+        Filepath to the repository.
+
+    Returns
+    -------
+    str : the Git repo commit hash.
+    """
+    cmd = 'git show --format="%H" | head -n 1'
+    p_version = subprocess.run(cmd, shell=True, text=True,
+                               stdout=subprocess.PIPE, cwd=fp_repo)
+    version = p_version.stdout.strip()
+    app.logger.debug('obtain repo (%s) commit hash via "%s" = %s' % (
+        fp_repo, cmd, version))
+    return version

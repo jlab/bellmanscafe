@@ -1,3 +1,13 @@
+v1.10
+  * you can now globally define a directory into which all cache objects will be stored
+  * the server now obtains the gapc version number at start up (and at every compile run) and add this into the globally defined cache prefix
+    * same applies to fetching the ADP_collection commit hash to inform about the used version and the bellmanscafe commit hash
+  * the name of the cache directory is no longer the algebra product, but the md5 hash of the algebra product
+  * forwarding STDERR and STDOUT into according files while compiling. When executing, the contents is read and will be reported in the tab output. Thus, cache is really transparent for the user!
+  * graphic generation of @Jasmin-Walter 's new plotting function is added.
+  * allow user source files in an external directory, i.e. the path to the ADP_collection repo can also be specified globally
+  * user selected instance, i.e. algebra product and grammar, are injected as an additional line to the gap file named bcafe in the cached version and always compile this instance.
+
 v1.9
 Internally moved css code to a separate file.
 Enabling automatically updating .gap and .hh files via a cronjob on a shell script.

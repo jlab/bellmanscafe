@@ -3,13 +3,40 @@ import json
 import os
 import shutil
 import subprocess
+import hashlib
+import logging
 
 from flask import Flask, render_template, request, send_file
 
-from gapfilesparser import parsegapfiles
+from gapfilesparser import parsegapfiles, get_gapc_version, \
+                           get_repo_commithash
+
+
+# the Cafe shall let users interact with a collection of Bellman's GAP
+# programs like Needleman-Wunsch or ElMamun. The FP_GAPUSERSOURCES variable
+# must point to the path containing these sources.
+PREFIX_GAPUSERSOURCES = "../ADP_collection/"
+
+# user submission leads to compilation and execution of new algera products
+# if the user re-submits the same algebra product (also called instance) it
+# does not need to be re-computed, therefore we are using a cache. JUST this
+# instance with user inputs have to be run.
+PREFIX_CACHE = "DOCKER/bcafe_cache/"
 
 app = Flask(__name__)
 app.secret_key = "xasdqfghuioiuwqenjdcbjhawbuomcujeq1217846421kopNSJJGWmc8u29"
+
+logging.basicConfig(
+    # filename='bellmansgap.log',
+    level=logging.DEBUG,
+    format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
+
+# obtain gapc version number to prefix cache prefix. Thus, updated gapc
+# compiler will automatically lead to new cache
+GAPC_VERSION = get_gapc_version(app)
+PREFIX_CACHE = os.path.join(PREFIX_CACHE, 'gapc_v%s' % GAPC_VERSION)
+REPO_VERSION = get_repo_commithash(app, PREFIX_GAPUSERSOURCES)
+CAFE_VERSION = get_repo_commithash(app, "./")
 
 # Variablen
 exlist = []
@@ -22,10 +49,11 @@ dirstr = ""
 # glob.glob('*.gap') returns a list of names of
 # all files in the directory that end on ".gap"
 # the list is then sorted
-gapfiles = sorted(glob.glob('*.gap'))
+FP_GAPFILES = glob.glob(os.path.join(PREFIX_GAPUSERSOURCES, '*.gap'))
+gapfiles = sorted(list(map(os.path.basename, FP_GAPFILES)))
 program = ""
 
-returndict = parsegapfiles(gapfiles)
+returndict = parsegapfiles(FP_GAPFILES)
 
 gramdict = returndict["gramdict"]
 algdict = returndict["algdict"]
@@ -54,7 +82,8 @@ def home():
 @app.route("/<filename>/download")
 def download_file(filename):
     p = filename
-    return send_file(p, as_attachment=True)
+    return send_file(os.path.join(PREFIX_GAPUSERSOURCES, p),
+                     as_attachment=True)
 
 
 # route for the bellman page "/bellman"
@@ -192,7 +221,15 @@ def bellman():
             # calculategapc() is used to return the result to the variable res
             command = algslist[not_empty_algs_indices[0]]
             name = algslist[not_empty_algs_indices[0]]
-            res = calculategapc(program, command, name, exlist)
+
+            res = compile_and_run_gapc(
+                gra,
+                command, os.path.join(PREFIX_GAPUSERSOURCES,
+                                      program + ".gap"),
+                PREFIX_CACHE,
+                exlist,
+                [os.path.join(PREFIX_GAPUSERSOURCES, h)
+                    for h in headersdict[program]])
 
             # variables that are important for building
             # the result part of the page and the previous
@@ -210,7 +247,10 @@ def bellman():
                 inputstringsnumberdict=inputstringsnumberdict,
                 headersdict=json.dumps(headersdict),
                 inputreminderlist=inputreminderlist, exlist=exlist,
-                user_form_input=json.dumps(user_form_input))
+                user_form_input=json.dumps(user_form_input),
+                gapc_version=GAPC_VERSION,
+                repo_hash=REPO_VERSION,
+                cafe_hash=CAFE_VERSION)
 
     # More than one algebra:
     if (len(not_empty_algs_indices) >= 2
@@ -262,7 +302,14 @@ def bellman():
 
             # Once the command and name are assembled,
             # they are used to calculate the result.
-            res = calculategapc(program, command, name, exlist)
+            res = compile_and_run_gapc(
+                gra,
+                command,
+                os.path.join(PREFIX_GAPUSERSOURCES, program + ".gap"),
+                PREFIX_CACHE,
+                exlist,
+                [os.path.join(PREFIX_GAPUSERSOURCES, h)
+                    for h in headersdict[program]])
 
             # variables that are important for building
             # the result part of the page and the previous
@@ -280,7 +327,10 @@ def bellman():
                 inputstringsnumberdict=inputstringsnumberdict,
                 headersdict=json.dumps(headersdict),
                 inputreminderlist=inputreminderlist, exlist=exlist,
-                user_form_input=json.dumps(user_form_input))
+                user_form_input=json.dumps(user_form_input),
+                gapc_version=GAPC_VERSION,
+                repo_hash=REPO_VERSION,
+                cafe_hash=CAFE_VERSION)
 
     # if this return statement is reached
     # then at least one combo-box necessary
@@ -296,143 +346,133 @@ def bellman():
         inputstringsnumberdict=inputstringsnumberdict,
         headersdict=json.dumps(headersdict),
         inputreminderlist=inputreminderlist, exlist=exlist,
-        user_form_input=json.dumps(user_form_input))
+        user_form_input=json.dumps(user_form_input),
+        gapc_version=GAPC_VERSION,
+        repo_hash=REPO_VERSION,
+        cafe_hash=CAFE_VERSION)
 
 
-'''
-this function executes three commands in the shell
-and returns the result of the last command
-the first command is the gapc tool itself,
-the second is the make command
-and the third is the executable
-that was generated by the previous command
-'''
+def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
+                         prefix_cache, userinputs: [str],
+                         fps_headerfiles: [str] = []):
+    """Compiles a binary for a given instance (aka algebra product).
 
+    Parameters
+    ----------
+    grammar : str
+        The user selected grammar.
 
-def calculategapc(program, command, name, exlist):
-    # dirstr is the string of the directory
-    # where generated files regarding this program are safed
-    dirstr = "computed_" + program
-    res = []
+    algproduct : str
+        The algebra product to be compiled, e.g. "alg_score * alg_enum".
 
-    # this is the executed commandstring
-    commandstring = 'gapc -p ' + command \
-                    + ' -o ' + dirstr + '/' + name + '_gapc.cc ' \
-                    + program + '.gap' + ' 2>&1'
-    pro1_returncode = 0
+    fp_gapfile : str
+        File path location of the user gap source file.
 
-    # gapc Command
-    # if this combination of algebras and operator
-    # has not been computed for this program yet it will be computed
-    if not os.path.exists(dirstr + "/" + name + "_gapc.cc"):
-        # if the directory that holds the created files
-        # does not exist yet for this program, it will be created
-        if not os.path.exists(dirstr):
-            os.makedirs(dirstr)
-        # the commandstring is executed with subprocess.run()
-        pro1 = subprocess.run(
-            commandstring, shell=True, text=True,
-            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        # the returncode will be used to check
-        # if the process has run successfully
-        pro1_returncode = pro1.returncode
-        # the result of the process is saved
-        # in list1 and appended to the res list
-        list1 = pro1.stdout.splitlines()
-        list1.insert(0, "<b>Command</b>: " + commandstring)
-        res.append(list1)
-    # if this combination of algebras and operator has
-    # already been computed, it will not be computed again
-    else:
-        list1 = []
-        list1.append("<b>Command</b>: " + commandstring)
-        res.append(list1)
+    prefix_cache : str
+        Directory to used to cache compile product.
 
-    # The header files necessary for execution will be
-    # copied to the destination folder (and overwritten).
+    userinputs : [str]
+        List of user input(s) for tracks of grammar.
 
-    for f in headersdict[program]:
-        shutil.copy(f, dirstr)
-    # further commands will be executed
-    # from within the directory to which
-    # the files have been saved
-    os.chdir("./" + dirstr)
+    fps_headerfiles : [str]
+        List of additional user header files, necessary for C++ compilation.
+    """
+    # update the global gapc version number as the according ubuntu package
+    # might have changed during server execution time
+    global GAPC_VERSION
+    GAPC_VERSION = get_gapc_version(app)
 
-    # the commandstring is now rebuild as a make command
-    commandstring = "make -f " + name + "_gapc.mf" + " 2>&1"
-    # if the returncode was not 0, an error must have occured,
-    # this is however not handled yet,
-    # rather the rest of the code is just not executed in that case
-    if pro1_returncode != 0:
-        list2 = ["An error has occured during the "
-                 "execution of the gapc command."]
-        res.append(list2)
-        list3 = ["An error has occured during the "
-                 "execution of the gapc command."]
-        res.append(list3)
-    else:
-        # if no error occured in process 1,
-        # process 2 is started via subprocess.run
-        pro2 = subprocess.run(
-            commandstring, shell=True, text=True,
-            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        # the results of the make command are saved
-        # in list2, which is appended to the res list
-        list2 = pro2.stdout.splitlines()
-        list2.insert(0, "<b>Command</b>: " + commandstring)
-        res.append(list2)
+    # update global commit hash of user repository as it might change during
+    # server run time through cron jobs
+    global REPO_VERSION
+    REPO_VERSION = get_repo_commithash(app, PREFIX_GAPUSERSOURCES)
 
-        # since the third command takes in a string input
-        # directly typed in by the user
-        # a commandlist is built instead of the commandstring
-        commandlist = []
-        ex = ""
-        commandlist.append("./" + name + "_gapc")
-        for exstring in exlist:
-            commandlist.append(exstring)
-            ex += '"'
-            ex += exstring
-            ex += '"'
-            ex += " "
-        # commandlist.append("2>&1")
+    # the instance is the application of the algebra product to the grammar
+    instance = '%s(%s)' % (grammar, algproduct)
+    hash_instance = hashlib.md5(instance.encode('utf-8')).hexdigest()
+    fp_workdir = os.path.join(prefix_cache, hash_instance)
+    app.logger.info('working directory for instance "%s" is "%s"' % (
+        instance, fp_workdir))
 
-        # the commandstring will also be built,
-        # but will only be displayed in the result section of the page
-        # and is not directly used for executing the subprocess
-        commandstring = "./" + name + "_gapc " + ex + " 2>&1"
-        # ( ulimit -t 1; ./a.out )
-        # commandstring = "( ulimit -t 0; " + commandstring + " )"
+    steps = {
+        # 0) inject instance bcafe to original *.gap source file (as it might
+        #    not be defined)
+        # 1) transpiling via gapc
+        'gapc': ('echo "instance bcafe=%s;" >> "%s" '
+                 '&& gapc -i "bcafe" --plot-grammar 1 %s ') % (
+            instance, os.path.basename(fp_gapfile),
+            os.path.basename(fp_gapfile)),
 
-        # if an error occured in process 2, then process 3 will not be executed
-        if pro2.returncode != 0:
-            list3 = ["An error has occured during the execution "
-                     "of the make command."]
-            res.append(list3)
-        else:
-            '''
-            using a commandlist instead of a commandstring
-            is supposed to act as a barrier for hacking attempts,
-            with a commandlist the first element
-            is interpreted as the program or command,
-            while the rest of the elements are interpreted as arguments
-            or parameters to that program or command,
-            therefore shell commands in the inputstring
-            are not interpreted as commands but rather as arguments
-            to the executable command here
-            this has however not been tested for this server yet
-            '''
-            pro3 = subprocess.run(
-                commandlist, text=True, stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT)
-            list3 = pro3.stdout.splitlines()
-            list3.insert(0, "<b>Command</b>: " + commandstring)
-            list3.insert(1, "<b>Output</b> :")
-            res.append(list3)
-    # after all three commands have been executed,
-    # we return to the original folder and
-    # the resulting list of strings is returned
-    os.chdir("..")
-    return res
+        # 2) convert grammar plot into gif
+        'dot': 'dot -Tgif out.dot -o grammar.gif',
+
+        # 3) compiling c++ into binary
+        'make': 'make -f out.mf',
+
+        # 4) run the compiled binary with user input (not cached)
+        'run': './out %s' % ' '.join(map(lambda x: '"%s"' % x, userinputs))
+    }
+    steps = {name: '%s > %s.out 2> %s.err' % (cmd, name, name)
+             for name, cmd
+             in steps.items()}
+
+    if os.path.exists(fp_workdir):
+        # if a matching cache dir exists, we test if the source file contents
+        # has changed. This might be due to updates in the ADP_collections repo
+        invalid_cache = False
+        for fp_src in [fp_gapfile] + fps_headerfiles:
+            fp_dst = os.path.join(fp_workdir, os.path.basename(fp_src))
+            if os.path.exists(fp_dst):
+                dst = fp_dst
+                if fp_src == fp_gapfile:
+                    # ignore last line of gap source file, since this is the
+                    # injected instance
+                    dst = '<(head %s -n -1)' % fp_dst
+                p_diff = subprocess.run(
+                    'diff %s %s' % (fp_src, dst), shell=True, text=True,
+                    executable='/bin/bash')
+                if p_diff.returncode != 0:
+                    invalid_cache = True
+        if invalid_cache:
+            shutil.rmtree(fp_workdir)
+            app.logger.info('delete outdated cache dir "%s"' % fp_workdir)
+
+    if not os.path.exists(fp_workdir):
+        os.makedirs(fp_workdir, exist_ok=True)
+        app.logger.info('create working directory "%s"' % fp_workdir)
+
+        # copy *.gap and header source files into working directory
+        for fp_src in [fp_gapfile] + fps_headerfiles:
+            fp_dst = os.path.join(fp_workdir, os.path.basename(fp_src))
+            shutil.copy(fp_src, fp_dst)
+            app.logger.info('copy file "%s" to %s' % (fp_src, fp_dst))
+
+        for name, cmd in steps.items():
+            if name == "run":
+                # don't run the compiled binary in here since it shall not be
+                # part of the cache
+                continue
+            subprocess.run(cmd, shell=True, text=True, cwd=fp_workdir)
+            app.logger.info('executing (in %s) "%s"' % (fp_workdir, cmd))
+
+    # execute the binary with user input(s)
+    subprocess.run(steps['run'], shell=True, text=True, cwd=fp_workdir)
+    app.logger.info('executing (in %s) "%s"' % (fp_workdir, steps['run']))
+
+    report = []
+    for name, cmd in steps.items():
+        rep = []
+        rep.append('<b>Command</b>: %s' % cmd)
+        with open(os.path.join(fp_workdir, '%s.out' % name)) as f:
+            rep.extend(f.readlines())
+        with open(os.path.join(fp_workdir, '%s.err' % name)) as f:
+            rep.extend(f.readlines())
+        # don't add dot execution to report, since there is no tab yet on the
+        # website
+        if name not in ['dot']:
+            report.append(rep)
+
+    return report
 
 
 # route for the support page

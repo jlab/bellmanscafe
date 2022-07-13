@@ -5,7 +5,7 @@
 
 <!-- This script adds a title to the banner at the top of the page. -->
 <script type=text/javascript>
-    version = "v1.9"
+    version = "v1.10"
     divbanner = document.getElementById('divbanner');
     divbanner.innerHTML += "<center><FONT color='#ffffff' size='6'>Bellman's Cafe "+ version +"</FONT></center>";
 </script>
@@ -715,4 +715,7 @@ $(document).ready(function(){
     document.getElementById('divbottom').scrollIntoView();
 </script>
 
+<span style="font-size: small;">
+gapc version: <a href="https://github.com/jlab/gapc" target="_new">{{ gapc_version|safe }}</a>, ADP_collection version: <a href="https://github.com/jlab/ADP_collection/commit/{{ repo_hash|safe }}" target="_new">{{ repo_hash|safe }}</a>, cafe version: <a href="https://github.com/jlab/bellmanscafe/commit/{{ cafe_hash|safe }}" target="_new">{{ cafe_hash|safe }}</a>.
+</span>
 {% endblock %}
