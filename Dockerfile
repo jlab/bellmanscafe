@@ -12,7 +12,7 @@ RUN add-apt-repository ppa:janssenlab/software
 RUN apt-get -y update
 RUN apt-get -y install bellmansgapc
 
-RUN git clone -b revamp_calculategapc https://github.com/jlab/bellmanscafe.git
+RUN git clone -b master https://github.com/jlab/bellmanscafe.git
 RUN git clone https://github.com/jlab/ADP_collection.git
 
 WORKDIR bellmanscafe
