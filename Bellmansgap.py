@@ -17,6 +17,12 @@ from gapfilesparser import parsegapfiles, get_gapc_version, \
 # must point to the path containing these sources.
 PREFIX_GAPUSERSOURCES = "../ADP_collection/"
 
+# the ADP_collection repository contains a directory "Resources" which contains
+# static content for the cafe, e.g. images. To serve these, we need a symlink
+# from flask static dir into the Resources subdir of the repo.
+if not os.path.exists("static/Resources"):
+    os.symlink("../" + PREFIX_GAPUSERSOURCES + "Resources", "static/Resources")
+
 # user submission leads to compilation and execution of new algera products
 # if the user re-submits the same algebra product (also called instance) it
 # does not need to be re-computed, therefore we are using a cache. JUST this
