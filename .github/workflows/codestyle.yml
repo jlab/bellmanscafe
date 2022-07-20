@@ -27,7 +27,7 @@ jobs:
       run: |
         conda config --add channels conda-forge
         conda config --add channels anaconda
-        conda create -q --yes -n bellmanscafe python=3.9 flake8
+        conda create -q --yes -n bellmanscafe python=3.9 flake8 markdown
         conda init bash
         source ~/.bashrc
         conda activate bellmanscafe
