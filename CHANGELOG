@@ -1,3 +1,7 @@
+v1.11
+  * enable static user content from ADP_collections
+  * enable markdown comments in *.gap user files
+
 v1.10
   * you can now globally define a directory into which all cache objects will be stored
   * the server now obtains the gapc version number at start up (and at every compile run) and add this into the globally defined cache prefix

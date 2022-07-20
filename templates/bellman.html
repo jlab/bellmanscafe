@@ -5,7 +5,7 @@
 
 <!-- This script adds a title to the banner at the top of the page. -->
 <script type=text/javascript>
-    version = "v1.10"
+    version = "v1.11"
     divbanner = document.getElementById('divbanner');
     divbanner.innerHTML += "<center><FONT color='#ffffff' size='6'>Bellman's Cafe "+ version +"</FONT></center>";
 </script>
@@ -20,14 +20,14 @@
 
 <script>
 
-        // This code snippet was originally used to play the loading animation, when the page is loading. 
+        // This code snippet was originally used to play the loading animation, when the page is loading.
         // It might be re-employed later.
-        /* 
+        /*
         $(window).on("load",function(){
           $(".loader-wrapper").fadeOut("slow");
         });
         */
-        
+
         //The loader element that contains the components of the loading animation is removed at the start of the page
         //and is rebuilt when the submit button is clicked.
         loader = document.getElementById("loader");
@@ -85,7 +85,7 @@
 <!--
 <p>
     Infotext:
-</p>   
+</p>
 -->
 </div>
 
@@ -105,57 +105,57 @@ function progFunction(selectProgramObject) {
     var algdict = {{ algdict|safe }};
     //The selected value from the programselect is saved in a variable.
     var selectedProgram = selectProgramObject.value;
-    
-    //If the default option "Choose a program", which has the value "" was selected, 
+
+    //If the default option "Choose a program", which has the value "" was selected,
     //the alg1select, alg2select, alg3Select, operator, textbox and exercise elements are emptied to
     //return them to their default state.
     if(selectedProgram == ""){
         var alg1Select = document.getElementById("alg1select");
         while (alg1Select.firstChild) {
             alg1Select.removeChild(alg1Select.firstChild);
-        }   
-        
+        }
+
         var operat = document.getElementById("operator1")
         operat.selectedIndex = 0;
-        
+
         var alg2Select = document.getElementById("alg2select");
         while (alg2Select.firstChild) {
             alg2Select.removeChild(alg2Select.firstChild);
-        }  
-        
+        }
+
         var operat2 = document.getElementById("operator2")
         operat2.selectedIndex = 0;
-        
+
         var alg3Select = document.getElementById("alg3select");
         while (alg3Select.firstChild) {
             alg3Select.removeChild(alg3Select.firstChild);
         }
-        
+
         var textbox = document.getElementById("textbox");
         textbox.innerHTML = "<p>Infotext:</p>";
-        
+
         var exercisediv = document.getElementById("exercise");
         exercisediv.innerHTML="Your Input: (For example: 1+2*3)";
     }
-    
+
     //Depending on the program the number of inputs can vary.
     //The default example_value is for now fixed, but should later also vary by program.
     var example_value = "\"1+2*3\"";
-    
+
     //The inputstringsnumberdict is recovered via Jinja and holds the number of inputs required for every parsed program.
     var inputstringsnumberdict = {{ inputstringsnumberdict|safe }};
     //n is the number of inputs required for the selected program.
     var n = inputstringsnumberdict[selectedProgram];
-    
+
     //The exercise div is intialized with a paragraph.
     var exercisediv = document.getElementById("exercise");
     exercisediv.innerHTML="Your Input: (For example 1+2*3)";
-    
-    //user_form_input is recovered via Jinja and holds the values in the combo-boxes that were selected by the user 
+
+    //user_form_input is recovered via Jinja and holds the values in the combo-boxes that were selected by the user
     //and the typed input from the exercise div, before submit was pressed.
     //If submit hasn't been pressed yet this session, this dictionary is empty.
     var user_form_input = {{ user_form_input|safe }};
-    
+
     //A for loop iterating n times
     for (let i = 1; i <= n; i++) {
         //If previously entered input exists for the exercises, they are used, otherwise the default value is used and saved in example_value.
@@ -168,14 +168,14 @@ function progFunction(selectProgramObject) {
         exercisediv.innerHTML+='<p><input type="text" id="ex"'+i+'" name="ex'+i+'" value = '+example_value+' /></p>';
         exercisediv.style.visibility = 'visible';
     }
-    
-    
+
+
     //The combo-boxes for grammar, algebras, operator as well as the textbox containing information about the program are created here.
-    
+
     //The grammars and algebras that were parsed for this program are extracted from the dictionaries and saved in new variables.
     var grammarsList = gramdict[selectedProgram];
     var algebrasList = algdict[selectedProgram].sort();
-    
+
     //The grammarselect combo-box is first emptied.
     var grammarSelect = document.getElementById("grammarselect");
     while (grammarSelect.firstChild) {
@@ -186,7 +186,7 @@ function progFunction(selectProgramObject) {
     defaultOption.value = "";
     defaultOption.text = "Choose a grammar";
     grammarSelect.appendChild(defaultOption);
-    
+
     //For each grammar in the grammarsList for this program an option is created and appended.
     grammarsList.forEach(function(grammarString) {
         var option = document.createElement("option");
@@ -196,7 +196,7 @@ function progFunction(selectProgramObject) {
     });
     //The first option (after the default option) is selected.
     grammarSelect.selectedIndex = 1;
-    
+
     //The algebra 1 combo-box is emptied.
     var alg1Select = document.getElementById("alg1select");
     while (alg1Select.firstChild) {
@@ -209,10 +209,10 @@ function progFunction(selectProgramObject) {
         option.text = algebraString;
         alg1Select.appendChild(option);
     });
-    //Since the first option is always selected automatically, it still works, 
+    //Since the first option is always selected automatically, it still works,
     //but explicitly selecting the first option would in line with the rest of the code and
     //should be added here later.
-    
+
     //Since the operators stay the same and are not dependant on the program, the combo-box
     //does not need to be emtpied and rebuilt.
     //The first option of the operator combo-box is selected and its onchange-function is executed
@@ -220,17 +220,17 @@ function progFunction(selectProgramObject) {
     var operatorSelect = document.getElementById("operator1");
     operatorSelect.selectedIndex = 1;
     operatorFunction(operatorSelect);
-    
+
     //The algebra 2 combo-box is emptied.
     var alg2Select = document.getElementById("alg2select");
     while (alg2Select.firstChild) {
         alg2Select.removeChild(alg2Select.firstChild);
     }
-    
+
     //For the second operator the operator is only selected, but the infotext is not updated.
     var operatorSelect2 = document.getElementById("operator2");
     operatorSelect2.selectedIndex = 1;
-    
+
     //The algebra 3 combo-box is emptied.
     var alg3Select = document.getElementById("alg3select");
     while (alg3Select.firstChild) {
@@ -245,7 +245,7 @@ function progFunction(selectProgramObject) {
     emptyOption2.value = "";
     emptyOption2.text = "";
     alg3Select.appendChild(emptyOption2);
-    
+
     algebrasList = algdict[selectedProgram].sort();
     //Each parsed algebra is then added to the options of the algebra 2 and 3 combo-boxes.
     algebrasList.forEach(function(algebraString) {
@@ -262,17 +262,17 @@ function progFunction(selectProgramObject) {
     // And the third is selected for combo-box 3, making it different from the other two.
     alg2Select.selectedIndex = 2;
     alg3Select.selectedIndex = 0;
-    
+
     //An infotext corresponding to the selected program is added to the textbox div.
     var infotextsdict = {{ infotextsdict|safe }};
     var infotextslist = infotextsdict[selectedProgram];
     var textbox = document.getElementById("textbox");
-    
+
     textbox.innerHTML = "<p>Infotext:</p>";
     //A black border around the textbox is added.
     textbox.style = "border:1px solid black;";
     textbox.style.visibility = 'visible';
-    
+
     infotextslist.forEach(function(infotext) {
             textbox.innerHTML += infotext;
         });
@@ -282,24 +282,24 @@ function progFunction(selectProgramObject) {
 
     var submitButton = document.getElementById("submit");
     submitButton.style.visibility = 'visible';
-    
+
     // Make tip disappear
     var tip = document.getElementById("tip");
     tip.style.display = 'none';
-    
+
     // Set download link to selectedProgram + ".gap" and set its visibility to visible.
     var gapFileName = selectedProgram + ".gap";
     var gapFileDownloadLink = document.getElementById("gapFileDownload")
     gapFileDownloadLink.href = "{{url_for('download_file', filename='replaceString')}}".replace("replaceString", gapFileName);
     gapFileDownloadLink.innerHTML = "Download " + gapFileName;
     gapFileDownloadLink.style.visibility = 'visible';
-    
+
     //Remove all siblings of gapFileDownloadLink in the span.
     var downloadsSpan = document.getElementById("Downloads");
     while (gapFileDownloadLink.nextSibling) {
         downloadsSpan.removeChild(gapFileDownloadLink.nextSibling);
     }
-    
+
     // Create download links for each header and add them to the span.
     var headersdict = {{ headersdict|safe }}
     var headerslist = headersdict[selectedProgram];
@@ -322,7 +322,7 @@ function progFunction(selectProgramObject) {
     var globalAlgebrasCounter = 3;
     var globalOperatorsCounter = 2;
 </script>
-    
+
 <div id="divbox2" style="visibility:hidden">
 <div id="algsOpInfo">
 <div id="algebrasdiv">
@@ -358,15 +358,15 @@ function progFunction(selectProgramObject) {
 
 <script type=text/javascript>
     function operatorFunction(operatorSelectObject) {
-        
+
         var operatorinfo = document.getElementById("operatorinfo");
         //The operatorinfo div is reset. (which might be unnecessary here)
         //operatorinfo.innerHTML = "<p>Info:</p>";
         operatorinfo.style = "border:1px solid black;";
         operatorinfo.style.visibility = 'visible';
-        
+
         var selectedOperator = operatorSelectObject.value;
-        
+
     }
 </script>
 </span>
@@ -409,27 +409,27 @@ function progFunction(selectProgramObject) {
         //The global counters for algebras and operators are incremented.
         globalAlgebrasCounter += 1;
         globalOperatorsCounter += 1;
-        
+
         //New div is created that will hold new operator select and algebra select.
         var newAlgebraDiv = document.createElement("div");
         newAlgebraDiv.id = "algebradiv" + globalAlgebrasCounter;
-        
+
         //Creating operator span
         var operatorSpan = document.createElement("span");
         operatorSpan.style.paddingRight = "2px";
-        
+
         //A label is added for the operator.
         const operatorLabel = document.createElement("label");
         operatorLabel.innerHTML = "Product Operator " +  globalOperatorsCounter + ":";
         operatorLabel.setAttribute("for", "operator" + globalOperatorsCounter);
         operatorSpan.appendChild(operatorLabel);
-        
+
         //New operator select is created and appended to the div.
         var newOperatorSelect = document.createElement("select");
         newOperatorSelect.id = "operator"+globalOperatorsCounter;
         newOperatorSelect.name = "operator"+globalOperatorsCounter;
         newOperatorSelect.style.marginLeft = "4px";
-        
+
         //Adding options to newOperatorSelect.
         var options = ["*", "/", "%", "^", ".", "|"];
         options.forEach(function(operator) {
@@ -438,46 +438,46 @@ function progFunction(selectProgramObject) {
             opt.innerHTML = operator;
             newOperatorSelect.appendChild(opt);
         });
-        
+
         operatorSpan.appendChild(newOperatorSelect);
-        
+
         //Adding operatorSpan to the div
         newAlgebraDiv.appendChild(operatorSpan);
-        
-        
+
+
         //Creating algebraselect span
         var algSpan = document.createElement("span");
         algSpan.style.paddingLeft = "2px";
-        
+
         //A label is added for the select element (corresponding to the number of Algebras).
         const label = document.createElement("label");
         label.innerHTML = "Algebra " +  globalAlgebrasCounter + ":";
         label.setAttribute("for", "alg" + globalAlgebrasCounter);
         algSpan.appendChild(label);
-        
+
         //New algebra select is created and appended to the div.
         var newAlgebraSelect = document.createElement("select");
         newAlgebraSelect.id = "alg"+globalAlgebrasCounter;
         newAlgebraSelect.name = "alg"+globalAlgebrasCounter;
         newAlgebraSelect.style.marginLeft = "4px";
         algSpan.appendChild(newAlgebraSelect);
-        
+
         //Adding algSpan to the div
         newAlgebraDiv.appendChild(algSpan);
-        
+
         // selectedProgram is extracted from the progSelect.
         var progSelect = document.getElementById("programselect");
         var selectedProgram = progSelect.value;
-        
+
         //algdict is imported from flask via Jinja
         var algdict = {{ algdict|safe }};
-        
+
         //First an empty option is added:
         var emptyOption = document.createElement("option");
         emptyOption.value = "";
         emptyOption.text = "";
         newAlgebraSelect.appendChild(emptyOption);
-        
+
         //newAlgebraSelect is populated with the algebrasList from the selectedProgram.
         algebrasList = algdict[selectedProgram].sort();
         algebrasList.forEach(function(algebraString) {
@@ -486,12 +486,12 @@ function progFunction(selectProgramObject) {
             option.text = algebraString;
             newAlgebraSelect.appendChild(option);
         });
-        
-        
+
+
         // The new algebra div is finally inserted before the addAlgebraButton.
         var parent = addAlgebraButton.parentElement;
         parent.insertBefore(newAlgebraDiv, addAlgebraButton);
-        
+
         if (globalAlgebrasCounter >= 5) {
             addAlgebraButton.style.display = "none";
         }
@@ -513,7 +513,7 @@ function progFunction(selectProgramObject) {
 . : The take-one product. The difference to the lexicographic product is that only one co-optimal result is chosen in the case of co-optimal results.
 <br>
 | : The overlay product. With !A | B!, $A$ is used in the forward computation and $B$ is used during backtracing.
-    
+
 </div>
 </div>
 
@@ -531,7 +531,7 @@ function progFunction(selectProgramObject) {
         $('body').append('<div id="loader" class="loader-wrapper"><span class="loader"><span class="loader-inner"></span></span></div>');
     }
 </script>
-        
+
 </form>
 
 </div>
@@ -542,10 +542,10 @@ function progFunction(selectProgramObject) {
 <div id="divbottomouter" style="visibility:hidden">
 
 <!-- This html section constructs the tabs
-        and is (mostly) taken directly from: 
+        and is (mostly) taken directly from:
         https://makitweb.com/simple-tabbed-content-area-with-html-css-and-jquery/-->
-        
-<!-- divbottom contains the results section (bottom side) of the bellman page.-->    
+
+<!-- divbottom contains the results section (bottom side) of the bellman page.-->
     <div id="divbottom" class="tabs">
         <ul class="tabs-list">
             <li ><a href="#tab1">Input</a></li>
@@ -568,7 +568,7 @@ function progFunction(selectProgramObject) {
                 inputreminderstring += "<br><div> Your Input was: "+{{exlist|safe}}+"</div><br>"
                 //The inputreminderstring is then written to Tab 1.
                 document.write(inputreminderstring);
-            </script> 
+            </script>
             </p>
         </div>
         <div id="tab2" class="tab">
@@ -608,13 +608,13 @@ function progFunction(selectProgramObject) {
             </p>
         </div>
     </div>
-    
+
     <!-- End of tabs html section -->
-    
+
 
 </div>
 
-<!-- Script for tab activation. 
+<!-- Script for tab activation.
     This section is taken directly from:
     https://makitweb.com/simple-tabbed-content-area-with-html-css-and-jquery/-->
 <script type="text/javascript">
@@ -646,7 +646,7 @@ $(document).ready(function(){
     function resetValuesFunction() {
         var max_num_algebras = 5;
         var user_form_input = {{ user_form_input|safe }};
-        
+
         //The values of the combo-boxes are set to the values
         //saved in user_form_input.
         var progSelect = document.getElementById("programselect");
@@ -654,34 +654,34 @@ $(document).ready(function(){
         //Since the value changing is not registered by onchange in this case,
         //the onchange function progFunction() has to be executed manually.
         progFunction(progSelect);
-        
+
         var inputstringsnumberdict = {{ inputstringsnumberdict|safe }};
         var n = inputstringsnumberdict[user_form_input["program"]];
-        
+
         var gramSelect = document.getElementById("grammarselect");
         gramSelect.value = user_form_input["gra"];
-        
+
         var alg1Sel = document.getElementById("alg1select");
         alg1Sel.value = user_form_input["alg1"];
-        
+
         var operatorSel = document.getElementById("operator1");
         operatorSel.value = user_form_input["operator1"];
         //As is the case with the progFunction() of programselect, operatorFunction() has to be executed manually her too.
         operatorFunction(operatorSel);
-        
+
         var alg2Sel = document.getElementById("alg2select");
         alg2Sel.value = user_form_input["alg2"];
-        
+
         var operator2Sel = document.getElementById("operator2");
         operator2Sel.value = user_form_input["operator2"];
-        
+
         var alg3Sel = document.getElementById("alg3select");
         alg3Sel.value = user_form_input["alg3"];
-        
-        
+
+
         var addAlgebraButton = document.getElementById("addAlgebraButton");
-        
-        
+
+
         if ("alg4" in user_form_input) {// && user_form_input["operator3"] != "") {
             addAlgebraFunction(addAlgebraButton);
             alg4select = document.getElementById("alg4");
@@ -691,7 +691,7 @@ $(document).ready(function(){
                 operator3select.value = user_form_input["operator3"];
             }
         }
-        
+
         if ("alg5" in user_form_input) {// && user_form_input["operator4"] != "") {
             addAlgebraFunction(addAlgebraButton);
             alg5select = document.getElementById("alg5");
@@ -701,12 +701,12 @@ $(document).ready(function(){
                 operator4select.value = user_form_input["operator4"];
             }
         }
-        
+
         if (globalAlgebrasCounter >= max_num_algebras && globalOperatorsCounter >= max_num_algebras-1) {
             addAlgebraButton.style.display = 'none';
         }
-        
-        
+
+
     }
     //resetValuesFunction() is executed just before the submit button as well as after all other elements have been built.
     resetValuesFunction();
