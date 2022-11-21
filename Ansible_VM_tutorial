@@ -1,0 +1,45 @@
+Quickstart Ansible With Virtual Machines
+Guided by the tutorial in the link below
+https://dev.to/tuvannguyen/quickstart-ansible-with-virtual-machines-5ep8
+
+Requirement:
+The working machine has Ubuntu 20.04.01 LTS as operating system.
+
+
+## 1. Install VirtualBox
+
+possible issues:
+How to Fix VirtualBox’s “Kernel Driver Not Installed (rc=-1908)”
+I had to enter unsecure mode in BIOS 
+
+
+## 2. Install Ansible
+https://docs.ansible.com/ansible/latest/installation_guide/installation_distros.html#installing-ansible-on-ubuntu
+
+enter the following commands into the terminal:
+$ sudo apt update
+$ sudo apt install software-properties-common
+$ sudo add-apt-repository --yes --update ppa:ansible/ansible
+$ sudo apt install ansible
+
+## 3. Create a Vitrual machine and install Ubuntu 
+https://dev.to/isabolic99/how-to-set-host-only-adapter-on-vm-virtual-box-2jka
+
+### checking the ip-adress
+https://itsfoss.com/check-ip-address-ubuntu/
+
+### Add new user 
+sudo useradd -m -G sudo -s /bin/bash testuser		#add user with home dir
+sudo passwd testuser					#set password for testuser
+sudo usermod -aG sudo testuser			#makes testuser sudo
+
+### Switch between users
+su testuser	#switch to testuser
+
+### change groupe and owner of host to add ip-adress
+sudo chgrp 'username' hosts 
+sudo chgrp 'username' hosts
+
+replace 'username'
+
+
