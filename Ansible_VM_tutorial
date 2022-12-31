@@ -7,7 +7,7 @@ The working machine has Ubuntu 20.04.01 LTS as operating system.
 
 
 ## 1. Install VirtualBox
-
+https://www.virtualbox.org/wiki/Linux_Downloads
 possible issues:
 How to Fix VirtualBox’s “Kernel Driver Not Installed (rc=-1908)”
 I had to enter unsecure mode in BIOS 
@@ -22,24 +22,35 @@ $ sudo apt install software-properties-common
 $ sudo add-apt-repository --yes --update ppa:ansible/ansible
 $ sudo apt install ansible
 
-## 3. Create a Vitrual machine and install Ubuntu 
+## 3. Create a vitrual machine (VM) and install Ubuntu 
+https://ubuntu.com/download/server
++ install openSSH (you will be ask for it)
+https://www.wikihow.com/Install-Ubuntu-on-VirtualBox
++ create an ssh key on your computer
++ add the public key to the created VMs
+
+## 4. Set host-only adapter on the VM
 https://dev.to/isabolic99/how-to-set-host-only-adapter-on-vm-virtual-box-2jka
 
-### checking the ip-adress
+### 5. checking the ip-adress
 https://itsfoss.com/check-ip-address-ubuntu/
 
-### Add new user 
+### 6. Add new user 
 sudo useradd -m -G sudo -s /bin/bash testuser		#add user with home dir
 sudo passwd testuser					#set password for testuser
 sudo usermod -aG sudo testuser			#makes testuser sudo
 
-### Switch between users
+### 7. Switch between users
 su testuser	#switch to testuser
 
-### change groupe and owner of host to add ip-adress
+### 8. change groupe and owner of host to add ip-adress
 sudo chgrp 'username' hosts 
 sudo chgrp 'username' hosts
 
 replace 'username'
+
+
+Other helpful tutorials might be:
+https://www.youtube.com/watch?v=3RiVKs8GHYQ
 
 
