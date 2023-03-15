@@ -1,5 +1,6 @@
 import os
 import subprocess
+import markdown
 
 '''
 This method parses the gap files and returns
@@ -72,7 +73,7 @@ def parsegapfiles(gapfiles):
         programname = os.path.basename(grafile).split(".")[0]
         gramdict[programname] = gramlist
         algdict[programname] = alglist
-        infotextsdict[programname] = commentslist
+        infotextsdict[programname] = list(map(markdown.markdown, commentslist))
         inputstringsnumberdict[programname] = number_of_inputstrings
         headersdict[programname] = headerslist
     outputdict["gramdict"] = gramdict
