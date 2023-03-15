@@ -214,7 +214,8 @@ def bellman():
             inputreminderlist.append("You have not selected anything.")
 
         user_form_input['plot_grammar'] = request.form.get('plot_grammar')
-        user_form_input['outside_grammar'] = request.form.get('outside_grammar')
+        user_form_input['outside_grammar'] = request.form.get(
+                'outside_grammar')
 
     # List of indices of algs that have been selected
     not_empty_algs_indices = \
@@ -238,7 +239,8 @@ def bellman():
                                       program + ".gap"),
                 PREFIX_CACHE,
                 exlist,
-                int(request.form.get('plot_grammar')), bool(request.form.get('outside_grammar')),
+                int(request.form.get('plot_grammar')),
+                bool(request.form.get('outside_grammar')),
                 [os.path.join(PREFIX_GAPUSERSOURCES, h)
                     for h in headersdict[program]])
 
@@ -321,7 +323,8 @@ def bellman():
                 os.path.join(PREFIX_GAPUSERSOURCES, program + ".gap"),
                 PREFIX_CACHE,
                 exlist,
-                int(request.form.get('plot_grammar')), bool(request.form.get('outside_grammar')),
+                int(request.form.get('plot_grammar')),
+                bool(request.form.get('outside_grammar')),
                 [os.path.join(PREFIX_GAPUSERSOURCES, h)
                     for h in headersdict[program]])
 
@@ -410,7 +413,8 @@ def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
 
     # the instance is the application of the algebra product to the grammar
     instance = '%s(%s)' % (grammar, algproduct)
-    hash_instance = hashlib.md5(("%s_%i_%s" % (instance, plot_grammar_level, outside)).encode('utf-8')).hexdigest()
+    hash_instance = hashlib.md5(("%s_%i_%s" % (
+        instance, plot_grammar_level, outside)).encode('utf-8')).hexdigest()
     fp_workdir = os.path.join(prefix_cache, hash_instance)
     app.logger.info('working directory for instance "%s" is "%s"' % (
         instance, fp_workdir))
