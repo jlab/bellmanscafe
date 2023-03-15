@@ -280,6 +280,9 @@ function progFunction(selectProgramObject) {
     var divbox2 = document.getElementById("divbox2");
     divbox2.style.visibility = 'visible';
 
+    var advanced_options = document.getElementById("advanced_options");
+    advanced_options.style.visibility = 'visible';
+
     var submitButton = document.getElementById("submit");
     submitButton.style.visibility = 'visible';
 
@@ -519,6 +522,24 @@ function progFunction(selectProgramObject) {
 
 </div>
 
+<div id="advanced_options" style="visibility:hidden">
+  <fieldset>
+    <legend>Advanced Settings</legend>
+
+    <label for="plot_grammar">Level of detail for grammar visualization</label>
+    <select id='plot_grammar' name='plot_grammar'>
+      <option value="1" selected>basic (1)</option>
+      <option value="2">indices (2)</option>
+      <option value="3">data types (3)</option>
+      <option value="4">min/max yield size (4)</option>
+      <option value="5">table dimensions (5)</option>
+    </select>
+
+    <input type="checkbox" id="outside_grammar" name="outside_grammar"></input>
+    <label for="outside_grammar">generate outside grammar</label>
+  </fieldset>
+
+</div>
 
 <!-- The submit button element. loadFunction() starts the loading animation and is executed when the submit button is clicked.-->
 <p><button type="submit" id="submit" style="visibility:hidden" onclick="loadFunction();">Submit</button></p>
@@ -550,6 +571,7 @@ function progFunction(selectProgramObject) {
         <ul class="tabs-list">
             <li ><a href="#tab1">Input</a></li>
             <li ><a href="#tab2">Gapc</a></li>
+            <li ><a href="#tab_grammar">grammar plot</a></li>
             <li ><a href="#tab3">Make</a></li>
             <li class="active"><a href="#tab4">Result</a></li>
         </ul>
@@ -582,6 +604,9 @@ function progFunction(selectProgramObject) {
                 document.write(resultstring);
             </script>
             </p>
+        </div>
+        <div id="tab_grammar" class="tab">
+          <img src="data:image/gif;base64,{{ result[3]|safe }}" border="1" id="grammarplot" name="grammarplot" width="100%"/>
         </div>
         <div id="tab3" class="tab">
             <p>
@@ -706,7 +731,8 @@ $(document).ready(function(){
             addAlgebraButton.style.display = 'none';
         }
 
-
+        document.getElementById("plot_grammar").value = user_form_input['plot_grammar'];
+        document.getElementById("outside_grammar").checked = user_form_input['outside_grammar'] != null;
     }
     //resetValuesFunction() is executed just before the submit button as well as after all other elements have been built.
     resetValuesFunction();
