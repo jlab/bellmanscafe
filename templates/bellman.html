@@ -606,7 +606,13 @@ function progFunction(selectProgramObject) {
             </p>
         </div>
         <div id="tab_grammar" class="tab">
-          <img src="data:image/gif;base64,{{ result[3]|safe }}" border="1" id="grammarplot" name="grammarplot" width="100%"/>
+          <img src="" border="1" id="grammarplot" name="grammarplot" width="100%"/>
+          <script type=text/javascript>
+              var result = {{ result|safe }}
+              var resultstring = "data:image/gif;base64,";
+              resultstring = resultstring + result[3];
+              document.getElementById('grammarplot').src = resultstring;
+          </script>
         </div>
         <div id="tab3" class="tab">
             <p>
