@@ -4,7 +4,8 @@ RUN apt-get -y update
 RUN apt-get -y install \
         git \
         software-properties-common \
-        python3-pip
+        python3-pip \
+        graphviz
 
 RUN pip install gunicorn flask
 
