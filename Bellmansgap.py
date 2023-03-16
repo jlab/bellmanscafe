@@ -502,8 +502,13 @@ def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
     # a bit hacky, but this is to serve dynamically generated images from cache
     # which is not directly exposed to the web. We load the GIF content as
     # base64 encoded string and paste this directly as src="" into an image tag
-    with open(os.path.join(fp_workdir, "grammar.gif"), "rb") as image:
-        report.append(base64.b64encode(image.read()).decode('utf-8'))
+    # Note: previous compile errors might lead to a missing out.dot file!
+    fp_plot = os.path.join(fp_workdir, "grammar.gif")
+    if os.path.exists(fp_plot):
+        with open(fp_plot, "rb") as image:
+            report.append(base64.b64encode(image.read()).decode('utf-8'))
+    else:
+        report.append(None)
 
     return report
 
