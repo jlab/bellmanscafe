@@ -240,7 +240,7 @@ def bellman():
                 PREFIX_CACHE,
                 exlist,
                 int(request.form.get('plot_grammar'))
-                    if request.form.get('plot_grammar') is not None else 1,
+                if request.form.get('plot_grammar') is not None else 1,
                 bool(request.form.get('outside_grammar')),
                 [os.path.join(PREFIX_GAPUSERSOURCES, h)
                     for h in headersdict[program]])
@@ -325,7 +325,7 @@ def bellman():
                 PREFIX_CACHE,
                 exlist,
                 int(request.form.get('plot_grammar'))
-                    if request.form.get('plot_grammar') is not None else 1,
+                if request.form.get('plot_grammar') is not None else 1,
                 bool(request.form.get('outside_grammar')),
                 [os.path.join(PREFIX_GAPUSERSOURCES, h)
                     for h in headersdict[program]])
