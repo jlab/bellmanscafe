@@ -484,7 +484,8 @@ def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
             child = subprocess.run(cmd, shell=True, text=True, cwd=fp_workdir)
             # we explicitly store the exit status into an extra file ... to
             # better indicate errors in the webpage
-            with open(os.path.join(fp_workdir, '%s.exitstatus' % name), 'w') as f:
+            with open(os.path.join(fp_workdir,
+                                   '%s.exitstatus' % name), 'w') as f:
                 f.write('%i\n' % child.returncode)
             app.logger.info('executing (in %s) "%s"' % (fp_workdir, cmd))
 
