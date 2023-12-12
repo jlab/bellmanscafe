@@ -1,3 +1,6 @@
+v1.13
+  * improved error reporting a little: 1) missing grammar plots are indicated via a static error image 2) exit status for each step are recorded and divs are colored orange if exit status is non-zero
+
 v1.12
   * I've added two advanced options: 1) define the level of detail for plotting the grammar 2) activate outside grammar generation
   * plot-grammar results are now displayed as an additional tab + cache is sensitive to plot-grammar & outside_grammar flags
