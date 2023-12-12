@@ -481,36 +481,48 @@ def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
                 # don't run the compiled binary in here since it shall not be
                 # part of the cache
                 continue
-            subprocess.run(cmd, shell=True, text=True, cwd=fp_workdir)
+            child = subprocess.run(cmd, shell=True, text=True, cwd=fp_workdir)
+            # we explicitly store the exit status into an extra file ... to
+            # better indicate errors in the webpage
+            with open(os.path.join(fp_workdir,
+                                   '%s.exitstatus' % name), 'w') as f:
+                f.write('%i\n' % child.returncode)
             app.logger.info('executing (in %s) "%s"' % (fp_workdir, cmd))
 
     # execute the binary with user input(s)
-    subprocess.run(steps['run'], shell=True, text=True, cwd=fp_workdir)
+    child = subprocess.run(steps['run'], shell=True, text=True, cwd=fp_workdir)
     app.logger.info('executing (in %s) "%s"' % (fp_workdir, steps['run']))
+    with open(os.path.join(fp_workdir, 'run.exitstatus'), 'w') as f:
+        f.write('%i\n' % child.returncode)
 
     report = []
     for name, cmd in steps.items():
+        exit_status = None
         rep = []
         rep.append('<b>Command</b>: %s' % cmd)
         with open(os.path.join(fp_workdir, '%s.out' % name)) as f:
             rep.extend(f.readlines())
         with open(os.path.join(fp_workdir, '%s.err' % name)) as f:
             rep.extend(f.readlines())
+        # read exit status of step
+        with open(os.path.join(fp_workdir, '%s.exitstatus' % name)) as f:
+            exit_status = int(f.readlines()[0].strip())
+
         # don't add dot execution to report, since there is no tab yet on the
         # website
         if name not in ['dot']:
-            report.append(rep)
+            report.append([rep, exit_status])
 
     # a bit hacky, but this is to serve dynamically generated images from cache
     # which is not directly exposed to the web. We load the GIF content as
     # base64 encoded string and paste this directly as src="" into an image tag
     # Note: previous compile errors might lead to a missing out.dot file!
     fp_plot = os.path.join(fp_workdir, "grammar.gif")
-    if os.path.exists(fp_plot):
+    if os.path.exists(fp_plot) and (os.stat(fp_plot).st_size > 0):
         with open(fp_plot, "rb") as image:
-            report.append(base64.b64encode(image.read()).decode('utf-8'))
+            report.append([base64.b64encode(image.read()).decode('utf-8'), 0])
     else:
-        report.append(None)
+        report.append(["error", 1])
 
     return report
 

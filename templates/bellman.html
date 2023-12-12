@@ -5,7 +5,7 @@
 
 <!-- This script adds a title to the banner at the top of the page. -->
 <script type=text/javascript>
-    version = "v1.12"
+    version = "v1.13"
     divbanner = document.getElementById('divbanner');
     divbanner.innerHTML += "<center><FONT color='#ffffff' size='6'>Bellman's Cafe "+ version +"</FONT></center>";
 </script>
@@ -569,11 +569,11 @@ function progFunction(selectProgramObject) {
 <!-- divbottom contains the results section (bottom side) of the bellman page.-->
     <div id="divbottom" class="tabs">
         <ul class="tabs-list">
-            <li ><a href="#tab1">Input</a></li>
-            <li ><a href="#tab2">Gapc</a></li>
-            <li ><a href="#tab_grammar">Grammar Plot</a></li>
-            <li ><a href="#tab3">Make</a></li>
-            <li class="active"><a href="#tab4">Result</a></li>
+            <li ><a href="#tab1" id="title_input">Input</a></li>
+            <li ><a href="#tab2" id="title_gapc">Gapc</a></li>
+            <li ><a href="#tab_grammar" id="title_plot">Grammar Plot</a></li>
+            <li ><a href="#tab3" id='title_make'>Make</a></li>
+            <li class="active" id='title_binary'><a href="#tab4">Result</a></li>
         </ul>
 
         <div id="tab1" class="tab">
@@ -598,10 +598,16 @@ function progFunction(selectProgramObject) {
             <script type=text/javascript>
                 var result = {{ result|safe }}
                 var resultstring = "";
-                result[0].forEach(function(line){
+                result[0][0].forEach(function(line){
                     resultstring = resultstring + line + "<br>";
                 });
                 document.write(resultstring);
+                // TODO (smj): avoid duplication of code, which should color the out box orange iff step exited with non zero
+                if (result[0][1] != "0") {
+                  document.getElementById("tab2").style.backgroundColor = '#ffE1A3';
+                } else {
+                  document.getElementById("tab2").style.backgroundColor = null;
+                }
             </script>
             </p>
         </div>
@@ -610,8 +616,17 @@ function progFunction(selectProgramObject) {
           <script type=text/javascript>
               var result = {{ result|safe }}
               var resultstring = "data:image/gif;base64,";
-              resultstring = resultstring + result[3];
+              if (result[3][1] != '0') {
+                resultstring = 'static/error.png';
+              } else {
+                resultstring = resultstring + result[3][0];
+              }
               document.getElementById('grammarplot').src = resultstring;
+              if (result[3][1] != "0") {
+                document.getElementById("tab_grammar").style.backgroundColor = '#ffE1A3';
+              } else {
+                document.getElementById("tab_grammar").style.backgroundColor = null;
+              }
           </script>
         </div>
         <div id="tab3" class="tab">
@@ -619,10 +634,15 @@ function progFunction(selectProgramObject) {
             <script type=text/javascript>
                 var result = {{ result|safe }}
                 var resultstring = "";
-                result[1].forEach(function(line){
+                result[1][0].forEach(function(line){
                     resultstring = resultstring + line + "<br>";
                 });
                 document.write(resultstring);
+                if (result[1][1] != "0") {
+                  document.getElementById("tab3").style.backgroundColor = '#ffE1A3';
+                } else {
+                  document.getElementById("tab3").style.backgroundColor = null;
+                }
             </script>
             </p>
         </div>
@@ -631,10 +651,15 @@ function progFunction(selectProgramObject) {
             <script type=text/javascript>
                 var result = {{ result|safe }}
                 var resultstring = "";
-                result[2].forEach(function(line){
+                result[2][0].forEach(function(line){
                     resultstring = resultstring + line + "<br>";
                 });
                 document.write(resultstring);
+                if (result[2][1] != "0") {
+                  document.getElementById("tab4").style.backgroundColor = '#ffE1A3';
+                } else {
+                  document.getElementById("tab4").style.backgroundColor = null;
+                }
             </script>
             </p>
         </div>
