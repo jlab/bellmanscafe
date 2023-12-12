@@ -1,3 +1,7 @@
+v1.12
+  * I've added two advanced options: 1) define the level of detail for plotting the grammar 2) activate outside grammar generation
+  * plot-grammar results are now displayed as an additional tab + cache is sensitive to plot-grammar & outside_grammar flags
+
 v1.11
   * enable static user content from ADP_collections
   * enable markdown comments in *.gap user files

@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import hashlib
 import logging
+import base64
 
 from flask import Flask, render_template, request, send_file
 
@@ -212,6 +213,10 @@ def bellman():
         if len(inputreminderlist) == 0:
             inputreminderlist.append("You have not selected anything.")
 
+        user_form_input['plot_grammar'] = request.form.get('plot_grammar')
+        user_form_input['outside_grammar'] = request.form.get(
+                'outside_grammar')
+
     # List of indices of algs that have been selected
     not_empty_algs_indices = \
         [i for i in range(len(algslist)) if algslist[i] != ""]
@@ -234,6 +239,9 @@ def bellman():
                                       program + ".gap"),
                 PREFIX_CACHE,
                 exlist,
+                int(request.form.get('plot_grammar'))
+                if request.form.get('plot_grammar') is not None else 1,
+                bool(request.form.get('outside_grammar')),
                 [os.path.join(PREFIX_GAPUSERSOURCES, h)
                     for h in headersdict[program]])
 
@@ -256,7 +264,9 @@ def bellman():
                 user_form_input=json.dumps(user_form_input),
                 gapc_version=GAPC_VERSION,
                 repo_hash=REPO_VERSION,
-                cafe_hash=CAFE_VERSION)
+                cafe_hash=CAFE_VERSION,
+                plot_grammar_level=request.form.get('plot_grammar'),
+                outside_grammar=request.form.get('outside_grammar'))
 
     # More than one algebra:
     if (len(not_empty_algs_indices) >= 2
@@ -314,6 +324,9 @@ def bellman():
                 os.path.join(PREFIX_GAPUSERSOURCES, program + ".gap"),
                 PREFIX_CACHE,
                 exlist,
+                int(request.form.get('plot_grammar'))
+                if request.form.get('plot_grammar') is not None else 1,
+                bool(request.form.get('outside_grammar')),
                 [os.path.join(PREFIX_GAPUSERSOURCES, h)
                     for h in headersdict[program]])
 
@@ -360,6 +373,7 @@ def bellman():
 
 def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
                          prefix_cache, userinputs: [str],
+                         plot_grammar_level: int = 1, outside: bool = False,
                          fps_headerfiles: [str] = []):
     """Compiles a binary for a given instance (aka algebra product).
 
@@ -380,6 +394,12 @@ def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
     userinputs : [str]
         List of user input(s) for tracks of grammar.
 
+    plot_grammar_level : int
+        Determines the level of detail when plotting the grammar.
+
+    outside : bool
+        Activates automatic generation of outside grammar generation.
+
     fps_headerfiles : [str]
         List of additional user header files, necessary for C++ compilation.
     """
@@ -395,18 +415,21 @@ def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
 
     # the instance is the application of the algebra product to the grammar
     instance = '%s(%s)' % (grammar, algproduct)
-    hash_instance = hashlib.md5(instance.encode('utf-8')).hexdigest()
+    hash_instance = hashlib.md5(("%s_%i_%s" % (
+        instance, plot_grammar_level, outside)).encode('utf-8')).hexdigest()
     fp_workdir = os.path.join(prefix_cache, hash_instance)
     app.logger.info('working directory for instance "%s" is "%s"' % (
         instance, fp_workdir))
 
+    param_outside = " --outside_grammar ALL " if outside else ""
     steps = {
         # 0) inject instance bcafe to original *.gap source file (as it might
         #    not be defined)
         # 1) transpiling via gapc
         'gapc': ('echo "instance bcafe=%s;" >> "%s" '
-                 '&& gapc -i "bcafe" --plot-grammar 1 %s ') % (
-            instance, os.path.basename(fp_gapfile),
+                 '&& gapc -i "bcafe" --plot-grammar %i %s %s ') % (
+            instance, os.path.basename(fp_gapfile), plot_grammar_level,
+            param_outside,
             os.path.basename(fp_gapfile)),
 
         # 2) convert grammar plot into gif
@@ -477,6 +500,17 @@ def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
         # website
         if name not in ['dot']:
             report.append(rep)
+
+    # a bit hacky, but this is to serve dynamically generated images from cache
+    # which is not directly exposed to the web. We load the GIF content as
+    # base64 encoded string and paste this directly as src="" into an image tag
+    # Note: previous compile errors might lead to a missing out.dot file!
+    fp_plot = os.path.join(fp_workdir, "grammar.gif")
+    if os.path.exists(fp_plot):
+        with open(fp_plot, "rb") as image:
+            report.append(base64.b64encode(image.read()).decode('utf-8'))
+    else:
+        report.append(None)
 
     return report
 

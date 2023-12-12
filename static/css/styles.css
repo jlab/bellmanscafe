@@ -28,7 +28,7 @@
     #divbox2 contains #algsOpInfowhich contains the 
     grammarselect and the algebraselects and operatorselects and operatorinfo.
 */    
-    #divbox1, #divbox2 {
+    #divbox1, #divbox2, #advanced_options {
         border:5px outset #AF6557;
         margin-top: 15px;
         margin-bottom: 20px;
@@ -169,7 +169,7 @@ is played when the submit button is clicked.
     padding:0px;
 }
 .tabs .tabs-list li{
-    width:100px;
+    width:120px;
     float:left;
     margin:0px;
     margin-right:2px;
