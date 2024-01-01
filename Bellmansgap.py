@@ -536,7 +536,7 @@ def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
         if (name == 'tikz') and uses_tikz:
             rep = []
             for rank, fp_candidate in enumerate(sorted(glob.glob(os.path.join(
-                fp_workdir, 'tikz-figure*.png')))):
+                    fp_workdir, 'tikz-figure*.png')))):
                 if (os.stat(fp_candidate).st_size > 0):
                     with open(fp_candidate, "rb") as image:
                         rep.append(base64.b64encode(image.read()).decode(
