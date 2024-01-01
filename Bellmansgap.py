@@ -440,7 +440,7 @@ def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
         'make': 'make -f out.mf',
 
         # 4) run the compiled binary with user input (not cached)
-        'run': './out %s' % ' '.join(map(lambda x: '"%s"' % x, userinputs)),
+        'run': '../out %s' % ' '.join(map(lambda x: '"%s"' % x, userinputs)),
 
         # 5) OPTIONAL: if algebra product uses tikZ, images will be rendered
         'tikz': 'cp -v run.out tikz.tex 2> tikz.err && '
@@ -497,46 +497,61 @@ def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
                 f.write('%i\n' % child.returncode)
             app.logger.info('executing (in %s) "%s"' % (fp_workdir, cmd))
 
-    # execute the binary with user input(s)
-    child = subprocess.run(steps['run'], shell=True, text=True, cwd=fp_workdir)
-    app.logger.info('executing (in %s) "%s"' % (fp_workdir, steps['run']))
-    with open(os.path.join(fp_workdir, 'run.exitstatus'), 'w') as f:
-        f.write('%i\n' % child.returncode)
-
+    inputs_hash = hashlib.md5(''.join(userinputs).encode('utf-8')).hexdigest()
+    fp_binary_workdir = os.path.join(fp_workdir, 'run_%s' % inputs_hash)
     uses_tikz = False
-    if child.returncode == 0:
-        with open(os.path.join(fp_workdir, 'run.out'), 'r') as f:
-            if 'documentclass' in f.readlines()[0]:
-                uses_tikz = True
-                app.logger.info('found tikZ tree descriptions.')
-                child = subprocess.run(steps['tikz'], shell=True, text=True,
-                                       cwd=fp_workdir)
-                app.logger.info(
-                    'executing (in %s) "%s"' % (fp_workdir, steps['tikz']))
-                with open(os.path.join(fp_workdir,
-                                       'tikz.exitstatus'), 'w') as f:
-                    f.write('%i\n' % child.returncode)
+    if not os.path.exists(fp_binary_workdir):
+        os.makedirs(fp_binary_workdir, exist_ok=True)
+
+        # execute the binary with user input(s)
+        child = subprocess.run(steps['run'], shell=True, text=True,
+                               cwd=fp_binary_workdir)
+        app.logger.info('no cached results found, thus executing (in %s) "%s"'
+            % (fp_binary_workdir, steps['run']))
+        with open(os.path.join(fp_binary_workdir, 'run.exitstatus'), 'w') as f:
+            f.write('%i\n' % child.returncode)
+
+        if child.returncode == 0:
+            with open(os.path.join(fp_binary_workdir, 'run.out'), 'r') as f:
+                if 'documentclass' in f.readlines()[0]:
+                    uses_tikz = True
+                    app.logger.info('found tikZ tree descriptions.')
+                    child = subprocess.run(steps['tikz'], shell=True, text=True,
+                                           cwd=fp_binary_workdir)
+                    app.logger.info(
+                        'executing (in %s) "%s"' % (fp_binary_workdir,
+                                                    steps['tikz']))
+                    with open(os.path.join(fp_binary_workdir,
+                                           'tikz.exitstatus'), 'w') as f:
+                        f.write('%i\n' % child.returncode)
+    else:
+        uses_tikz = os.path.exists(os.path.join(fp_binary_workdir, 'tikz.out'))
+        app.logger.info('found cached binary results.')
 
     report = []
     for name, cmd in steps.items():
+        fp_cache = fp_workdir
         if (name == "tikz") and (uses_tikz is False):
             report.append([[], 0])
+            fp_cache = fp_binary_workdir
             continue
+        if name in ["run", "tikz"]:
+            fp_cache = fp_binary_workdir
         exit_status = None
         rep = []
         rep.append('<b>Command</b>: %s' % cmd)
-        with open(os.path.join(fp_workdir, '%s.out' % name)) as f:
+        with open(os.path.join(fp_cache, '%s.out' % name)) as f:
             rep.extend(f.readlines())
-        with open(os.path.join(fp_workdir, '%s.err' % name)) as f:
+        with open(os.path.join(fp_cache, '%s.err' % name)) as f:
             rep.extend(f.readlines())
         # read exit status of step
-        with open(os.path.join(fp_workdir, '%s.exitstatus' % name)) as f:
+        with open(os.path.join(fp_cache, '%s.exitstatus' % name)) as f:
             exit_status = int(f.readlines()[0].strip())
 
         if (name == 'tikz') and uses_tikz:
             rep = []
             for rank, fp_candidate in enumerate(sorted(glob.glob(os.path.join(
-                    fp_workdir, 'tikz-figure*.png')))):
+                    fp_cache, 'tikz-figure*.png')))):
                 if (os.stat(fp_candidate).st_size > 0):
                     with open(fp_candidate, "rb") as image:
                         rep.append(base64.b64encode(image.read()).decode(
