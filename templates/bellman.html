@@ -146,7 +146,7 @@ function progFunction(selectProgramObject) {
     //The inputstringsnumberdict is recovered via Jinja and holds the number of inputs required for every parsed program.
     var inputstringsnumberdict = {{ inputstringsnumberdict|safe }};
     //n is the number of inputs required for the selected program.
-    var n = inputstringsnumberdict[selectedProgram];
+    var n = inputstringsnumberdict[selectedProgram].length;
 
     //The exercise div is intialized with a paragraph.
     var exercisediv = document.getElementById("exercise");
@@ -163,7 +163,8 @@ function progFunction(selectProgramObject) {
         if (user_form_input.hasOwnProperty("ex"+i)) {
             example_value = user_form_input["ex"+i];
         } else {
-            example_value = "\"1+2*3\"";
+            //example_value = "\"1+2*3\"";
+            example_value = "\"" + inputstringsnumberdict[selectedProgram][i-1] + "\"";
         }
         //The exercise elements are created with html containing the example_value as value.
         exercisediv.innerHTML+='<p><input type="text" id="ex"'+i+'" name="ex'+i+'" value = '+example_value+' /></p>';
@@ -794,7 +795,7 @@ $(document).ready(function(){
         progFunction(progSelect);
 
         var inputstringsnumberdict = {{ inputstringsnumberdict|safe }};
-        var n = inputstringsnumberdict[user_form_input["program"]];
+        var n = inputstringsnumberdict[user_form_input["program"]].length;
 
         var gramSelect = document.getElementById("grammarselect");
         gramSelect.value = user_form_input["gra"];

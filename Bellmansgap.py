@@ -140,7 +140,7 @@ def bellman():
         # Since multiple inputs are possible an exlist is created
         # containing all submitted inputs.
         exlist = []
-        for i in range(1, inputstringsnumberdict[program] + 1):
+        for i in range(1, len(inputstringsnumberdict[program]) + 1):
             requeststring = "ex" + str(i)
             exlist.append(request.form.get(requeststring))
 
@@ -178,7 +178,7 @@ def bellman():
         # user had made before pressing submit
         for param in ["program", "gra"]:
             user_form_input[param] = request.form[param]
-        for i in range(1, inputstringsnumberdict[program] + 1):
+        for i in range(1, len(inputstringsnumberdict[program]) + 1):
             requeststring = "ex" + str(i)
             user_form_input[requeststring] = request.form.get(requeststring)
         for j in range(1, len(algslist)+1):

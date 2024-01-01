@@ -74,7 +74,7 @@ def parsegapfiles(gapfiles):
         gramdict[programname] = gramlist
         algdict[programname] = alglist
         infotextsdict[programname] = list(map(markdown.markdown, commentslist))
-        inputstringsnumberdict[programname] = number_of_inputstrings
+        inputstringsnumberdict[programname] = get_example_inputs(commentslist, number_of_inputstrings)
         headersdict[programname] = headerslist
     outputdict["gramdict"] = gramdict
     outputdict["algdict"] = algdict
@@ -82,6 +82,18 @@ def parsegapfiles(gapfiles):
     outputdict["inputstringsnumberdict"] = inputstringsnumberdict
     outputdict["headersdict"] = headersdict
     return outputdict
+
+
+def get_example_inputs(comments, number_of_inputstrings):
+    example_inputs = []
+    for comment in comments:
+        for line in comment.split('\n'):
+            if line.startswith('example inputs: '):
+                example_inputs.append(line[len("example inputs: "):].strip().split())
+    if len(example_inputs) > 0:
+        return example_inputs[-1]
+    else:
+        return [''] * number_of_inputstrings
 
 
 def get_gapc_version(app):
