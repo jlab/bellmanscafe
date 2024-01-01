@@ -448,7 +448,8 @@ def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
                 'make -f tikz.makefile 2>> tikz.err && '
                 'mv -v tikz.log tikz.out 2>> tikz.err'
     }
-    steps = {name: '%s > %s.out 2> %s.err' % (cmd, name, name) if name not in ['tikz'] else cmd
+    steps = {name: '%s > %s.out 2> %s.err' % (cmd, name, name)
+             if name not in ['tikz'] else cmd
              for name, cmd
              in steps.items()}
 
@@ -508,9 +509,12 @@ def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
             if 'documentclass' in f.readlines()[0]:
                 uses_tikz = True
                 app.logger.info('found tikZ tree descriptions.')
-                child = subprocess.run(steps['tikz'], shell=True, text=True, cwd=fp_workdir)
-                app.logger.info('executing (in %s) "%s"' % (fp_workdir, steps['tikz']))
-                with open(os.path.join(fp_workdir, 'tikz.exitstatus'), 'w') as f:
+                child = subprocess.run(steps['tikz'], shell=True, text=True,
+                                       cwd=fp_workdir)
+                app.logger.info(
+                    'executing (in %s) "%s"' % (fp_workdir, steps['tikz']))
+                with open(os.path.join(fp_workdir,
+                                       'tikz.exitstatus'), 'w') as f:
                     f.write('%i\n' % child.returncode)
 
     report = []
@@ -531,12 +535,16 @@ def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
 
         if (name == 'tikz') and uses_tikz:
             rep = []
-            for rank, fp_candidate in enumerate(sorted(glob.glob(os.path.join(fp_workdir, 'tikz-figure*.png')))):
+            for rank, fp_candidate in enumerate(sorted(glob.glob(os.path.join(
+                fp_workdir, 'tikz-figure*.png')))):
                 if (os.stat(fp_candidate).st_size > 0):
                     with open(fp_candidate, "rb") as image:
-                        rep.append(base64.b64encode(image.read()).decode('utf-8'))
+                        rep.append(base64.b64encode(image.read()).decode(
+                            'utf-8'))
                 if rank > limit_candidate_trees:
-                    app.logger.info('number of candidates exceeds displaying limit of top %i!' % limit_candidate_trees)
+                    app.logger.info(
+                        ('number of candidates exceeds displaying limit of '
+                         'top %i!') % limit_candidate_trees)
                     break
 
         # don't add dot execution to report, since there is no tab yet on the
