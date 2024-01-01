@@ -1,3 +1,6 @@
+v1.14
+  * add in another tab right of "results" iff user requests algebra product that contains the auto tikZ algebra. This tabs allows to iterate through individual candidate visualizations. It should be limited to the top 20 candidates to avoid server overload.
+
 v1.13
   * improved error reporting a little: 1) missing grammar plots are indicated via a static error image 2) exit status for each step are recorded and divs are colored orange if exit status is non-zero
 
