@@ -507,7 +507,7 @@ def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
         child = subprocess.run(steps['run'], shell=True, text=True,
                                cwd=fp_binary_workdir)
         app.logger.info('no cached results found, thus executing (in %s) "%s"'
-            % (fp_binary_workdir, steps['run']))
+                        % (fp_binary_workdir, steps['run']))
         with open(os.path.join(fp_binary_workdir, 'run.exitstatus'), 'w') as f:
             f.write('%i\n' % child.returncode)
 
@@ -516,8 +516,8 @@ def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
                 if 'documentclass' in f.readlines()[0]:
                     uses_tikz = True
                     app.logger.info('found tikZ tree descriptions.')
-                    child = subprocess.run(steps['tikz'], shell=True, text=True,
-                                           cwd=fp_binary_workdir)
+                    child = subprocess.run(steps['tikz'], shell=True,
+                                           text=True, cwd=fp_binary_workdir)
                     app.logger.info(
                         'executing (in %s) "%s"' % (fp_binary_workdir,
                                                     steps['tikz']))
