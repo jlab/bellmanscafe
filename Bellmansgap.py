@@ -374,7 +374,8 @@ def bellman():
 def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
                          prefix_cache, userinputs: [str],
                          plot_grammar_level: int = 1, outside: bool = False,
-                         fps_headerfiles: [str] = []):
+                         fps_headerfiles: [str] = [],
+                         limit_candidate_trees: int = 20):
     """Compiles a binary for a given instance (aka algebra product).
 
     Parameters
@@ -439,9 +440,15 @@ def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
         'make': 'make -f out.mf',
 
         # 4) run the compiled binary with user input (not cached)
-        'run': './out %s' % ' '.join(map(lambda x: '"%s"' % x, userinputs))
+        'run': './out %s' % ' '.join(map(lambda x: '"%s"' % x, userinputs)),
+
+        # 5) OPTIONAL: if algebra product uses tikZ, images will be rendered
+        'tikz': 'cp -v run.out tikz.tex 2> tikz.err && '
+                'pdflatex tikz.tex 2>> tikz.err && '
+                'make -f tikz.makefile 2>> tikz.err && '
+                'mv -v tikz.log tikz.out 2>> tikz.err'
     }
-    steps = {name: '%s > %s.out 2> %s.err' % (cmd, name, name)
+    steps = {name: '%s > %s.out 2> %s.err' % (cmd, name, name) if name not in ['tikz'] else cmd
              for name, cmd
              in steps.items()}
 
@@ -477,7 +484,7 @@ def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
             app.logger.info('copy file "%s" to %s' % (fp_src, fp_dst))
 
         for name, cmd in steps.items():
-            if name == "run":
+            if name in ["run", "tikz"]:
                 # don't run the compiled binary in here since it shall not be
                 # part of the cache
                 continue
@@ -495,8 +502,22 @@ def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
     with open(os.path.join(fp_workdir, 'run.exitstatus'), 'w') as f:
         f.write('%i\n' % child.returncode)
 
+    uses_tikz = False
+    if child.returncode == 0:
+        with open(os.path.join(fp_workdir, 'run.out'), 'r') as f:
+            if 'documentclass' in f.readlines()[0]:
+                uses_tikz = True
+                app.logger.info('found tikZ tree descriptions.')
+                child = subprocess.run(steps['tikz'], shell=True, text=True, cwd=fp_workdir)
+                app.logger.info('executing (in %s) "%s"' % (fp_workdir, steps['tikz']))
+                with open(os.path.join(fp_workdir, 'tikz.exitstatus'), 'w') as f:
+                    f.write('%i\n' % child.returncode)
+
     report = []
     for name, cmd in steps.items():
+        if (name == "tikz") and (uses_tikz is False):
+            report.append([[], 0])
+            continue
         exit_status = None
         rep = []
         rep.append('<b>Command</b>: %s' % cmd)
@@ -507,6 +528,16 @@ def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
         # read exit status of step
         with open(os.path.join(fp_workdir, '%s.exitstatus' % name)) as f:
             exit_status = int(f.readlines()[0].strip())
+
+        if (name == 'tikz') and uses_tikz:
+            rep = []
+            for rank, fp_candidate in enumerate(sorted(glob.glob(os.path.join(fp_workdir, 'tikz-figure*.png')))):
+                if (os.stat(fp_candidate).st_size > 0):
+                    with open(fp_candidate, "rb") as image:
+                        rep.append(base64.b64encode(image.read()).decode('utf-8'))
+                if rank > limit_candidate_trees:
+                    app.logger.info('number of candidates exceeds displaying limit of top %i!' % limit_candidate_trees)
+                    break
 
         # don't add dot execution to report, since there is no tab yet on the
         # website
