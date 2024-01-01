@@ -686,7 +686,7 @@ function progFunction(selectProgramObject) {
                 <td style="text-align: right;"><a href="#next" id="cand_next" onclick="change_candidate('next');">next ❯</a></td>
               </tr>
               <tr>
-                <td colspan=3 style="text-align: center;">
+                <td colspan=3 style="text-align: center; background-color: #ffffff;">
                   <img src="" border="1" id="candidateplot" name="candidateplot" style="height: 70vw; min-height: 330px;"/>
                   <script type=text/javascript>
                     var result = {{ result|safe }}
@@ -738,6 +738,9 @@ function progFunction(selectProgramObject) {
                     change_candidate('prev');
                   </script>
                 </td>
+              </tr>
+              <tr>
+                <td colspan="3" style="text-align: center;">To prevent server overload, we at most report the top 20 candidates.</td>
               </tr>
             </table>
           </p>
