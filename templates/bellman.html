@@ -8,6 +8,7 @@
     version = "v1.13"
     divbanner = document.getElementById('divbanner');
     divbanner.innerHTML += "<center><FONT color='#ffffff' size='6'>Bellman's Cafe "+ version +"</FONT></center>";
+    window.candidateRank = 1;
 </script>
 
 <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
@@ -550,6 +551,7 @@ function progFunction(selectProgramObject) {
         //The components of the loading animation are added to the body in html.
         //The animation is then automatically started by the css-code, namely @keyframes loader and @keyframes loader-inner.
         $('body').append('<div id="loader" class="loader-wrapper"><span class="loader"><span class="loader-inner"></span></span></div>');
+        window.candidateRank = 0;
     }
 </script>
 
@@ -574,6 +576,7 @@ function progFunction(selectProgramObject) {
             <li ><a href="#tab_grammar" id="title_plot">Grammar Plot</a></li>
             <li ><a href="#tab3" id='title_make'>Make</a></li>
             <li class="active" id='title_binary'><a href="#tab4">Result</a></li>
+            <li style="display: visibility; width:160px" id="li_tikz"><a href="#tab_tikz" id="title_tikz">Candidate Trees</a></li>
         </ul>
 
         <div id="tab1" class="tab">
@@ -616,13 +619,13 @@ function progFunction(selectProgramObject) {
           <script type=text/javascript>
               var result = {{ result|safe }}
               var resultstring = "data:image/gif;base64,";
-              if (result[3][1] != '0') {
+              if (result[4][1] != '0') {
                 resultstring = 'static/error.png';
               } else {
-                resultstring = resultstring + result[3][0];
+                resultstring = resultstring + result[4][0];
               }
               document.getElementById('grammarplot').src = resultstring;
-              if (result[3][1] != "0") {
+              if (result[4][1] != "0") {
                 document.getElementById("tab_grammar").style.backgroundColor = '#ffE1A3';
               } else {
                 document.getElementById("tab_grammar").style.backgroundColor = null;
@@ -662,6 +665,82 @@ function progFunction(selectProgramObject) {
                 }
             </script>
             </p>
+        </div>
+        <div id="tab_tikz" class="tab">
+          <p>
+            <script type=text/javascript>
+              var result = {{ result|safe }}
+              // show TikZ tab when results are ready, instead of output of binary
+              if (result[3][0].length > 0) {
+                $(document.getElementById('tab_tikz')).addClass("active");
+                $(document.getElementById("tab4")).removeClass("active");
+                $(document.getElementById("title_binary")).removeClass("active");
+                $(document.getElementById("li_tikz")).addClass("active");
+              }
+            </script>
+            <table border="1" width="100%">
+              <tr>
+                <td style="text-align: left;"><a href="#prev" id="cand_prev" onclick="change_candidate('prev');">❮ prev</a></td>
+                <th id='candidateNumber' style="text-align: center;">x of y candidate trees
+                </th>
+                <td style="text-align: right;"><a href="#next" id="cand_next" onclick="change_candidate('next');">next ❯</a></td>
+              </tr>
+              <tr>
+                <td colspan=3 style="text-align: center;">
+                  <img src="" border="1" id="candidateplot" name="candidateplot" style="height: 70vw; min-height: 330px;"/>
+                  <script type=text/javascript>
+                    var result = {{ result|safe }}
+                    function showCandidate(rank) {
+                      var resultstring = "";
+                      if (result[3][0].length > 0) {
+                        document.getElementById("li_tikz").style.display = 'visibility';
+                      } else {
+                        document.getElementById("li_tikz").style.display = 'none';
+                      }
+
+                      var resultstring = "data:image/gif;base64,";
+                      resultstring = resultstring + result[3][0][rank-1];
+                      document.getElementById('candidateplot').src = resultstring;
+                      //document.getElementById('candidateNumber').innerHTML = "candidate " + window.candidateRank + " of " + result[3][0].length;
+
+                      if (result[3][1] != "0") {
+                        document.getElementById("tab_tikz").style.backgroundColor = '#ffE1A3';
+                      } else {
+                        document.getElementById("tab_tikz").style.backgroundColor = null;
+                      }
+                    }
+                    function change_candidate(direction) {
+                      if (direction == 'next') {
+                        if (window.candidateRank < result[3][0].length) {
+                          window.candidateRank += 1;
+                        }
+                      }
+                      if (direction == 'prev') {
+                        if (window.candidateRank > 1) {
+                          window.candidateRank -= 1;
+                        }
+                      }
+                      if (window.candidateRank > 1) {
+                        document.getElementById("cand_prev").style.color = 'blue';
+                      } else {
+                        document.getElementById("cand_prev").style.color = 'gray';
+                      }
+                      if (window.candidateRank < result[3][0].length) {
+                        document.getElementById("cand_next").style.color = 'blue';
+                      } else {
+                        document.getElementById("cand_next").style.color = 'gray';
+                      }
+
+                      document.getElementById('candidateNumber').innerHTML = "candidate " + window.candidateRank + " of " + result[3][0].length;
+                      showCandidate(window.candidateRank);
+                    }
+
+                    change_candidate('prev');
+                  </script>
+                </td>
+              </tr>
+            </table>
+          </p>
         </div>
     </div>
 
