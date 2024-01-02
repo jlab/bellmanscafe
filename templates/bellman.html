@@ -9,6 +9,15 @@
     divbanner = document.getElementById('divbanner');
     divbanner.innerHTML += "<center><FONT color='#ffffff' size='6'>Bellman's Cafe "+ version +"</FONT></center>";
     window.candidateRank = 1;
+
+    function escapeHtml(unsafe) {
+      return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
 </script>
 
 <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
@@ -161,7 +170,7 @@ function progFunction(selectProgramObject) {
     for (let i = 1; i <= n; i++) {
         //If previously entered input exists for the exercises, they are used, otherwise the default value is used and saved in example_value.
         if (user_form_input.hasOwnProperty("ex"+i)) {
-            example_value = user_form_input["ex"+i];
+            example_value = escapeHtml(user_form_input["ex"+i]);
         } else {
             //example_value = "\"1+2*3\"";
             example_value = "\"" + inputstringsnumberdict[selectedProgram][i-1] + "\"";

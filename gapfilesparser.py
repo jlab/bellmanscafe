@@ -91,7 +91,7 @@ def get_example_inputs(comments, number_of_inputstrings):
             if line.startswith('example inputs: '):
                 example_inputs.append(line[len("example inputs: "):].strip().split())
     if len(example_inputs) > 0:
-        return example_inputs[-1]
+        return list(map(lambda x: x.replace('/', '&#47;') , example_inputs[-1]))
     else:
         return [''] * number_of_inputstrings
 
