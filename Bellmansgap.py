@@ -402,6 +402,19 @@ def read_exit_status_file(fp):
                 return 1
 
 
+def modify_tikz_file(fp_orig, fp_limited, max_candidates=20):
+    with open(fp_orig, 'r') as fR:
+        candidate_counter = 0
+        with open(fp_limited, 'w') as fW:
+            for line in fR.readlines():
+                if line.startswith("\\end{tikzpicture}"):
+                    candidate_counter += 1
+                fW.write(line)
+                if candidate_counter >= max_candidates:
+                    fW.write('\\end{document}\n')
+                    break
+
+
 def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
                          prefix_cache, userinputs: [str],
                          plot_grammar_level: int = 1, outside: bool = False,
@@ -474,11 +487,9 @@ def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
         'run': '../out %s' % ' '.join(map(lambda x: '"%s"' % x, userinputs)),
 
         # 5) OPTIONAL: if algebra product uses tikZ, images will be rendered
-        'tikz': 'cp -v run.out tikz.tex 2> tikz.err && '
-                '/usr/bin/time -v -o pdflatex.benchmark pdflatex tikz.tex '
+        'tikz': '/usr/bin/time -v -o pdflatex.benchmark pdflatex tikz.tex '
                 '2>> tikz.err && '
                 '/usr/bin/time -v -o pdfmake.benchmark make -f tikz.makefile '
-                'ALL_FIGURE_NAMES="XX" '
                 '2>> tikz.err && '
                 'mv -v tikz.log tikz.out 2>> tikz.err'
     }
@@ -551,20 +562,13 @@ def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
                     uses_tikz = True
                     app.logger.info('found tikZ tree descriptions.')
 
-                    # obtain actual number of candidates from run.out
-                    num_tikz_candidaes = 0
-                    with open(os.path.join(fp_binary_workdir,
-                                           'run.out'), 'r') as f:
-                        for line in f.readlines():
-                            if line.startswith("\\begin{tikzpicture}"):
-                                num_tikz_candidaes += 1
-                    # limit PDF conversion of tikZ candidates
-                    steps['tikz'] = steps['tikz'].replace(
-                        'ALL_FIGURE_NAMES="XX"',
-                        'ALL_FIGURE_NAMES="%s"' % ' '.join(map(
-                            lambda x: 'tikz-figure%i' % x,
-                            range(min(limit_candidate_trees,
-                                      num_tikz_candidaes)))))
+                    # modify original binary stdout such that it contains
+                    # at most limit_candidate_trees many trees to limit server
+                    # workload when compiling individual candidate PNGs
+                    modify_tikz_file(
+                        os.path.join(fp_binary_workdir, 'run.out'),
+                        os.path.join(fp_binary_workdir, 'tikz.tex'),
+                        limit_candidate_trees)
 
                     child = subprocess.run(steps['tikz'], shell=True,
                                            text=True, cwd=fp_binary_workdir)
