@@ -357,7 +357,7 @@ def bellman():
     # some of these variables might be outdated
     # and unnecessary to return by now, further cleanup will follow
     return render_template(
-        "bellman.html", program=program,
+        "bellman.html", result=[], program=program,
         gra=gra, gapfiles=json.dumps(gapfiles),
         gramdict=json.dumps(gramdict),
         algdict=json.dumps(algdict),

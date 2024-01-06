@@ -610,16 +610,20 @@ function progFunction(selectProgramObject) {
             <p>
             <script type=text/javascript>
                 var result = {{ result|safe }}
-                var resultstring = "";
-                result[0][0].forEach(function(line){
-                    resultstring = resultstring + line + "<br>";
-                });
-                document.write(resultstring);
-                // TODO (smj): avoid duplication of code, which should color the out box orange iff step exited with non zero
-                if (result[0][1] != "0") {
-                  document.getElementById("tab2").style.backgroundColor = '#ffE1A3';
-                } else {
-                  document.getElementById("tab2").style.backgroundColor = null;
+                if ((typeof result !== 'undefined') && (typeof result[0] !== 'undefined')) {
+                  var resultstring = "";
+                  if (typeof result[0][0] !== 'undefined') {
+                    result[0][0].forEach(function(line){
+                        resultstring = resultstring + line + "<br>";
+                    });
+                  }
+                  document.write(resultstring);
+                  // TODO (smj): avoid duplication of code, which should color the out box orange iff step exited with non zero
+                  if ((typeof result[0][1] !== 'undefined') && (result[0][1] != "0")) {
+                    document.getElementById("tab2").style.backgroundColor = '#ffE1A3';
+                  } else {
+                    document.getElementById("tab2").style.backgroundColor = null;
+                  }
                 }
             </script>
             </p>
@@ -628,17 +632,19 @@ function progFunction(selectProgramObject) {
           <img src="" border="1" id="grammarplot" name="grammarplot" width="100%"/>
           <script type=text/javascript>
               var result = {{ result|safe }}
-              var resultstring = "data:image/gif;base64,";
-              if (result[4][1] != '0') {
-                resultstring = 'static/error.png';
-              } else {
-                resultstring = resultstring + result[4][0];
-              }
-              document.getElementById('grammarplot').src = resultstring;
-              if (result[4][1] != "0") {
-                document.getElementById("tab_grammar").style.backgroundColor = '#ffE1A3';
-              } else {
-                document.getElementById("tab_grammar").style.backgroundColor = null;
+              if ((typeof result !== 'undefined') && (typeof result[4] !== 'undefined')) {
+                var resultstring = "data:image/gif;base64,";
+                if (result[4][1] != '0') {
+                  resultstring = 'static/error.png';
+                } else {
+                  resultstring = resultstring + result[4][0];
+                }
+                document.getElementById('grammarplot').src = resultstring;
+                if ((typeof result[4][1] !== 'undefined') && (result[4][1] != "0")) {
+                  document.getElementById("tab_grammar").style.backgroundColor = '#ffE1A3';
+                } else {
+                  document.getElementById("tab_grammar").style.backgroundColor = null;
+                }
               }
           </script>
         </div>
@@ -646,15 +652,17 @@ function progFunction(selectProgramObject) {
             <p>
             <script type=text/javascript>
                 var result = {{ result|safe }}
-                var resultstring = "";
-                result[1][0].forEach(function(line){
-                    resultstring = resultstring + line + "<br>";
-                });
-                document.write(resultstring);
-                if (result[1][1] != "0") {
-                  document.getElementById("tab3").style.backgroundColor = '#ffE1A3';
-                } else {
-                  document.getElementById("tab3").style.backgroundColor = null;
+                if ((typeof result !== 'undefined') && (typeof result[1] !== 'undefined')) {
+                  var resultstring = "";
+                  result[1][0].forEach(function(line){
+                      resultstring = resultstring + line + "<br>";
+                  });
+                  document.write(resultstring);
+                  if ((typeof result[1][1] !== 'undefined') && (result[1][1] != "0")) {
+                    document.getElementById("tab3").style.backgroundColor = '#ffE1A3';
+                  } else {
+                    document.getElementById("tab3").style.backgroundColor = null;
+                  }
                 }
             </script>
             </p>
@@ -663,15 +671,17 @@ function progFunction(selectProgramObject) {
             <p>
             <script type=text/javascript>
                 var result = {{ result|safe }}
-                var resultstring = "";
-                result[2][0].forEach(function(line){
-                    resultstring = resultstring + line + "<br>";
-                });
-                document.write(resultstring);
-                if (result[2][1] != "0") {
-                  document.getElementById("tab4").style.backgroundColor = '#ffE1A3';
-                } else {
-                  document.getElementById("tab4").style.backgroundColor = null;
+                if ((typeof result !== 'undefined') && (typeof result[2] !== 'undefined')) {
+                  var resultstring = "";
+                  result[2][0].forEach(function(line){
+                      resultstring = resultstring + line + "<br>";
+                  });
+                  document.write(resultstring);
+                  if ((typeof result[2][1] !== 'undefined') && (result[2][1] != "0")) {
+                    document.getElementById("tab4").style.backgroundColor = '#ffE1A3';
+                  } else {
+                    document.getElementById("tab4").style.backgroundColor = null;
+                  }
                 }
             </script>
             </p>
@@ -680,12 +690,14 @@ function progFunction(selectProgramObject) {
           <p>
             <script type=text/javascript>
               var result = {{ result|safe }}
-              // show TikZ tab when results are ready, instead of output of binary
-              if (result[3][0].length > 0) {
-                $(document.getElementById('tab_tikz')).addClass("active");
-                $(document.getElementById("tab4")).removeClass("active");
-                $(document.getElementById("title_binary")).removeClass("active");
-                $(document.getElementById("li_tikz")).addClass("active");
+              if ((typeof result !== 'undefined') && (typeof result[3] !== 'undefined')) {
+                // show TikZ tab when results are ready, instead of output of binary
+                if (result[3][0].length > 0) {
+                  $(document.getElementById('tab_tikz')).addClass("active");
+                  $(document.getElementById("tab4")).removeClass("active");
+                  $(document.getElementById("title_binary")).removeClass("active");
+                  $(document.getElementById("li_tikz")).addClass("active");
+                }
               }
             </script>
             <table border="0" width="100%">
@@ -744,8 +756,9 @@ function progFunction(selectProgramObject) {
                       document.getElementById('candidateNumber').innerHTML = "candidate " + window.candidateRank + " of " + result[3][0].length;
                       showCandidate(window.candidateRank);
                     }
-
-                    change_candidate('prev');
+                    if ((typeof result !== 'undefined') && (typeof result[3] !== 'undefined')) {
+                      change_candidate('prev');
+                    }
                   </script>
                 </td>
               </tr>
