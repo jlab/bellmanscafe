@@ -28,22 +28,6 @@
 <!-- This section supplements the body section of the base.html file-->
 {% block body %}
 
-<script>
-
-        // This code snippet was originally used to play the loading animation, when the page is loading.
-        // It might be re-employed later.
-        /*
-        $(window).on("load",function(){
-          $(".loader-wrapper").fadeOut("slow");
-        });
-        */
-
-        //The loader element that contains the components of the loading animation is removed at the start of the page
-        //and is rebuilt when the submit button is clicked.
-        loader = document.getElementById("loader");
-        $('body').removeChild(loader);
-</script>
-
 <div style= "padding-left: 20px;padding-right: 20px;padding-top: 20px;">
 <!-- Title of the page-->
 <h1>Welcome to Bellman's Cafe</h1>
