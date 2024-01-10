@@ -3,6 +3,17 @@ import subprocess
 import os
 import logging
 
+
+def log(msg, level='debug', verbose=sys.stderr):
+    if isinstance(verbose, logging.Logger):
+        if level=='info':
+            verbose.info(msg + '\n')
+        else:
+            verbose.debug(msg)
+    else:
+        verbose.write(msg)
+
+
 def get_gapc_version(verbose=sys.stderr):
     """Obtain gapc version number via 'gapc --version' system call.
 
@@ -19,11 +30,7 @@ def get_gapc_version(verbose=sys.stderr):
     p_version = subprocess.run(cmd, shell=True, text=True,
                                stdout=subprocess.PIPE)
     version = p_version.stdout.strip()
-    msg = 'obtain gapc version number via "%s" = %s' % (cmd, version)
-    if isinstance(verbose, logging.Logger):
-        verbose.debug(msg)
-    else:
-        verbose.write(msg)
+    log('obtain gapc version number via "%s" = %s' % (cmd, version))
 
     return version
 
@@ -46,11 +53,7 @@ def get_repo_commithash(fp_repo: str, verbose=sys.stderr):
     p_version = subprocess.run(cmd, shell=True, text=True,
                                stdout=subprocess.PIPE, cwd=fp_repo)
     version = p_version.stdout.strip()
-    msg = 'obtain repo (%s) commit hash via "%s" = %s' % (fp_repo, cmd, version)
-    if isinstance(verbose, logging.Logger):
-        verbose.debug(msg)
-    else:
-        verbose.write(msg)
+    log('obtain repo (%s) commit hash via "%s" = %s' % (fp_repo, cmd, version))
 
     return version
 
