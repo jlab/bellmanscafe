@@ -1,6 +1,7 @@
 import sys
 import glob
 import os
+import markdown
 
 def _extract_comments(block: [str]) -> ([str], [str]):
     """Takes a list of code lines and splits them into two new list. The first
@@ -58,7 +59,7 @@ def _extract_comments(block: [str]) -> ([str], [str]):
     if cmts == [""]:
         cmts = []
 
-    return code.split(DELIM), cmts
+    return code.split(DELIM), [c for c in cmts if c != ""]
 
 
 def _merge(a: dict, b: dict, subdicts: [str]=['comments']):
@@ -145,7 +146,8 @@ def _parse_gapl_header(block: [str]):
         gapl_inputs = ['raw']
 
     return {'imports': gapl_imports, 'inputs': gapl_inputs,
-            'header': {'comments': comments}}
+            'header': {'comments': list(map(markdown.markdown, comments)),
+                       'code': code}}
 
 
 def _parse_gapl_signature(block: [str]):
@@ -336,6 +338,7 @@ def _extract_example_inputs(gapl):
                 example_inputs = cmt[len('example inputs:'):].strip().split()
                 gapl['instances'][name]['comments'].pop(i)
                 return example_inputs
+    return example_inputs
 
 
 def parse_gapl(fp_program):
