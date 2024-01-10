@@ -33,7 +33,7 @@
             if (i < {{max_algebras}}) {
               var operator = "";
               if (document.getElementById("algebra_" + (i+1)).value != "empty") {
-                txt_algproduct = " " + document.getElementById("product_" + i).value + " ";
+                txt_algproduct += " " + document.getElementById("product_" + i).value + " ";
               }
               txt_algproduct += operator;
             }
@@ -54,10 +54,10 @@
         var txt_instance = "";
         if (document.getElementById("select_grammar").value != "empty") {
           txt_instance += document.getElementById("select_grammar").value;
-          document.getElementById("container_submit").style.visibility = 'visible';
+          document.getElementById("submit").removeAttribute('disabled');
         } else {
           txt_instance += "MISSING GRAMMAR";
-          document.getElementById("container_submit").style.visibility = 'hidden';
+          document.getElementById("submit").disabled="yes";
         }
         txt_instance += "(";
 
@@ -158,22 +158,52 @@
         }
 
         // grammar
-        document.getElementById("select_grammar").innerHTML = '<option value="empty" selected="selected">Choose a grammar</option>';
+        var gra = '<option value="empty"';
+        if ((window.user_input['select_grammar'] == null) || (window.user_input['select_grammar'] == "empty")) {
+          gra += ' selected="selected"';
+        }
+        gra += '>Choose a grammar</option>';
+        document.getElementById("select_grammar").innerHTML = gra;
         document.getElementById("select_grammar").size = (Object.keys(programs[selected_program]['grammars']).length + 1);
         for (const [key, value] of Object.entries(programs[selected_program]['grammars'])) {
-          document.getElementById("select_grammar").innerHTML +=
-            '<option value="' + key + '">' + key + '</option>';
+          gra = '<option value="' + key + '"';
+          if ((window.user_input['select_grammar'] != null) && (window.user_input['select_grammar'] == key)) {
+            gra += ' selected="selected"';
+          }
+          gra += '>' + key + '</option>';
+          document.getElementById("select_grammar").innerHTML += gra;
         }
 
         // input strings
         document.getElementById("container_inputstrings").innerHTML = "Your Input:";
         for (let i = 1; i <= programs[selected_program]['inputs'].length; i++) {
           var example = '1+2*3';
-          if (programs[selected_program]['example_inputs'].length == programs[selected_program]['inputs'].length) {
-            example = programs[selected_program]['example_inputs'][i-1];
+          if (window.user_input['userinput_' + i] == null) {
+            if (programs[selected_program]['example_inputs'].length == programs[selected_program]['inputs'].length) {
+              example = programs[selected_program]['example_inputs'][i-1];
+            }
+          } else {
+            example = window.user_input['userinput_' + i];
           }
           document.getElementById("container_inputstrings").innerHTML +=
             '<input type="text" id="userinput_' + i + '" value="' + example + '" oninput="update_instance()" name="userinput_' + i + '"/>';
+        }
+
+        // advanced options
+        if (window.user_input['plot_grammar'] == null) {
+          window.user_input['plot_grammar'] = "1";
+        }
+        for (opt of document.getElementById("plot_grammar").children) {
+          if (opt.value != window.user_input['plot_grammar']) {
+            opt.removeAttribute('selected');
+          } else {
+            opt.selected = 'selected';
+          }
+        }
+        if (window.user_input['outside_grammar'] == null) {
+          document.getElementById("outside_grammar").removeAttribute("checked");
+        } else {
+          document.getElementById("outside_grammar").checked = "on";
         }
 
         // code
@@ -193,7 +223,7 @@
         update_instance();
         algebraproduct_visibility();
       } else {
-        document.getElementById("container_submit").style.visibility = 'hidden';
+        document.getElementById("submit").disabled = 'true';
       }
 
     }
@@ -249,7 +279,7 @@
 
         <label for="plot_grammar">Level of detail for grammar visualization</label>
         <select id='plot_grammar' name='plot_grammar'>
-          <option value="1" selected>basic (1)</option>
+          <option value="1" selected="selected">basic (1)</option>
           <option value="2">indices (2)</option>
           <option value="3">data types (3)</option>
           <option value="4">min/max yield size (4)</option>
@@ -261,7 +291,7 @@
       </fieldset>
     </div>
     <div class="container_submit" id="container_submit">
-      <button type="submit" id="submit" onclick="execute_gapc();">Submit</button>
+      <button type="submit" id="submit" onclick="execute_gapc();" disabled>Submit</button>
     </div>
     <div class="container_results">
       container results
