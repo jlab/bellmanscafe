@@ -57,6 +57,7 @@ def download_file(filename):
 @app.route("/bellman", methods=["GET", "POST"])
 def bellman():
     user_input = dict()
+    results = dict()
 
     # This if statement only occurs
     # after the user pressed the submit button
@@ -68,8 +69,11 @@ def bellman():
 
         results = compile_and_run_gapc(gapl_programs, user_input, settings, MAX_ALGEBRAS, limit_candidate_trees=20, verbose=app.logger)
 
+        # update versions collected during compilation
+        settings['versions'] = results['versions']
+
     return render_template(
-        "bellman.html", programs=gapl_programs, max_algebras=MAX_ALGEBRAS, settings=settings, user_input=user_input)
+        "bellman.html", programs=gapl_programs, max_algebras=MAX_ALGEBRAS, settings=settings, user_input=user_input, results=results)
 
 
 
