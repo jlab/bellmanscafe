@@ -6,6 +6,7 @@ import logging
 
 from bellmanscafe.cafe import obtain_cafe_settings
 from bellmanscafe.parse_gapl import get_gapc_programs
+from bellmanscafe.execute import compile_and_run_gapc
 
 # the Cafe shall let users interact with a collection of Bellman's GAP
 # programs like Needleman-Wunsch or ElMamun. The FP_GAPUSERSOURCES variable
@@ -64,9 +65,8 @@ def bellman():
             if key in user_input.keys():
                 raise ValueError("key collision")
             user_input[key] = value
-        print(request.form, file=sys.stderr)
-        #print("key test", request.form['algebra_1'], file=sys.stderr)
-        #pass
+
+        results = compile_and_run_gapc(gapl_programs, user_input, settings, MAX_ALGEBRAS, limit_candidate_trees=20, verbose=app.logger)
 
     return render_template(
         "bellman.html", programs=gapl_programs, max_algebras=MAX_ALGEBRAS, settings=settings, user_input=user_input)

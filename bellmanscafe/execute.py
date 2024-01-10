@@ -1,3 +1,13 @@
+import sys
+import hashlib
+import shutil
+import subprocess
+import base64
+import os
+import glob
+
+from bellmanscafe.cafe import get_gapc_version, get_repo_commithash, log
+
 def read_exit_status_file(fp):
     """Read a file into which the exit code has been written.
 
@@ -42,65 +52,58 @@ def modify_tikz_file(fp_orig, fp_limited, max_candidates=20):
                     break
 
 
-def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
-                         prefix_cache, userinputs: [str],
-                         plot_grammar_level: int = 1, outside: bool = False,
-                         fps_headerfiles: [str] = [],
-                         limit_candidate_trees: int = 20):
+def compile_and_run_gapc(gapl_programs, user_input, settings, max_algebras, limit_candidate_trees: int = 20,
+                         verbose=sys.stderr):
     """Compiles a binary for a given instance (aka algebra product).
 
     Parameters
     ----------
-    grammar : str
-        The user selected grammar.
+    userinputs : ?
+        ?
 
-    algproduct : str
-        The algebra product to be compiled, e.g. "alg_score * alg_enum".
-
-    fp_gapfile : str
-        File path location of the user gap source file.
-
-    prefix_cache : str
-        Directory to used to cache compile product.
-
-    userinputs : [str]
-        List of user input(s) for tracks of grammar.
-
-    plot_grammar_level : int
-        Determines the level of detail when plotting the grammar.
-
-    outside : bool
-        Activates automatic generation of outside grammar generation.
-
-    fps_headerfiles : [str]
-        List of additional user header files, necessary for C++ compilation.
     """
     # update the global gapc version number as the according ubuntu package
     # might have changed during server execution time
-    global GAPC_VERSION
-    GAPC_VERSION = get_gapc_version(app)
+    settings['versions']['gapc'] = get_gapc_version(verbose)
 
     # update global commit hash of user repository as it might change during
     # server run time through cron jobs
-    global REPO_VERSION
-    REPO_VERSION = get_repo_commithash(app, PREFIX_GAPUSERSOURCES)
+    settings['versions']['ADP_collection'] = get_repo_commithash(settings['paths']['gapc_programs'], verbose)
 
     # the instance is the application of the algebra product to the grammar
-    instance = '%s(%s)' % (grammar, algproduct)
-    hash_instance = hashlib.md5(("%s_%i_%s" % (
-        instance, plot_grammar_level, outside)).encode('utf-8')).hexdigest()
-    fp_workdir = os.path.join(prefix_cache, hash_instance)
-    app.logger.info('working directory for instance "%s" is "%s"' % (
-        instance, fp_workdir))
+    instance = user_input['select_grammar'] + '('
+    for idx in range(1, max_algebras+1):
+        if user_input['algebra_%i' % idx] != 'empty':
+            instance += user_input['algebra_%i' % idx]
+        if (idx == max_algebras) or (user_input['algebra_%i' % (idx+1)] != 'empty'):
+            instance += user_input['product_%i' % idx]
+        else:
+            break
+    instance += ')'
 
-    param_outside = " --outside_grammar ALL " if outside else ""
+    hash_instance = hashlib.md5(("%s_%s_%s_%s" % (
+        user_input['select_program'], instance, user_input['plot_grammar'], 'outside_grammar' in user_input)).encode('utf-8')).hexdigest()
+    fp_workdir = os.path.join(settings['paths']['prefix_cache'], hash_instance)
+    log('working directory for instance "%s" is "%s"' % (
+        instance, fp_workdir), level="info")
+
+    param_outside = " --outside_grammar ALL " if 'outside_grammar' in user_input else ""
+
+    inputstrings = []
+    for key, value in user_input.items():
+        if key.startswith('userinput_'):
+            inputstrings.append((int(key.split('_')[-1]), value))
+    inputstrings = [value for (pos, value) in sorted(inputstrings, key=lambda x: x[0])]
+
+    fp_gapfile = os.path.join(settings['paths']['gapc_programs'], user_input['select_program']+'.gap')
+    fps_headerfiles = list(map(lambda x: os.path.join(settings['paths']['gapc_programs'], x), gapl_programs[user_input['select_program']]['imports']))
     steps = {
         # 0) inject instance bcafe to original *.gap source file (as it might
         #    not be defined)
         # 1) transpiling via gapc
-        'gapc': ('echo "instance bcafe=%s;" >> "%s" '
-                 '&& gapc -i "bcafe" --plot-grammar %i %s %s ') % (
-            instance, os.path.basename(fp_gapfile), plot_grammar_level,
+        'gapc': ('echo "\ninstance bcafe=%s;" >> "%s" '
+                 '&& gapc -i "bcafe" --plot-grammar %s %s %s ') % (
+            instance, os.path.basename(fp_gapfile), user_input['plot_grammar'],
             param_outside,
             os.path.basename(fp_gapfile)),
 
@@ -111,7 +114,7 @@ def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
         'make': 'make -f out.mf',
 
         # 4) run the compiled binary with user input (not cached)
-        'run': '../out %s' % ' '.join(map(lambda x: '"%s"' % x, userinputs)),
+        'run': '../out %s' % ' '.join(map(lambda x: '"%s"' % x, inputstrings)),
 
         # 5) OPTIONAL: if algebra product uses tikZ, images will be rendered
         'tikz': '/usr/bin/time -v -o pdflatex.benchmark pdflatex tikz.tex '
@@ -144,17 +147,17 @@ def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
                     invalid_cache = True
         if invalid_cache:
             shutil.rmtree(fp_workdir)
-            app.logger.info('delete outdated cache dir "%s"' % fp_workdir)
+            log('delete outdated cache dir "%s"' % fp_workdir, 'info')
 
     if not os.path.exists(fp_workdir):
         os.makedirs(fp_workdir, exist_ok=True)
-        app.logger.info('create working directory "%s"' % fp_workdir)
+        log('create working directory "%s"' % fp_workdir, 'info')
 
         # copy *.gap and header source files into working directory
         for fp_src in [fp_gapfile] + fps_headerfiles:
             fp_dst = os.path.join(fp_workdir, os.path.basename(fp_src))
             shutil.copy(fp_src, fp_dst)
-            app.logger.info('copy file "%s" to %s' % (fp_src, fp_dst))
+            log('copy file "%s" to %s' % (fp_src, fp_dst), 'info')
 
         for name, cmd in steps.items():
             if name in ["run", "tikz"]:
@@ -167,9 +170,9 @@ def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
             with open(os.path.join(fp_workdir,
                                    '%s.exitstatus' % name), 'w') as f:
                 f.write('%i\n' % child.returncode)
-            app.logger.info('executing (in %s) "%s"' % (fp_workdir, cmd))
+            log('executing (in %s) "%s"' % (fp_workdir, cmd), 'info')
 
-    inputs_hash = hashlib.md5(''.join(userinputs).encode('utf-8')).hexdigest()
+    inputs_hash = hashlib.md5(''.join(inputstrings).encode('utf-8')).hexdigest()
     fp_binary_workdir = os.path.join(fp_workdir, 'run_%s' % inputs_hash)
     uses_tikz = False
     if not os.path.exists(fp_binary_workdir):
@@ -178,8 +181,8 @@ def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
         # execute the binary with user input(s)
         child = subprocess.run(steps['run'], shell=True, text=True,
                                cwd=fp_binary_workdir)
-        app.logger.info('no cached results found, thus executing (in %s) "%s"'
-                        % (fp_binary_workdir, steps['run']))
+        log('no cached results found, thus executing (in %s) "%s"'
+                        % (fp_binary_workdir, steps['run']), 'info')
         with open(os.path.join(fp_binary_workdir, 'run.exitstatus'), 'w') as f:
             f.write('%i\n' % child.returncode)
 
@@ -187,7 +190,7 @@ def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
             with open(os.path.join(fp_binary_workdir, 'run.out'), 'r') as f:
                 if 'documentclass' in f.readlines()[0]:
                     uses_tikz = True
-                    app.logger.info('found tikZ tree descriptions.')
+                    log('found tikZ tree descriptions.', 'info')
 
                     # modify original binary stdout such that it contains
                     # at most limit_candidate_trees many trees to limit server
@@ -199,53 +202,48 @@ def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
 
                     child = subprocess.run(steps['tikz'], shell=True,
                                            text=True, cwd=fp_binary_workdir)
-                    app.logger.info(
-                        'executing (in %s) "%s"' % (fp_binary_workdir,
-                                                    steps['tikz']))
+                    log('executing (in %s) "%s"' % (fp_binary_workdir,
+                                                    steps['tikz']), 'info')
                     with open(os.path.join(fp_binary_workdir,
                                            'tikz.exitstatus'), 'w') as f:
                         f.write('%i\n' % child.returncode)
     else:
         uses_tikz = os.path.exists(os.path.join(fp_binary_workdir, 'tikz.tex'))
-        app.logger.info('found cached binary results.')
+        log('found cached binary results.', 'info')
 
-    report = []
+    report = {'versions': settings['versions']}
     for name, cmd in steps.items():
         fp_cache = fp_workdir
         if name in ["run", "tikz"]:
             fp_cache = fp_binary_workdir
-        if (name == "tikz") and (uses_tikz is False):
-            report.append([[], 0])
-            continue
-        exit_status = None
-        rep = []
-        rep.append('<b>Command</b>: %s' % cmd)
-        with open(os.path.join(fp_cache, '%s.out' % name)) as f:
-            rep.extend(f.readlines())
-        with open(os.path.join(fp_cache, '%s.err' % name)) as f:
-            rep.extend(f.readlines())
-        # read exit status of step
-        exit_status = read_exit_status_file(
-            os.path.join(fp_cache, '%s.exitstatus' % name))
+        rep = {'command': cmd, 'stdout': [], 'stderr': [], 'benchmark': []}
+        if (name not in ['tikz', 'dot']):
+            with open(os.path.join(fp_cache, '%s.out' % name)) as f:
+                rep['stdout'].extend(f.readlines())
+        if (name not in ['tikz']) or uses_tikz:
+            with open(os.path.join(fp_cache, '%s.err' % name)) as f:
+                rep['stderr'].extend(f.readlines())
+            # read exit status of step
+            rep['exit_status'] = read_exit_status_file(
+                os.path.join(fp_cache, '%s.exitstatus' % name))
+        if (name not in ['tikz']):
+            with open(os.path.join(fp_cache, '%s.benchmark' % name)) as f:
+                rep['benchmark'].extend(f.readlines())
         if (name == 'tikz') and uses_tikz:
-            rep = []
             for rank, fp_candidate in enumerate(sorted(
                     glob.glob(os.path.join(fp_cache, 'tikz-figure*.png')),
                     key=lambda x: int(x.split('figure')[1].split('.')[0]))):
                 if (os.stat(fp_candidate).st_size > 0):
                     with open(fp_candidate, "rb") as image:
-                        rep.append(base64.b64encode(image.read()).decode(
+                        rep['stdout'].append(base64.b64encode(image.read()).decode(
                             'utf-8'))
                 if rank+1 >= limit_candidate_trees:
-                    app.logger.info(
+                    log(
                         ('number of candidates exceeds displaying limit of '
-                         'top %i!') % limit_candidate_trees)
+                         'top %i!') % limit_candidate_trees, 'info')
                     break
 
-        # don't add dot execution to report, since there is no tab yet on the
-        # website
-        if name not in ['dot']:
-            report.append([rep, exit_status])
+        report[name] = rep
 
     # a bit hacky, but this is to serve dynamically generated images from cache
     # which is not directly exposed to the web. We load the GIF content as
@@ -254,8 +252,9 @@ def compile_and_run_gapc(grammar: str, algproduct: str, fp_gapfile: str,
     fp_plot = os.path.join(fp_workdir, "grammar.gif")
     if os.path.exists(fp_plot) and (os.stat(fp_plot).st_size > 0):
         with open(fp_plot, "rb") as image:
-            report.append([base64.b64encode(image.read()).decode('utf-8'), 0])
+            report['dot']['stdout'] = [base64.b64encode(image.read()).decode('utf-8')]
     else:
-        report.append(["error", 1])
+        report['dot']['exit_status'] = 1
 
+    print("\n\n\nREPORT", report, file=sys.stderr)
     return report
