@@ -295,6 +295,13 @@
     </div>
     <div class="container_results">
       container results
+      {% for (task, label) in [('gapc', 'Gapc'), ('dot', 'Grammar Plot'), ('make', 'Make'), ('run', 'Result'), ('tikz', 'Candidates')] %}
+      <div id="result_" + {{task}}>
+        <div id="result_label_" + {{task}}>{{label}}</div>
+        <div id="result_command_" + {{taks}}>{{results[task]['command']|safe}}</div>
+        <div id="result_stdout" + {{taks}}>{{results[task]['stdout']|safe}}</div>
+      </div>
+      {% endfor %}
     </div>
     <div class="container_code">
       <div class="container_code_header" id="container_code_header">container code header</div>
