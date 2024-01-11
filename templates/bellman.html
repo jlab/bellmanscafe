@@ -314,7 +314,7 @@
       <div id="result_" + {{task}}>
         <div id="result_label_" + {{task}}>{{label}}</div>
         {% if task in results.keys() %}
-          <div id="result_command_" + {{taks}}>{{results[task]['command']|safe}}</div>
+          <div id="result_command_" + {{taks}}><pre><code class="language-bash">{{results[task]['command']|safe}}</code></pre></div>
           {% if task == 'dot' %}
             {% if results[task]['exit_status'] == 0 %}
               <img src="data:image/gif;base64,{{results[task]['stdout'][0]}}" width="100%"/>
@@ -328,9 +328,13 @@
               </div>
             {% endfor %}
           {% else %}
-            <div id="result_stdout" + {{taks}}>{{'<br/>'.join(results[task]['stdout'])|safe}}</div>
+            {% if results[task]['stdout']|length > 0 %}
+              <div id="result_stdout" + {{taks}}><pre><code class="language-bash">{{''.join(results[task]['stdout'])|safe}}</code></pre></div>
+            {% endif %}
           {% endif %}
-          <div id="result_stderr" + {{taks}}>{{'<br/>'.join(results[task]['stderr'])|safe}}</div>
+          {% if results[task]['stderr']|length > 0 %}
+            <div id="result_stderr" + {{taks}}><pre><code class="language-bash">{{''.join(results[task]['stderr'])|safe}}</code></pre></div>
+          {% endif %}
         {% endif %}
       </div>
       {% endfor %}
