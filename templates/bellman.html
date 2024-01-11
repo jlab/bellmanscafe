@@ -7,6 +7,17 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/loader.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
+<script src="{{ url_for('static', filename='js/highlight.min.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/highlight_default.css') }}">
+<script>hljs.highlightAll();</script>
+
+<!--
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<!-- and it's easy to individually load additional languages -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/go.min.js"></script>
+-->
+
 <!-- This script adds a title to the banner at the top of the page. -->
 <script type=text/javascript>
     version = "v2.0"
@@ -209,18 +220,18 @@
         }
 
         // code
-        document.getElementById("container_code_header").innerHTML = programs[selected_program]['header']['code'].map(escapeHtml).join('<br/>');
+        document.getElementById("container_code_header").innerHTML = '<pre><code class="language-cpp">' + programs[selected_program]['header']['code'].map(escapeHtml).join('') + '</code></pre>';
         for (comptype of (['signatures', 'algebras', 'grammars'])) {
           for (const [name, value] of Object.entries(programs[selected_program][comptype])) {
             document.getElementById("container_code_" + comptype).innerHTML +=
-            '<div id="' + comptype + '_' + name + '">' + programs[selected_program][comptype][name]['code'].map(escapeHtml).join('<br/>') + '</div>';
+            '<div id="' + comptype + '_' + name + '"><pre><code class="language-cpp">' + programs[selected_program][comptype][name]['code'].map(escapeHtml).join('') + '</code></pre></div>';
           }
         }
         var code_instances = "";
         for (const [name, value] of Object.entries(programs[selected_program]['instances'])) {
           code_instances += programs[selected_program]['instances'][name]['code'].map(escapeHtml).join('<br/>') + '<br/>';
         }
-        document.getElementById("container_code_instances").innerHTML = code_instances;
+        document.getElementById("container_code_instances").innerHTML = '<pre><code class="language-cpp">' + code_instances + '</code></pre>';
 
         update_instance();
         algebraproduct_visibility();
@@ -228,19 +239,13 @@
         document.getElementById("submit").disabled = 'true';
       }
 
+      hljs.highlightAll();
     }
 
     function execute_gapc() {
       // The components of the loading animation are added to the body in html.
       // The animation is then automatically started by the css-code, namely @keyframes loader and @keyframes loader-inner.
-      // var elem = document.createElement('div');
-      // elem.id="loader";
-      // elem.class="loader-wrapper";
-      // elem.innerHTML = '<span class="loader"><span class="loader-inner"></span></span>';
-      // //$('body').append('<div id="loader" class="loader-wrapper"><span class="loader"><span class="loader-inner"></span></span></div>');
-      // document.body.appendChild(elem);
       $('body').append('<div id="loader" class="loader-wrapper"><span class="loader"><span class="loader-inner"></span></span></div>');
-      console.log("jetzt geht es los");
     }
 
     window.addEventListener("load", (event) => {
