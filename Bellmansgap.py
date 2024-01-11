@@ -33,8 +33,7 @@ logging.basicConfig(
     level=logging.DEBUG,
     format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
 
-# number of allowed algebras
-MAX_ALGEBRAS = 5
+
 
 settings = obtain_cafe_settings(PREFIX_CACHE, PREFIX_GAPUSERSOURCES, verbose=app.logger)
 gapl_programs = get_gapc_programs(settings['paths']['gapc_programs'])
@@ -67,13 +66,13 @@ def bellman():
                 raise ValueError("key collision")
             user_input[key] = value
 
-        results = compile_and_run_gapc(gapl_programs, user_input, settings, MAX_ALGEBRAS, limit_candidate_trees=20, verbose=app.logger)
+        results = compile_and_run_gapc(gapl_programs, user_input, settings, verbose=app.logger)
 
         # update versions collected during compilation
         settings['versions'] = results['versions']
 
     return render_template(
-        "bellman.html", programs=gapl_programs, max_algebras=MAX_ALGEBRAS, settings=settings, user_input=user_input, results=results)
+        "bellman.html", programs=gapl_programs, settings=settings, user_input=user_input, results=results)
 
 
 

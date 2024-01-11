@@ -73,6 +73,12 @@ def obtain_cafe_settings(fp_cache, fp_gapc_programs, verbose=sys.stderr):
     settings['paths']['prefix_cache'] = os.path.join(fp_cache, 'gapc_v%s' % settings['versions']['gapc'])
     settings['paths']['gapc_programs'] = fp_gapc_programs
 
+    # maximum number of allowed algebras
+    settings['max_algebras'] = 5
+
+    # limit tikZ image generation to:
+    settings['limit_candidate_trees'] = 20
+
     return settings
 
 

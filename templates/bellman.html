@@ -33,11 +33,11 @@
       var txt_algproduct = "";
 
       if (selected_program != "empty") {
-        for (let i = 1; i <= {{max_algebras}}; i++) {
+        for (let i = 1; i <= {{settings['max_algebras']}}; i++) {
           if (document.getElementById("algebra_" + i).value != "empty") {
             txt_algproduct += document.getElementById("algebra_" + i).value;
 
-            if (i < {{max_algebras}}) {
+            if (i < {{settings['max_algebras']}}) {
               var operator = "";
               if (document.getElementById("algebra_" + (i+1)).value != "empty") {
                 txt_algproduct += " " + document.getElementById("product_" + i).value + " ";
@@ -90,12 +90,12 @@
     }
 
     function algebraproduct_visibility() {
-      for (let i = {{max_algebras}}-1; i >= 1; i--) {
+      for (let i = {{settings['max_algebras']}}-1; i >= 1; i--) {
         if (document.getElementById("algebra_" + i).value == 'empty') {
-          for (j = i+1; j <= {{max_algebras}}; j++) {
+          for (j = i+1; j <= {{settings['max_algebras']}}; j++) {
             document.getElementById("algebra_grp_" + j).style.display = 'none';
           }
-          for (j = i; j < {{max_algebras}}; j++) {
+          for (j = i; j < {{settings['max_algebras']}}; j++) {
             document.getElementById("product_grp_" + j).style.display = 'none';
           }
         } else {
@@ -103,6 +103,17 @@
           document.getElementById("product_grp_" + i).style.display = 'block';
         }
       }
+    }
+
+    function tikz_candidate_title(current) {
+      var value = 'candidate x of y';
+      {% if ('tikz' in results.keys()) %}
+        value = 'candidate ' + current + ' of ' + {{results['tikz']['total_number_tikz_candidates']}}
+        {% if (results['tikz']['total_number_tikz_candidates'] > settings['limit_candidate_trees']) %}
+          value += ' (display limited to top ' + {{settings['limit_candidate_trees']}} + ')';
+        {% endif %}
+      {% endif %}
+      return value;
     }
 
     function update_user_form() {
@@ -127,7 +138,7 @@
 
         // algebra product
         document.getElementById("container_algebraproduct").innerHTML = "";
-        for (let i = 1; i <= {{max_algebras}}; i++) {
+        for (let i = 1; i <= {{settings['max_algebras']}}; i++) {
           size = Object.keys(programs[selected_program]['algebras']).length;
           if (i > 1) {
             size += 1;
@@ -157,7 +168,7 @@
           document.getElementById("container_algebraproduct").innerHTML +=
             '</select></div>';
 
-          if (i < {{max_algebras}}) {
+          if (i < {{settings['max_algebras']}}) {
             var product = '<div id="product_grp_' + i + '" class="algprod_select"><div>Operator ' + i + '</div><select id="product_' + i + '" size="6" onchange="update_instance()" name="product_' + i + '" class="select_operator">';
             for (operator of ([['*', 'The lexicographic product.'],
                                ['/', 'The interleaved product.'],
@@ -262,6 +273,7 @@
         var step = 'run';
         {% if ('tikz' in results) and (results['tikz']['stdout']|length > 0) %}  //schaun mer mal
           step = 'tikz';
+          document.getElementById("tikz_title").innerHTML = tikz_candidate_title(1);
         {% endif %}
         switch_tab(document.getElementById("tabs_results"), step);
         for (comptype of (['signatures', 'algebras', 'grammars'])) {
@@ -326,7 +338,7 @@
           }
           if (((direction == 'next') && (div_candidate.nextElementSibling.classList.contains('tikz_candidate'))) || ((direction == 'prev') && (div_candidate.previousElementSibling.classList.contains('tikz_candidate')))) {
             div_candidate.style.display = 'none';
-            document.getElementById("tikz_title").innerHTML = "candidate " + shown_candidate + " of " + num_candidates;
+            document.getElementById("tikz_title").innerHTML = tikz_candidate_title(shown_candidate);
             break;
           }
         }

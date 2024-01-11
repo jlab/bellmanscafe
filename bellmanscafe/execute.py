@@ -40,19 +40,22 @@ def read_exit_status_file(fp):
 
 
 def modify_tikz_file(fp_orig, fp_limited, max_candidates=20):
+    within_maximum = True
+    candidate_counter = 0
     with open(fp_orig, 'r') as fR:
-        candidate_counter = 0
         with open(fp_limited, 'w') as fW:
             for line in fR.readlines():
                 if line.startswith("\\end{tikzpicture}"):
                     candidate_counter += 1
-                fW.write(line)
-                if candidate_counter >= max_candidates:
-                    fW.write('\\end{document}\n')
-                    break
+                if within_maximum:
+                    fW.write(line)
+                    if candidate_counter >= max_candidates:
+                        fW.write('\\end{document}\n')
+                        within_maximum = False
+    return candidate_counter
 
 
-def compile_and_run_gapc(gapl_programs, user_input, settings, max_algebras, limit_candidate_trees: int = 20,
+def compile_and_run_gapc(gapl_programs, user_input, settings,
                          verbose=sys.stderr):
     """Compiles a binary for a given instance (aka algebra product).
 
@@ -72,10 +75,10 @@ def compile_and_run_gapc(gapl_programs, user_input, settings, max_algebras, limi
 
     # the instance is the application of the algebra product to the grammar
     instance = user_input['select_grammar'] + '('
-    for idx in range(1, max_algebras+1):
+    for idx in range(1, settings['max_algebras']+1):
         if user_input['algebra_%i' % idx] != 'empty':
             instance += user_input['algebra_%i' % idx]
-        if (idx < max_algebras) and (user_input['algebra_%i' % (idx+1)] != 'empty'):
+        if (idx < settings['max_algebras']) and (user_input['algebra_%i' % (idx+1)] != 'empty'):
             instance += user_input['product_%i' % idx]
         else:
             break
@@ -187,10 +190,12 @@ def compile_and_run_gapc(gapl_programs, user_input, settings, max_algebras, limi
                     # modify original binary stdout such that it contains
                     # at most limit_candidate_trees many trees to limit server
                     # workload when compiling individual candidate PNGs
-                    modify_tikz_file(
+                    num_candidates = modify_tikz_file(
                         os.path.join(fp_binary_workdir, 'run.out'),
                         os.path.join(fp_binary_workdir, 'tikz.tex'),
-                        limit_candidate_trees)
+                        settings['limit_candidate_trees'])
+                    with open(os.path.join(fp_binary_workdir, 'num_candidates.txt'), 'w') as N:
+                        N.write(str(num_candidates))
 
                     child = subprocess.run(steps['tikz'], shell=True,
                                            text=True, cwd=fp_binary_workdir)
@@ -229,10 +234,12 @@ def compile_and_run_gapc(gapl_programs, user_input, settings, max_algebras, limi
                     with open(fp_candidate, "rb") as image:
                         rep['stdout'].append(base64.b64encode(image.read()).decode(
                             'utf-8'))
-                if rank+1 >= limit_candidate_trees:
+                if rank+1 >= settings['limit_candidate_trees']:
                     log(('number of candidates exceeds displaying limit of '
-                         'top %i!\n') % limit_candidate_trees, 'info', verbose)
+                         'top %i!\n') % settings['limit_candidate_trees'], 'info', verbose)
                     break
+            with open(os.path.join(fp_cache, 'num_candidates.txt'), 'r') as N:
+                rep['total_number_tikz_candidates'] = int(''.join(N.readlines()))
 
         report[name] = rep
 
