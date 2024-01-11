@@ -6,7 +6,7 @@ import base64
 import os
 import glob
 
-from bellmanscafe.cafe import get_gapc_version, get_repo_commithash, log
+from bellmanscafe.cafe import get_gapc_version, get_repo_commithash, log, get_codefiles_hash
 
 def read_exit_status_file(fp):
     """Read a file into which the exit code has been written.
@@ -84,8 +84,8 @@ def compile_and_run_gapc(gapl_programs, user_input, settings, max_algebras, limi
     hash_instance = hashlib.md5(("%s_%s_%s_%s" % (
         user_input['select_program'], instance, user_input['plot_grammar'], 'outside_grammar' in user_input)).encode('utf-8')).hexdigest()
     fp_workdir = os.path.join(settings['paths']['prefix_cache'], hash_instance)
-    log('working directory for instance "%s" is "%s"' % (
-        instance, fp_workdir), level="info")
+    log('working directory for instance "%s" is "%s"\n' % (
+        instance, fp_workdir), "info", verbose)
 
     param_outside = " --outside_grammar ALL " if 'outside_grammar' in user_input else ""
 
@@ -130,34 +130,26 @@ def compile_and_run_gapc(gapl_programs, user_input, settings, max_algebras, limi
 
     if os.path.exists(fp_workdir):
         # if a matching cache dir exists, we test if the source file contents
-        # has changed. This might be due to updates in the ADP_collections repo
-        invalid_cache = False
-        for fp_src in [fp_gapfile] + fps_headerfiles:
-            fp_dst = os.path.join(fp_workdir, os.path.basename(fp_src))
-            if os.path.exists(fp_dst):
-                dst = fp_dst
-                if fp_src == fp_gapfile:
-                    # ignore last line of gap source file, since this is the
-                    # injected instance
-                    dst = '<(head %s -n -1)' % fp_dst
-                p_diff = subprocess.run(
-                    'diff %s %s' % (fp_src, dst), shell=True, text=True,
-                    executable='/bin/bash')
-                if p_diff.returncode != 0:
-                    invalid_cache = True
+        # has changed.
+        hash_program = get_codefiles_hash([fp_gapfile] + fps_headerfiles)
+        invalid_cache = not os.path.exists(os.path.join(fp_workdir, '%s.codehash' % hash_program))
         if invalid_cache:
             shutil.rmtree(fp_workdir)
-            log('delete outdated cache dir "%s"' % fp_workdir, 'info')
+            log('delete outdated cache dir "%s"\n' % fp_workdir, 'info', verbose)
 
     if not os.path.exists(fp_workdir):
         os.makedirs(fp_workdir, exist_ok=True)
-        log('create working directory "%s"' % fp_workdir, 'info')
+        log('create working directory "%s"\n' % fp_workdir, 'info', verbose)
+
+        hash_program = get_codefiles_hash([fp_gapfile] + fps_headerfiles)
+        with open(os.path.join(fp_workdir, '%s.codehash' % hash_program), 'w') as f:
+            f.write('\n'.join([fp_gapfile] + fps_headerfiles))
 
         # copy *.gap and header source files into working directory
         for fp_src in [fp_gapfile] + fps_headerfiles:
             fp_dst = os.path.join(fp_workdir, os.path.basename(fp_src))
             shutil.copy(fp_src, fp_dst)
-            log('copy file "%s" to %s' % (fp_src, fp_dst), 'info')
+            log('copy file "%s" to %s\n' % (fp_src, fp_dst), 'info', verbose)
 
         for name, cmd in steps.items():
             if name in ["run", "tikz"]:
@@ -170,7 +162,7 @@ def compile_and_run_gapc(gapl_programs, user_input, settings, max_algebras, limi
             with open(os.path.join(fp_workdir,
                                    '%s.exitstatus' % name), 'w') as f:
                 f.write('%i\n' % child.returncode)
-            log('executing (in %s) "%s"' % (fp_workdir, cmd), 'info')
+            log('executing (in %s) "%s"\n' % (fp_workdir, cmd), 'info', verbose)
 
     inputs_hash = hashlib.md5(''.join(inputstrings).encode('utf-8')).hexdigest()
     fp_binary_workdir = os.path.join(fp_workdir, 'run_%s' % inputs_hash)
@@ -181,8 +173,8 @@ def compile_and_run_gapc(gapl_programs, user_input, settings, max_algebras, limi
         # execute the binary with user input(s)
         child = subprocess.run(steps['run'], shell=True, text=True,
                                cwd=fp_binary_workdir)
-        log('no cached results found, thus executing (in %s) "%s"'
-                        % (fp_binary_workdir, steps['run']), 'info')
+        log('no cached results found, thus executing (in %s) "%s"\n'
+                        % (fp_binary_workdir, steps['run']), 'info', verbose)
         with open(os.path.join(fp_binary_workdir, 'run.exitstatus'), 'w') as f:
             f.write('%i\n' % child.returncode)
 
@@ -190,7 +182,7 @@ def compile_and_run_gapc(gapl_programs, user_input, settings, max_algebras, limi
             with open(os.path.join(fp_binary_workdir, 'run.out'), 'r') as f:
                 if 'documentclass' in f.readlines()[0]:
                     uses_tikz = True
-                    log('found tikZ tree descriptions.', 'info')
+                    log('found tikZ tree descriptions.\n', 'info', verbose)
 
                     # modify original binary stdout such that it contains
                     # at most limit_candidate_trees many trees to limit server
@@ -202,14 +194,14 @@ def compile_and_run_gapc(gapl_programs, user_input, settings, max_algebras, limi
 
                     child = subprocess.run(steps['tikz'], shell=True,
                                            text=True, cwd=fp_binary_workdir)
-                    log('executing (in %s) "%s"' % (fp_binary_workdir,
-                                                    steps['tikz']), 'info')
+                    log('executing (in %s) "%s"\n' % (fp_binary_workdir,
+                                                    steps['tikz']), 'info', verbose)
                     with open(os.path.join(fp_binary_workdir,
                                            'tikz.exitstatus'), 'w') as f:
                         f.write('%i\n' % child.returncode)
     else:
         uses_tikz = os.path.exists(os.path.join(fp_binary_workdir, 'tikz.tex'))
-        log('found cached binary results.', 'info')
+        log('found cached binary results.\n', 'info', verbose)
 
     report = {'versions': settings['versions']}
     for name, cmd in steps.items():
@@ -238,9 +230,8 @@ def compile_and_run_gapc(gapl_programs, user_input, settings, max_algebras, limi
                         rep['stdout'].append(base64.b64encode(image.read()).decode(
                             'utf-8'))
                 if rank+1 >= limit_candidate_trees:
-                    log(
-                        ('number of candidates exceeds displaying limit of '
-                         'top %i!') % limit_candidate_trees, 'info')
+                    log(('number of candidates exceeds displaying limit of '
+                         'top %i!\n') % limit_candidate_trees, 'info', verbose)
                     break
 
         report[name] = rep

@@ -2,6 +2,7 @@ import sys
 import subprocess
 import os
 import logging
+import hashlib
 
 
 def log(msg, level='debug', verbose=sys.stderr):
@@ -30,7 +31,7 @@ def get_gapc_version(verbose=sys.stderr):
     p_version = subprocess.run(cmd, shell=True, text=True,
                                stdout=subprocess.PIPE)
     version = p_version.stdout.strip()
-    log('obtain gapc version number via "%s" = %s' % (cmd, version))
+    log('obtain gapc version number via "%s" = %s\n' % (cmd, version))
 
     return version
 
@@ -53,7 +54,7 @@ def get_repo_commithash(fp_repo: str, verbose=sys.stderr):
     p_version = subprocess.run(cmd, shell=True, text=True,
                                stdout=subprocess.PIPE, cwd=fp_repo)
     version = p_version.stdout.strip()
-    log('obtain repo (%s) commit hash via "%s" = %s' % (fp_repo, cmd, version))
+    log('obtain repo (%s) commit hash via "%s" = %s\n' % (fp_repo, cmd, version))
 
     return version
 
@@ -73,3 +74,11 @@ def obtain_cafe_settings(fp_cache, fp_gapc_programs, verbose=sys.stderr):
     settings['paths']['gapc_programs'] = fp_gapc_programs
 
     return settings
+
+
+def get_codefiles_hash(fps_gapc_code: [str]):
+    content = ""
+    for fp_file in fps_gapc_code:
+        with open(fp_file, 'r') as f:
+            content += ''.join(f.readlines())
+    return hashlib.md5(content.encode('utf-8')).hexdigest()

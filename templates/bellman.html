@@ -4,10 +4,12 @@
 {% block head %}
 
 <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/loader.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
 <!-- This script adds a title to the banner at the top of the page. -->
 <script type=text/javascript>
-    version = "v1.14"
+    version = "v2.0"
 
     window.programs = {{programs|safe}};
     window.user_input = {{user_input|safe}};
@@ -229,7 +231,16 @@
     }
 
     function execute_gapc() {
-
+      // The components of the loading animation are added to the body in html.
+      // The animation is then automatically started by the css-code, namely @keyframes loader and @keyframes loader-inner.
+      // var elem = document.createElement('div');
+      // elem.id="loader";
+      // elem.class="loader-wrapper";
+      // elem.innerHTML = '<span class="loader"><span class="loader-inner"></span></span>';
+      // //$('body').append('<div id="loader" class="loader-wrapper"><span class="loader"><span class="loader-inner"></span></span></div>');
+      // document.body.appendChild(elem);
+      $('body').append('<div id="loader" class="loader-wrapper"><span class="loader"><span class="loader-inner"></span></span></div>');
+      console.log("jetzt geht es los");
     }
 
     window.addEventListener("load", (event) => {
@@ -242,12 +253,11 @@
 
 <!-- This section supplements the body section of the base.html file-->
 {% block body %}
-
 <div class="container_cafe">
   <form method="post">
     <div class="container_program">
       Program:
-      <select id='select_program' name='select_program' onchange="update_user_form()">
+      <select id='select_program' name='select_program' onchange="window.user_input['select_program']=document.getElementById('select_program').value; update_user_form();">
         <option value="empty">Choose a program</option>
         {% for key, value in programs.items() %}
           <option value="{{key}}">{{key}}</option>
@@ -298,8 +308,25 @@
       {% for (task, label) in [('gapc', 'Gapc'), ('dot', 'Grammar Plot'), ('make', 'Make'), ('run', 'Result'), ('tikz', 'Candidates')] %}
       <div id="result_" + {{task}}>
         <div id="result_label_" + {{task}}>{{label}}</div>
-        <div id="result_command_" + {{taks}}>{{results[task]['command']|safe}}</div>
-        <div id="result_stdout" + {{taks}}>{{results[task]['stdout']|safe}}</div>
+        {% if task in results.keys() %}
+          <div id="result_command_" + {{taks}}>{{results[task]['command']|safe}}</div>
+          {% if task == 'dot' %}
+            {% if results[task]['exit_status'] == 0 %}
+              <img src="data:image/gif;base64,{{results[task]['stdout'][0]}}" width="100%"/>
+            {% else %}
+              <img src="static/error.png" width="100%"/>
+            {% endif %}
+          {% elif task == 'tikz' %}
+            {% for cand in results['tikz']['stdout'] %}
+              <div id="candidate_{{loop.index}}">
+                <img src="data:image/gif;base64,{{cand}}" style="height: 70vw; min-height: 330px;"/>
+              </div>
+            {% endfor %}
+          {% else %}
+            <div id="result_stdout" + {{taks}}>{{'<br/>'.join(results[task]['stdout'])|safe}}</div>
+          {% endif %}
+          <div id="result_stderr" + {{taks}}>{{'<br/>'.join(results[task]['stderr'])|safe}}</div>
+        {% endif %}
       </div>
       {% endfor %}
     </div>
