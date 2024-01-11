@@ -11,19 +11,13 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/highlight_default.css') }}">
 <script>hljs.highlightAll();</script>
 
-<!--
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<!-- and it's easy to individually load additional languages -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/go.min.js"></script>
--->
-
 <!-- This script adds a title to the banner at the top of the page. -->
 <script type=text/javascript>
     version = "v2.0"
 
     window.programs = {{programs|safe}};
     window.user_input = {{user_input|safe}};
+    window.accodions_registered = 'False';
 
     function escapeHtml(unsafe) {
       return unsafe
@@ -220,12 +214,26 @@
         }
 
         // code
+        //code_download
+        var downloadfiles = "";
+        downloadfiles += '<div class="codefile"><a href="' + select_program.value + '.gap/download">' + selected_program + '.gap</a></div>'
+        for (file of programs[selected_program]['imports']) {
+          downloadfiles += '<div class="codefile"><a href="' + file + '/download">' + file + '</a></div>';
+        }
+        document.getElementById("code_download").innerHTML = downloadfiles;
+
         document.getElementById("container_code_header").innerHTML = '<pre><code class="language-cpp">' + programs[selected_program]['header']['code'].map(escapeHtml).join('') + '</code></pre>';
         for (comptype of (['signatures', 'algebras', 'grammars'])) {
+          var elements = '<div class="tabs_header" id="tabs_' + comptype + '">';
           for (const [name, value] of Object.entries(programs[selected_program][comptype])) {
-            document.getElementById("container_code_" + comptype).innerHTML +=
-            '<div id="' + comptype + '_' + name + '"><pre><code class="language-cpp">' + programs[selected_program][comptype][name]['code'].map(escapeHtml).join('') + '</code></pre></div>';
+            elements += '<div class="tab_label" onclick="switch_tab(this.parentNode, this.id);" id="' + name + '">' + name + '</div>';
           }
+          elements += '</div>';
+          for (const [name, value] of Object.entries(programs[selected_program][comptype])) {
+            elements +=
+            '<div id="tab_' + name + '" class="tab"><pre><code class="language-cpp">' + programs[selected_program][comptype][name]['code'].map(escapeHtml).join('') + '</code></pre></div>';
+          }
+          document.getElementById("container_code_" + comptype).innerHTML = elements;
         }
         var code_instances = "";
         for (const [name, value] of Object.entries(programs[selected_program]['instances'])) {
@@ -235,11 +243,25 @@
 
         update_instance();
         algebraproduct_visibility();
+        var step = 'run';
+        {% if ('tikz' in results) and (results['tikz']['stdout']|length > 0) %}  //schaun mer mal
+          step = 'tikz';
+        {% endif %}
+        switch_tab(document.getElementById("tabs_results"), step);
+        for (comptype of (['signatures', 'algebras', 'grammars'])) {
+          var first_name = Object.entries(programs[selected_program][comptype])[0][0];
+          switch_tab(document.getElementById("tabs_" + comptype), first_name);
+        }
+
+        document.getElementById("program").style.display = "block";
+        document.getElementById("container_instance").style.display = "flex";
       } else {
         document.getElementById("submit").disabled = 'true';
+        switch_tab(document.getElementById("tabs_results"), 'gapc');
       }
 
       hljs.highlightAll();
+      accordeon();
     }
 
     function execute_gapc() {
@@ -251,6 +273,41 @@
     window.addEventListener("load", (event) => {
       update_user_form();
     });
+
+    function switch_tab(container, name) {
+      for (divtab of container.querySelectorAll(".tab_label")) {
+        if (divtab.id == name) {
+          divtab.classList.add('active_tab_label');
+          container.parentElement.querySelector(".tab#tab_"+divtab.id).style.display = "block";
+        } else {
+          divtab.classList.remove('active_tab_label');
+          container.parentElement.querySelector(".tab#tab_"+divtab.id).style.display = "none";
+        }
+      }
+    }
+
+    function accordeon() {
+      if (window.accodions_registered != 'True') {
+        var acc = document.getElementsByClassName("accordion");
+        var i;
+        for (i = 0; i < acc.length; i++) {
+          acc[i].addEventListener("click", function() {
+            /* Toggle between adding and removing the "active" class,
+            to highlight the button that controls the panel */
+            this.classList.toggle("active");
+
+            /* Toggle between hiding and showing the active panel */
+            var panel = this.nextElementSibling;
+            if (panel.style.display === "block") {
+              panel.style.display = "none";
+            } else {
+              panel.style.display = "block";
+            }
+          });
+        }
+        window.accodions_registered = 'True';
+      }
+    }
 </script>
 
 
@@ -259,8 +316,10 @@
 <!-- This section supplements the body section of the base.html file-->
 {% block body %}
 <div class="container_cafe">
+  <div class="container_instance" id="container_instance" style="display: none;">container instance</div>
+
   <form method="post">
-    <div class="container_program">
+    <div class="container_program group">
       Program:
       <select id='select_program' name='select_program' onchange="window.user_input['select_program']=document.getElementById('select_program').value; update_user_form();">
         <option value="empty">Choose a program</option>
@@ -270,84 +329,101 @@
       </select>
       container program
     </div>
-    <div class="container_header_info" id="container_header_info">
-      container header info
-    </div>
-    <div class="container_algebraproduct" id="container_algebraproduct">
-      container algebraproduct
-    </div>
-    <div class="container_grammar">
-      Grammar:
-      <select id='select_grammar' name='select_grammar' onchange="update_instance()">
-
-
-      </select>
-      container grammar
-    </div>
-    <div class="container_inputstrings" id="container_inputstrings">
-      container inputstrings
-
-    </div>
-    <div class="container_advancedsettings">
-      <fieldset>
-        <legend>Advanced Settings</legend>
-
-        <label for="plot_grammar">Level of detail for grammar visualization</label>
-        <select id='plot_grammar' name='plot_grammar'>
-          <option value="1" selected="selected">basic (1)</option>
-          <option value="2">indices (2)</option>
-          <option value="3">data types (3)</option>
-          <option value="4">min/max yield size (4)</option>
-          <option value="5">table dimensions (5)</option>
-        </select>
-
-        <input type="checkbox" id="outside_grammar" name="outside_grammar"></input>
-        <label for="outside_grammar">generate outside grammar</label>
-      </fieldset>
-    </div>
-    <div class="container_submit" id="container_submit">
-      <button type="submit" id="submit" onclick="execute_gapc();" disabled>Submit</button>
-    </div>
-    <div class="container_results">
-      container results
-      {% for (task, label) in [('gapc', 'Gapc'), ('dot', 'Grammar Plot'), ('make', 'Make'), ('run', 'Result'), ('tikz', 'Candidates')] %}
-      <div id="result_" + {{task}}>
-        <div id="result_label_" + {{task}}>{{label}}</div>
-        {% if task in results.keys() %}
-          <div id="result_command_" + {{taks}}><pre><code class="language-bash">{{results[task]['command']|safe}}</code></pre></div>
-          {% if task == 'dot' %}
-            {% if results[task]['exit_status'] == 0 %}
-              <img src="data:image/gif;base64,{{results[task]['stdout'][0]}}" width="100%"/>
-            {% else %}
-              <img src="static/error.png" width="100%"/>
-            {% endif %}
-          {% elif task == 'tikz' %}
-            {% for cand in results['tikz']['stdout'] %}
-              <div id="candidate_{{loop.index}}">
-                <img src="data:image/gif;base64,{{cand}}" style="height: 70vw; min-height: 330px;"/>
-              </div>
-            {% endfor %}
-          {% else %}
-            {% if results[task]['stdout']|length > 0 %}
-              <div id="result_stdout" + {{taks}}><pre><code class="language-bash">{{''.join(results[task]['stdout'])|safe}}</code></pre></div>
-            {% endif %}
-          {% endif %}
-          {% if results[task]['stderr']|length > 0 %}
-            <div id="result_stderr" + {{taks}}><pre><code class="language-bash">{{''.join(results[task]['stderr'])|safe}}</code></pre></div>
-          {% endif %}
-        {% endif %}
+    <div id="program" style="display: none;">
+      <div class="container_header_info" id="container_header_info">
+        container header info
       </div>
-      {% endfor %}
-    </div>
-    <div class="container_code">
-      <div class="container_code_header" id="container_code_header">container code header</div>
-      <div class="container_code_signatures" id="container_code_signatures">container code signatures</div>
-      <div class="container_code_algebras" id="container_code_algebras">container code algebras</div>
-      <div class="container_code_grammars" id="container_code_grammars">container code grammars</div>
-      <div class="container_code_instances" id="container_code_instances">container code instances</div>
-    </div>
-    <div class="container_instance" id="container_instance">
-      container instance
+      <div class="container_algebraproduct" id="container_algebraproduct">
+        container algebraproduct
+      </div>
+      <div class="container_grammar">
+        Grammar:
+        <select id='select_grammar' name='select_grammar' onchange="update_instance()">
+
+
+        </select>
+        container grammar
+      </div>
+      <div class="container_inputstrings" id="container_inputstrings">
+        container inputstrings
+
+      </div>
+      <div class="container_advancedsettings">
+        <fieldset>
+          <legend>Advanced Settings</legend>
+
+          <label for="plot_grammar">Level of detail for grammar visualization</label>
+          <select id='plot_grammar' name='plot_grammar'>
+            <option value="1" selected="selected">basic (1)</option>
+            <option value="2">indices (2)</option>
+            <option value="3">data types (3)</option>
+            <option value="4">min/max yield size (4)</option>
+            <option value="5">table dimensions (5)</option>
+          </select>
+
+          <input type="checkbox" id="outside_grammar" name="outside_grammar"></input>
+          <label for="outside_grammar">generate outside grammar</label>
+        </fieldset>
+      </div>
+      <div class="container_submit" id="container_submit">
+        <button type="submit" id="submit" onclick="execute_gapc();" disabled>Submit</button>
+      </div>
+      <div class="container_results" id="container_results">
+        container results
+        {% set result_tabs = [('gapc', 'Gapc'), ('dot', 'Grammar Plot'), ('make', 'Make'), ('run', 'Result'), ('tikz', 'Candidates')] %}
+
+        <div id="tabs_results" class="tabs_header">
+          {% for (task, label) in result_tabs %}
+            {% if (task != 'tikz') or (('tikz' in results) and (results[task]['stdout']|length > 0)) %}
+              <div id="{{task}}" class='tab_label' onclick='switch_tab(this.parentNode, this.id);'>{{label}}</div>
+            {% endif %}
+          {% endfor %}
+        </div>
+
+        {% for (task, label) in result_tabs %}
+          {% if (task != 'tikz') or (('tikz' in results) and (results[task]['stdout']|length > 0)) %}
+            <div id="tab_{{task}}" class="tab">
+              {% if task in results.keys() %}
+                <div id="result_command_{{taks}}"><pre><code class="language-bash">{{results[task]['command']|safe}}</code></pre></div>
+                {% if task == 'dot' %}
+                  {% if results[task]['exit_status'] == 0 %}
+                    <img src="data:image/gif;base64,{{results[task]['stdout'][0]}}" width="100%"/>
+                  {% else %}
+                    <img src="static/error.png" width="100%"/>
+                  {% endif %}
+                {% elif task == 'tikz' %}
+                  {% for cand in results['tikz']['stdout'] %}
+                    <div id="candidate_{{loop.index}}">
+                      <img src="data:image/gif;base64,{{cand}}" style="height: 70vw; min-height: 330px;"/>
+                    </div>
+                  {% endfor %}
+                {% else %}
+                  {% if results[task]['stdout']|length > 0 %}
+                    <div id="result_stdout_{{taks}}"><pre><code class="language-bash">{{''.join(results[task]['stdout'])|safe}}</code></pre></div>
+                  {% endif %}
+                {% endif %}
+                {% if results[task]['stderr']|length > 0 %}
+                  <div id="result_stderr_{{taks}}"><pre><code class="language-bash">{{''.join(results[task]['stderr'])|safe}}</code></pre></div>
+                {% endif %}
+              {% endif %}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <div class="container_code" id="container_code">
+        <div id="code_download"></div>
+        <button type="button" class="accordion">Header</button>
+        <div class="panel" id="container_code_header">container code header</div>
+        <button type="button" class="accordion">Signature</button>
+        <div class="panel" id="container_code_signatures">container code signatures</div>
+        <button type="button" class="accordion">Algebras</button>
+        <div class="panel" id="container_code_algebras">container code algebras</div>
+        <button type="button" class="accordion">Grammars</button>
+        <div class="panel" id="container_code_grammars">container code grammars</div>
+        <button type="button" class="accordion">Instances</button>
+        <div class="panel" id="container_code_instances">container code instances</div>
+      </div>
     </div>
   </form>
 </div>

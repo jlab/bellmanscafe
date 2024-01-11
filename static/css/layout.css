@@ -1,0 +1,14 @@
+div.tabs_header {
+  display: flex;
+  flex-direction: row;
+}
+
+div#code_download {
+  display: flex;
+  flex-direction: row;
+}
+
+div#container_instance {
+  display: flex;
+  justify-content: center;
+}
