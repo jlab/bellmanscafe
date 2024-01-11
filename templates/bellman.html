@@ -93,14 +93,14 @@
       for (let i = {{max_algebras}}-1; i >= 1; i--) {
         if (document.getElementById("algebra_" + i).value == 'empty') {
           for (j = i+1; j <= {{max_algebras}}; j++) {
-            document.getElementById("algebra_" + j).style.visibility = 'hidden';
+            document.getElementById("algebra_grp_" + j).style.display = 'none';
           }
           for (j = i; j < {{max_algebras}}; j++) {
-            document.getElementById("product_" + j).style.visibility = 'hidden';
+            document.getElementById("product_grp_" + j).style.display = 'none';
           }
         } else {
-          document.getElementById("algebra_" + (i+1)).style.visibility = 'visible';
-          document.getElementById("product_" + i).style.visibility = 'visible';
+          document.getElementById("algebra_grp_" + (i+1)).style.display = 'block';
+          document.getElementById("product_grp_" + i).style.display = 'block';
         }
       }
     }
@@ -126,16 +126,23 @@
         }
 
         // algebra product
-        document.getElementById("container_algebraproduct").innerHTML = "container algebraproduct";
+        document.getElementById("container_algebraproduct").innerHTML = "";
         for (let i = 1; i <= {{max_algebras}}; i++) {
           size = Object.keys(programs[selected_program]['algebras']).length;
           if (i > 1) {
             size += 1;
           }
           document.getElementById("container_algebraproduct").innerHTML +=
-            '<select id="algebra_' + i + '" size="' + size + '" onchange="update_instance(); algebraproduct_visibility();" name="algebra_' + i + '">';
-          if ((i > 1) || (window.user_input['algebra_' + i] != null) || (window.user_input['algebra_' + i] == 'empty')) {
-            document.getElementById("algebra_" + i).innerHTML += '<option value="empty" selected="selected"></option>';
+            '<div id="algebra_grp_' + i + '"><div class="title" class="algprod_select">Algebra ' + i + '</div><select id="algebra_' + i + '" size="' + size + '" onchange="update_instance(); algebraproduct_visibility();" name="algebra_' + i + '">';
+          // Add an "empty" option, if user does not add another algebra to the product
+          var emptyAlg = '<option value="empty"';
+          if ((window.user_input['algebra_' + i] != null) && (window.user_input['algebra_' + i] == 'empty')) {
+            emptyAlg += ' selected="selected"';
+          }
+          emptyAlg += '></option>';
+          if (i > 1) {
+            // at least one algebra needs to be selected, i.e. cannot be empty
+            document.getElementById("algebra_" + i).innerHTML += emptyAlg;
           }
           var no_algebra = 0;
           for (const [key, value] of Object.entries(programs[selected_program]['algebras'])) {
@@ -148,10 +155,10 @@
             document.getElementById("algebra_" + i).innerHTML += elm;
           }
           document.getElementById("container_algebraproduct").innerHTML +=
-            '</select>';
+            '</select></div>';
 
           if (i < {{max_algebras}}) {
-            var product = '<select id="product_' + i + '" size="6" onchange="update_instance()" name="product_' + i + '">';
+            var product = '<div id="product_grp_' + i + '" class="algprod_select"><div>Operator ' + i + '</div><select id="product_' + i + '" size="6" onchange="update_instance()" name="product_' + i + '" class="select_operator">';
             for (operator of ([['*', 'The lexicographic product.'],
                                ['/', 'The interleaved product.'],
                                ['%', 'The cartesian product.'],
@@ -164,7 +171,7 @@
               }
               product += '>' + operator[0] + '</option>';
             }
-            product += '</select>';
+            product += '</select></div>';
             document.getElementById("container_algebraproduct").innerHTML += product;
           }
         }
@@ -187,7 +194,7 @@
         }
 
         // input strings
-        document.getElementById("container_inputstrings").innerHTML = "Your Input:";
+        document.getElementById("container_inputstrings").innerHTML = '<div class="title">Your input strings</div>';
         for (let i = 1; i <= programs[selected_program]['inputs'].length; i++) {
           var example = '1+2*3';
           var predefined = example;
@@ -200,7 +207,9 @@
             example = window.user_input['userinput_' + i];
           }
           document.getElementById("container_inputstrings").innerHTML +=
-            '<input type="text" id="userinput_' + i + '" value="' + example + '" oninput="update_instance()" name="userinput_' + i + '"/>Try "' + predefined + '" for example.';
+            '<div class="algprod_select">' +
+            '<div class="title">Track ' + i + '</div>' +
+            '<div class="hintgroup"><input type="text" id="userinput_' + i + '" value="' + example + '" oninput="update_instance()" name="userinput_' + i + '" class="userstring"/><div class="hint">Try "' + predefined + '" for example.</div></div></div>';
         }
 
         // advanced options
@@ -353,15 +362,13 @@
       <div class="group">
         <legend>Algebraproduct, Grammar, Inputstrings</legend>
         <div class="container_algebraproduct" id="container_algebraproduct">
-          container algebraproduct
         </div>
-        <div class="container_grammar">
-          Grammar:
-          <select id='select_grammar' name='select_grammar' onchange="update_instance()">
-
-
-          </select>
-          container grammar
+        <div class="container_grammar" id="container_grammar">
+          <div id="grammar_grp" class="algprod_select">
+            <div class="title">Grammar</div>
+            <select id='select_grammar' name='select_grammar' onchange="update_instance()">
+            </select>
+          </div>
         </div>
         <div class="container_inputstrings" id="container_inputstrings">
           container inputstrings

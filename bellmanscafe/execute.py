@@ -75,7 +75,7 @@ def compile_and_run_gapc(gapl_programs, user_input, settings, max_algebras, limi
     for idx in range(1, max_algebras+1):
         if user_input['algebra_%i' % idx] != 'empty':
             instance += user_input['algebra_%i' % idx]
-        if (idx == max_algebras) or (user_input['algebra_%i' % (idx+1)] != 'empty'):
+        if (idx < max_algebras) and (user_input['algebra_%i' % (idx+1)] != 'empty'):
             instance += user_input['product_%i' % idx]
         else:
             break

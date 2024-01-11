@@ -121,3 +121,18 @@ code.stderr {
 code.stdout {
   background-color: #ffffff;
 }
+
+select.select_operator {
+  margin-left: 4px;
+  margin-right: 4px;
+}
+
+div.title {
+  text-align: center;
+}
+
+div#container_algebraproduct, div#container_grammar, div#container_inputstrings {
+  border: 1px solid #AF6557;
+  margin: 5px;
+  padding: 5px;
+}
