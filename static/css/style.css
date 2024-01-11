@@ -136,3 +136,10 @@ div#container_algebraproduct, div#container_grammar, div#container_inputstrings 
   margin: 5px;
   padding: 5px;
 }
+
+div#tikz_title {
+  text-align: center;
+}
+div#tikz_gallery {
+  background-color: #ffffff;
+}

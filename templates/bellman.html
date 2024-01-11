@@ -310,6 +310,29 @@
       }
     }
 
+    function switch_tikz_gallery(direction) {
+      var num_candidates = document.querySelectorAll(".tikz_candidate").length;
+      var shown_candidate = 0;
+      for (div_candidate of document.querySelectorAll(".tikz_candidate")) {
+        shown_candidate += 1;
+        if (div_candidate.style.display != 'none') {
+          if ((direction == 'next') && (div_candidate.nextElementSibling.classList.contains('tikz_candidate'))) {
+            div_candidate.nextElementSibling.style.display = 'block';
+            shown_candidate += 1;
+          }
+          if ((direction == 'prev') && (div_candidate.previousElementSibling.classList.contains('tikz_candidate'))) {
+            div_candidate.previousElementSibling.style.display = 'block';
+            shown_candidate -= 1;
+          }
+          if (((direction == 'next') && (div_candidate.nextElementSibling.classList.contains('tikz_candidate'))) || ((direction == 'prev') && (div_candidate.previousElementSibling.classList.contains('tikz_candidate')))) {
+            div_candidate.style.display = 'none';
+            document.getElementById("tikz_title").innerHTML = "candidate " + shown_candidate + " of " + num_candidates;
+            break;
+          }
+        }
+      }
+    }
+
     function accordeon() {
       if (window.accodions_registered != 'True') {
         var acc = document.getElementsByClassName("accordion");
@@ -418,11 +441,18 @@
                     <img src="static/error.png" width="100%"/>
                   {% endif %}
                 {% elif task == 'tikz' %}
-                  {% for cand in results['tikz']['stdout'] %}
-                    <div id="candidate_{{loop.index}}">
-                      <img src="data:image/gif;base64,{{cand}}" style="height: 70vw; min-height: 330px;"/>
+                  <div id="result_stdout_{{task}}">
+                    <div id="tikz_title">candidate 1 of {{results['tikz']['stdout']|length}}</div>
+                    <div id="tikz_gallery">
+                      <div id="tikz_prev" onclick='switch_tikz_gallery("prev");'>❮</div>
+                      {% for cand in results['tikz']['stdout'] %}
+                        <div id="candidate_{{loop.index}}" class="tikz_candidate" style="display: {% if loop.index == 1 %}block;{% else %}none;{% endif %}">
+                          <img src="data:image/gif;base64,{{cand}}" style="height: 70vw; min-height: 330px;"/>
+                        </div>
+                      {% endfor %}
+                      <div id="tikz_next" onclick='switch_tikz_gallery("next");'>❯</div>
                     </div>
-                  {% endfor %}
+                  </div>
                 {% else %}
                   {% if results[task]['stdout']|length > 0 %}
                     <div id="result_stdout_{{task}}" class="channel"><pre><code class="language-bash stdout">{{''.join(results[task]['stdout'])|safe}}</code></pre><div class="channel_name">STDOUT</div></div>
