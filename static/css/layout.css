@@ -11,4 +11,26 @@ div#code_download {
 div#container_instance {
   display: flex;
   justify-content: center;
+  color:white;
+  background-color:#AF6557;
+
+  position: -webkit-sticky; /* for browser compatibility */
+  position: sticky;
+  top: 10px;
+  padding: 3px;
+}
+
+div#container_submit {
+  display: flex;
+  justify-content: center;
+}
+
+div.channel {
+  position: relative;
+}
+
+div.channel_name {
+  position: absolute;
+  top: 0px;
+  right: 0px;
 }

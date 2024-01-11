@@ -1,20 +1,39 @@
-div {
+/* div {
   border:1px solid black;
-}
+} */
 
 /* For Tabs */
 div.tab_label {
   min-width:120px;
   text-align: center;
   background-color:#AF6557;
+  padding:10px 5px;
+  border-radius:3px;
+  margin-right:2px;
+  color:white;
+}
+div.tab_label_error {
+  background-color:#ffE1A3;
 }
 
 div.tab_label:hover{
-    cursor:pointer;
+  cursor:pointer;
 }
 
 div.active_tab_label {
-  background-color:#00FF00;
+  background-color:#B8E1A3;
+  color:black;
+}
+
+div.tab {
+  background-color:#B8E1A3;
+  min-height:250px;
+  border-radius:3px;
+  padding:20px 15px;
+}
+
+div.tab_error {
+  background-color:#ffE1A3;
 }
 
 /* For Accordion */
@@ -75,7 +94,7 @@ div.codefile a:before {
 
 
 
-
+/* Border around multiple elements */
 div.group {
     border:5px outset #AF6557;
     margin-top: 15px;
@@ -84,4 +103,21 @@ div.group {
     padding-right: 20px;
     padding-top: 5px;
     padding-bottom: 10px;
+}
+
+
+div.channel_name {
+  background-color: #999999;
+  color: white;
+  padding-left: 1em;
+  padding-right: 1em;
+}
+code.command {
+  background-color: #AAAAAA;
+}
+code.stderr {
+  background-color: #F2E3E3;
+}
+code.stdout {
+  background-color: #ffffff;
 }

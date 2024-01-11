@@ -247,5 +247,5 @@ def compile_and_run_gapc(gapl_programs, user_input, settings, max_algebras, limi
     else:
         report['dot']['exit_status'] = 1
 
-    print("\n\n\nREPORT", report, file=sys.stderr)
+    report['program'] = user_input['select_program']
     return report

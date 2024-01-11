@@ -85,7 +85,7 @@
         }
 
         txt_instance += ")";
-        document.getElementById("container_instance").innerHTML = txt_instance;
+        document.getElementById("container_instance").innerHTML = "Your instance: " + txt_instance;
       }
     }
 
@@ -120,9 +120,9 @@
         }
         document.getElementById("container_header_info").innerHTML = comment;
         if (comment == "") {
-          document.getElementById("container_header_info").style.visibility = "hidden";
+          document.getElementById("grp_header_info").style.display = "none";
         } else {
-          document.getElementById("container_header_info").style.visibility = "visible";
+          document.getElementById("grp_header_info").style.display = "block";
         }
 
         // algebra product
@@ -185,15 +185,17 @@
         document.getElementById("container_inputstrings").innerHTML = "Your Input:";
         for (let i = 1; i <= programs[selected_program]['inputs'].length; i++) {
           var example = '1+2*3';
+          var predefined = example;
+          if (programs[selected_program]['example_inputs'].length == programs[selected_program]['inputs'].length) {
+            predefined = programs[selected_program]['example_inputs'][i-1];
+          }
           if (window.user_input['userinput_' + i] == null) {
-            if (programs[selected_program]['example_inputs'].length == programs[selected_program]['inputs'].length) {
-              example = programs[selected_program]['example_inputs'][i-1];
-            }
+            example = predefined;
           } else {
             example = window.user_input['userinput_' + i];
           }
           document.getElementById("container_inputstrings").innerHTML +=
-            '<input type="text" id="userinput_' + i + '" value="' + example + '" oninput="update_instance()" name="userinput_' + i + '"/>';
+            '<input type="text" id="userinput_' + i + '" value="' + example + '" oninput="update_instance()" name="userinput_' + i + '"/>Try "' + predefined + '" for example.';
         }
 
         // advanced options
@@ -255,6 +257,14 @@
 
         document.getElementById("program").style.display = "block";
         document.getElementById("container_instance").style.display = "flex";
+
+        var result_program = "empty";
+        {% if 'program' in results.keys() %}
+          result_program = "{{results['program']}}";
+        {% endif %}
+        if (result_program == selected_program) {
+          document.getElementById("tabs_results").scrollIntoView();
+        }
       } else {
         document.getElementById("submit").disabled = 'true';
         switch_tab(document.getElementById("tabs_results"), 'gapc');
@@ -320,35 +330,39 @@
 
   <form method="post">
     <div class="container_program group">
-      Program:
-      <select id='select_program' name='select_program' onchange="window.user_input['select_program']=document.getElementById('select_program').value; update_user_form();">
+      <legend>Select Program</legend>
+      <select id='select_program' name='select_program' onchange="window.user_input={}; update_user_form();">
         <option value="empty">Choose a program</option>
         {% for key, value in programs.items() %}
           <option value="{{key}}">{{key}}</option>
         {% endfor %}
       </select>
-      container program
     </div>
+
     <div id="program" style="display: none;">
-      <div class="container_header_info" id="container_header_info">
-        container header info
+      <div class="group" id="grp_header_info" style="display: none;">
+        <button type="button" class="accordion">Problem Description</button>
+        <div class="container_header_info panel" id="container_header_info" style="display: block;">
+        </div>
       </div>
-      <div class="container_algebraproduct" id="container_algebraproduct">
-        container algebraproduct
-      </div>
-      <div class="container_grammar">
-        Grammar:
-        <select id='select_grammar' name='select_grammar' onchange="update_instance()">
+      <div class="group">
+        <legend>Algebraproduct, Grammar, Inputstrings</legend>
+        <div class="container_algebraproduct" id="container_algebraproduct">
+          container algebraproduct
+        </div>
+        <div class="container_grammar">
+          Grammar:
+          <select id='select_grammar' name='select_grammar' onchange="update_instance()">
 
 
-        </select>
-        container grammar
+          </select>
+          container grammar
+        </div>
+        <div class="container_inputstrings" id="container_inputstrings">
+          container inputstrings
+        </div>
       </div>
-      <div class="container_inputstrings" id="container_inputstrings">
-        container inputstrings
-
-      </div>
-      <div class="container_advancedsettings">
+      <div class="container_advancedsettings group">
         <fieldset>
           <legend>Advanced Settings</legend>
 
@@ -368,23 +382,23 @@
       <div class="container_submit" id="container_submit">
         <button type="submit" id="submit" onclick="execute_gapc();" disabled>Submit</button>
       </div>
-      <div class="container_results" id="container_results">
-        container results
+      <div class="container_results group" id="container_results">
+        <legend>Execution Results</legend>
         {% set result_tabs = [('gapc', 'Gapc'), ('dot', 'Grammar Plot'), ('make', 'Make'), ('run', 'Result'), ('tikz', 'Candidates')] %}
 
         <div id="tabs_results" class="tabs_header">
           {% for (task, label) in result_tabs %}
             {% if (task != 'tikz') or (('tikz' in results) and (results[task]['stdout']|length > 0)) %}
-              <div id="{{task}}" class='tab_label' onclick='switch_tab(this.parentNode, this.id);'>{{label}}</div>
+              <div id="{{task}}" class="tab_label{% if (task in results.keys()) and (results[task]['exit_status'] != 0) %} tab_label_error{% endif %}" onclick='switch_tab(this.parentNode, this.id);'>{{label}}</div>
             {% endif %}
           {% endfor %}
         </div>
 
         {% for (task, label) in result_tabs %}
-          {% if (task != 'tikz') or (('tikz' in results) and (results[task]['stdout']|length > 0)) %}
-            <div id="tab_{{task}}" class="tab">
+          {% if (task != 'tikz') or (('tikz' in results.keys()) and (results['tikz']['stdout']|length > 0)) %}
+            <div id="tab_{{task}}" class="tab {% if (task in results.keys()) and (results[task]['exit_status'] != 0) %} tab_error{% endif %}">
               {% if task in results.keys() %}
-                <div id="result_command_{{taks}}"><pre><code class="language-bash">{{results[task]['command']|safe}}</code></pre></div>
+                <div id="result_command_{{task}}" class="channel"><pre><code class="language-bash command">{{results[task]['command']|safe}}</code></pre><div class="channel_name">COMMAND</div></div>
                 {% if task == 'dot' %}
                   {% if results[task]['exit_status'] == 0 %}
                     <img src="data:image/gif;base64,{{results[task]['stdout'][0]}}" width="100%"/>
@@ -399,11 +413,11 @@
                   {% endfor %}
                 {% else %}
                   {% if results[task]['stdout']|length > 0 %}
-                    <div id="result_stdout_{{taks}}"><pre><code class="language-bash">{{''.join(results[task]['stdout'])|safe}}</code></pre></div>
+                    <div id="result_stdout_{{task}}" class="channel"><pre><code class="language-bash stdout">{{''.join(results[task]['stdout'])|safe}}</code></pre><div class="channel_name">STDOUT</div></div>
                   {% endif %}
                 {% endif %}
                 {% if results[task]['stderr']|length > 0 %}
-                  <div id="result_stderr_{{taks}}"><pre><code class="language-bash">{{''.join(results[task]['stderr'])|safe}}</code></pre></div>
+                  <div id="result_stderr_{{task}}" class="channel"><pre><code class="language-bash stderr">{{''.join(results[task]['stderr'])|safe}}</code></pre><div class="channel_name">STDERR</div></div>
                 {% endif %}
               {% endif %}
             </div>
@@ -411,7 +425,8 @@
         {% endfor %}
       </div>
 
-      <div class="container_code" id="container_code">
+      <div class="container_code group" id="container_code">
+        <legend>Source Code</legend>
         <div id="code_download"></div>
         <button type="button" class="accordion">Header</button>
         <div class="panel" id="container_code_header">container code header</div>
