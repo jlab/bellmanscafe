@@ -51,7 +51,7 @@ def home():
 def download_file(filename):
     p = filename
     return send_file(os.path.join(PREFIX_GAPUSERSOURCES, p),
-                     as_attachment=True)
+                     as_attachment=False, mimetype="text/plain")
 
 # route for the bellman page "/bellman"
 @app.route("/bellman", methods=["GET", "POST"])

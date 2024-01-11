@@ -152,12 +152,17 @@
 
           if (i < {{max_algebras}}) {
             var product = '<select id="product_' + i + '" size="6" onchange="update_instance()" name="product_' + i + '">';
-            for (operator of (['*', '/', '%', '^', '.', '|'])) {
-              product += '<option value="' + operator + '"';
-              if (((operator == '*') && (window.user_input['product_' + i] == null)) || ((window.user_input['product_' + i] != null) && (window.user_input['product_' + i] == operator))) {
+            for (operator of ([['*', 'The lexicographic product.'],
+                               ['/', 'The interleaved product.'],
+                               ['%', 'The cartesian product.'],
+                               ['^', 'The Pareto product.'],
+                               ['.', 'The take-one product. The difference to the lexicographic product is that only one co-optimal result is chosen in the case of co-optimal results.'],
+                               ['|', 'The overlay product. With !A | B!, $A$ is used in the forward computation and $B$ is used during backtracing.']])) {
+              product += '<option value="' + operator[0] + '" title="' + operator[1] + '"';
+              if (((operator[0] == '*') && (window.user_input['product_' + i] == null)) || ((window.user_input['product_' + i] != null) && (window.user_input['product_' + i] == operator[0]))) {
                 product += 'selected="selected"';
               }
-              product += '>' + operator + '</option>';
+              product += '>' + operator[0] + '</option>';
             }
             product += '</select>';
             document.getElementById("container_algebraproduct").innerHTML += product;
