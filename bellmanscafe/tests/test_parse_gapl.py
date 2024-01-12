@@ -99,7 +99,7 @@ class ParseGAPLTests(TestCase):
         self.assertEqual(['sig_rna'], list(obs['signatures'].keys()))
 
     def test_parse_gapl(self):
-        obs = parse_gapl('tests/data/alignments.gap')
+        obs = parse_gapl('bellmanscafe/tests/data/alignments.gap')
         self.assertEqual([
             'algebras',
             'example_inputs',
