@@ -2,7 +2,7 @@ import sys
 import glob
 import os
 import markdown
-from cafe import log
+from bellmanscafe.cafe import log
 
 
 def _extract_comments(block: [str]) -> ([str], [str]):
