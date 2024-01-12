@@ -205,15 +205,16 @@
 
         // grammar
         document.getElementById("select_grammar").size = Object.keys(programs[selected_program]['grammars']).length;
+        var gra = "";
         for (const [key, value] of Object.entries(programs[selected_program]['grammars'])) {
-          var gra = '<option value="' + key + '"';
+          gra += '<option value="' + key + '"';
           if (((window.user_input['select_grammar'] != null) && (window.user_input['select_grammar'] == key)) ||
               ((window.user_input['select_grammar'] == null) && (key == Object.keys(programs[selected_program]['grammars'])[0]))) {
             gra += ' selected="selected"';
           }
           gra += '>' + key + '</option>';
-          document.getElementById("select_grammar").innerHTML += gra;
         }
+        document.getElementById("select_grammar").innerHTML = gra;
 
         // input strings
         document.getElementById("container_inputstrings").innerHTML = '<div class="title">Your input strings</div>';
@@ -528,6 +529,6 @@
 </div>
 
 <span style="font-size: small;">
-gapc version: <a href="https://github.com/jlab/gapc" target="_new">{{ settings['versions']['gapc']|safe }}</a>, ADP_collection version: <a href="https://github.com/jlab/ADP_collection/commit/{{ settings['versions']['ADP_collection']|safe }}" target="_new">{{ settings['versions']['ADP_collection']|safe }}</a>, cafe version: <a href="https://github.com/jlab/bellmanscafe/commit/{{ settings['versions']['cafe']|safe }}" target="_new">{{ settings['versions']['cafe']|safe }}</a>.
+gapc version: <a href="https://github.com/jlab/gapc" target="_new">{{ settings['versions']['gapc']|safe }}</a>, ADP_collection version: <a href="https://github.com/jlab/ADP_collection/commit/{{ settings['versions']['ADP_collection']|safe }}" target="_new">{{ settings['versions']['ADP_collection']|safe }}</a>, cafe version: <a href="https://github.com/jlab/bellmanscafe/commit/{{ settings['versions']['cafe']|safe }}" target="_new">{{ settings['versions']['cafe']|safe }}</a>, contact and help: <a href="mailto:stefan.janssen@computational.bio.uni-giessen.de?subject=Bellman's%20Cafe">stefan.janssen@computational.bio.uni-giessen.de</a>.
 </span>
 {% endblock %}
