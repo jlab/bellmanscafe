@@ -79,9 +79,12 @@ def compile_and_run_gapc(gapl_programs, user_input, settings,
     # the instance is the application of the algebra product to the grammar
     instance = user_input['select_grammar'] + '('
     for idx in range(1, settings['max_algebras']+1):
+        if 'algebra_%i' % idx not in user_input.keys():
+            break
         if user_input['algebra_%i' % idx] != 'empty':
             instance += user_input['algebra_%i' % idx]
         if ((idx < settings['max_algebras']) and
+           ('algebra_%i' % (idx+1) in user_input.keys()) and
            (user_input['algebra_%i' % (idx+1)] != 'empty')):
             instance += user_input['product_%i' % idx]
         else:
