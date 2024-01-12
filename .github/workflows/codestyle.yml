@@ -58,7 +58,7 @@ jobs:
         # conda CLI
         use-mamba: true
         mamba-version: "*"
-        python-version: "3.10"
+        python-version: "3.9"
         environment-file: environment.yml
     - name: run python tests
       shell: bash -el {0}
