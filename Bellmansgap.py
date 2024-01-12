@@ -1,5 +1,4 @@
 import os
-import sys
 
 from flask import Flask, render_template, request, send_file
 import logging
@@ -17,14 +16,16 @@ logging.basicConfig(
     level=logging.DEBUG,
     format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
 
-settings = obtain_cafe_settings(verbose=app.logger)  # see file bellmanscafe/cafe.py
+# see file bellmanscafe/cafe.py
+settings = obtain_cafe_settings(verbose=app.logger)
 gapl_programs = get_gapc_programs(settings['paths']['gapc_programs'])
 
 # the ADP_collection repository contains a directory "Resources" which contains
 # static content for the cafe, e.g. images. To serve these, we need a symlink
 # from flask static dir into the Resources subdir of the repo.
 if not os.path.exists("static/Resources"):
-    os.symlink("../" + settings['paths']['gapc_programs'] + "Resources", "static/Resources")
+    os.symlink("../" + settings['paths']['gapc_programs'] + "Resources",
+               "static/Resources")
 
 
 # route for the start page "/"
@@ -40,6 +41,7 @@ def download_file(filename):
     return send_file(os.path.join(settings['paths']['gapc_programs'], p),
                      as_attachment=False, mimetype="text/plain")
 
+
 # route for the bellman page "/bellman"
 @app.route("/", methods=["GET", "POST"])
 def bellman():
@@ -54,16 +56,15 @@ def bellman():
                 raise ValueError("key collision")
             user_input[key] = value
 
-        results = compile_and_run_gapc(gapl_programs, user_input, settings, verbose=app.logger)
+        results = compile_and_run_gapc(gapl_programs, user_input, settings,
+                                       verbose=app.logger)
 
         # update versions collected during compilation
         settings['versions'] = results['versions']
 
     return render_template(
-        "bellman.html", programs=gapl_programs, settings=settings, user_input=user_input, results=results)
-
-
-
+        "bellman.html", programs=gapl_programs, settings=settings,
+        user_input=user_input, results=results)
 
 
 # # route for the support page

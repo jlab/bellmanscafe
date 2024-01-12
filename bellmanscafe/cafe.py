@@ -7,7 +7,7 @@ import hashlib
 
 def log(msg, level='debug', verbose=sys.stderr):
     if isinstance(verbose, logging.Logger):
-        if level=='info':
+        if level == 'info':
             verbose.info(msg + '\n')
         else:
             verbose.debug(msg)
@@ -54,7 +54,8 @@ def get_repo_commithash(fp_repo: str, verbose=sys.stderr):
     p_version = subprocess.run(cmd, shell=True, text=True,
                                stdout=subprocess.PIPE, cwd=fp_repo)
     version = p_version.stdout.strip()
-    log('obtain repo (%s) commit hash via "%s" = %s\n' % (fp_repo, cmd, version))
+    log('obtain repo (%s) commit hash via "%s" = %s\n' % (
+        fp_repo, cmd, version))
 
     return version
 
@@ -69,8 +70,8 @@ def obtain_cafe_settings(verbose=sys.stderr):
 
     # user submission leads to compilation and execution of new algera products
     # if the user re-submits the same algebra product (also called instance) it
-    # does not need to be re-computed, therefore we are using a cache. JUST this
-    # instance with user inputs have to be run.
+    # does not need to be re-computed, therefore we are using a cache. JUST
+    # this instance with user inputs have to be run.
     fp_cache = "DOCKER/bcafe_cache/"
 
     # don't forget to leave a changelog message
@@ -80,11 +81,13 @@ def obtain_cafe_settings(verbose=sys.stderr):
     # compiler will automatically lead to new cache
     settings['versions'] = dict()
     settings['versions']['gapc'] = get_gapc_version(verbose)
-    settings['versions']['ADP_collection'] = get_repo_commithash(fp_gapc_programs, verbose)
+    settings['versions']['ADP_collection'] = get_repo_commithash(
+        fp_gapc_programs, verbose)
     settings['versions']['cafe'] = get_repo_commithash("./", verbose)
 
     settings['paths'] = dict()
-    settings['paths']['prefix_cache'] = os.path.join(fp_cache, 'gapc_v%s' % settings['versions']['gapc'])
+    settings['paths']['prefix_cache'] = os.path.join(
+        fp_cache, 'gapc_v%s' % settings['versions']['gapc'])
     settings['paths']['gapc_programs'] = fp_gapc_programs
 
     # maximum number of allowed algebras

@@ -2,6 +2,8 @@ import sys
 import glob
 import os
 import markdown
+from cafe import log
+
 
 def _extract_comments(block: [str]) -> ([str], [str]):
     """Takes a list of code lines and splits them into two new list. The first
@@ -32,16 +34,17 @@ def _extract_comments(block: [str]) -> ([str], [str]):
     in_comment = False
     i = 0
     while i < len(fused):
-        if (in_comment == False) and (fused[i:i+2] == '/*'):
+        if (in_comment is False) and (fused[i:i+2] == '/*'):
             in_comment = True
             i += 2
-        elif (in_comment == True) and (fused[i:i+2] == '*/'):
+        elif (in_comment is True) and (fused[i:i+2] == '*/'):
             comment += DELIM
             i += 2
             in_comment = False
             continue
         # keep // comments as part of code to use them as annotations of code,
-        # instead of /* */ comments which shall be describe the block as a whole
+        # instead of /* */ comments which shall be describe the block as a
+        # whole
         # elif (in_comment == False) and (fused[i:i+2] == '//'):
         #     cmt = fused[i+2:].split(DELIM)[0]
         #     comment += cmt + DELIM
@@ -62,7 +65,7 @@ def _extract_comments(block: [str]) -> ([str], [str]):
     return code.split(DELIM), [c for c in cmts if c != ""]
 
 
-def _merge(a: dict, b: dict, subdicts: [str]=['comments']):
+def _merge(a: dict, b: dict, subdicts: [str] = ['comments']):
     """Merge result dicts of _parse_gapl_XXX functions.
 
     Parameters
@@ -91,7 +94,8 @@ def _merge(a: dict, b: dict, subdicts: [str]=['comments']):
             # check if subdict keys collide
             coll = set(a[sub].keys()) & set(b[sub].keys())
             if len(coll) > 0:
-                raise ValueError("Conflicting '%s' keys: %s!" % (sub, ', '.join(coll)))
+                raise ValueError("Conflicting '%s' keys: %s!" % (
+                    sub, ', '.join(coll)))
         for d in [a, b]:
             if (sub in d.keys()):
                 if len(res[sub]) == 0:
@@ -156,7 +160,8 @@ def _parse_gapl_signature(block: [str]):
     Parameters
     ----------
     block : [str]
-        The code lines between the beginning of the signature and first algebra.
+        The code lines between the beginning of the signature and first
+        algebra.
 
     Returns
     -------
@@ -178,7 +183,8 @@ def _parse_gapl_single_algebra_grammar(block, position=0):
 
     name = code[0].split()[1].split('(')[0]
 
-    return {'name': name, 'position': position, 'code': code, 'comments': comments}
+    return {'name': name, 'position': position,
+            'code': code, 'comments': comments}
 
 
 def _parse_gapl_algebras(block):
@@ -192,16 +198,19 @@ def _parse_gapl_algebras(block):
 
     Returns
     -------
-    {'algebras': {alg_name1: {'code': [str], 'comments': [str], position: int},
-                  alg_name2: {'code': [str], 'comments': [str], position: int}}}
+    {'algebras': {alg_name1: {'code': [str], 'comments': [str],
+                              position: int},
+                  alg_name2: {'code': [str], 'comments': [str],
+                              position: int}}}
     """
     # subdivide into individual algebras
     alg_blocks = []
     blk = []
-    #seen_algebra_in_blk = False
     for line in block:
         if line.startswith('algebra '):
-            if (' auto ' in line) or (' implements ' in line) or (' extends ' in line):
+            if ((' auto ' in line) or
+               (' implements ' in line) or
+               (' extends ' in line)):
                 if len(blk) > 0:
                     alg_blocks.append(blk)
                 blk = [line]
@@ -210,12 +219,14 @@ def _parse_gapl_algebras(block):
     if len(blk) > 0:
         alg_blocks.append(blk)
 
-
     # iterate sub-blocks and parse algebra
     res = dict()
     for i, alg in enumerate(alg_blocks):
         alg_dict = _parse_gapl_single_algebra_grammar(alg, i)
-        res[alg_dict['name']] = {k: v for k,v in alg_dict.items() if k != 'name'}
+        res[alg_dict['name']] = {k: v
+                                 for k, v
+                                 in alg_dict.items()
+                                 if k != 'name'}
 
     return {'algebras': res}
 
@@ -253,7 +264,10 @@ def _parse_gapl_grammars(block):
     res = dict()
     for i, gra in enumerate(gra_blocks):
         gra_dict = _parse_gapl_single_algebra_grammar(gra, i)
-        res[gra_dict['name']] = {k: v for k,v in gra_dict.items() if k != 'name'}
+        res[gra_dict['name']] = {k: v
+                                 for k, v
+                                 in gra_dict.items()
+                                 if k != 'name'}
 
     return {'grammars': res}
 
@@ -269,8 +283,10 @@ def _parse_gapl_footer(block):
 
     Returns
     -------
-    {'instances': {ins_name1: {'code': [str], 'comments': [str], position: int},
-                   ins_name2: {'code': [str], 'comments': [str], position: int},
+    {'instances': {ins_name1: {'code': [str], 'comments': [str],
+                   position: int},
+                   ins_name2: {'code': [str], 'comments': [str],
+                   position: int},
     }}
     """
     # subdivide into individual instances
@@ -291,7 +307,10 @@ def _parse_gapl_footer(block):
     res = dict()
     for i, ins in enumerate(ins_blocks):
         ins_dict = _parse_gapl_single_algebra_grammar(ins, i)
-        res[ins_dict['name']] = {k: v for k,v in ins_dict.items() if k != 'name'}
+        res[ins_dict['name']] = {k: v
+                                 for k, v
+                                 in ins_dict.items()
+                                 if k != 'name'}
 
     return {'instances': res}
 
@@ -301,31 +320,48 @@ def _shift_comments(gapl):
        the component ABOVE the comment. However, if makes semantically more
        sense to assign it to the component BELOW the comment.
     """
-    srt_instances = sorted(gapl['instances'].items(), key=lambda item: (item[1]['position']), reverse=True)
+    srt_instances = sorted(gapl['instances'].items(),
+                           key=lambda item: (item[1]['position']),
+                           reverse=True)
 
     # store last comment in a new field calles "footer"
-    gapl['footer'] = {'comments': gapl['instances'][srt_instances[0][0]]['comments']}
+    gapl['footer'] = {'comments':
+                      gapl['instances'][srt_instances[0][0]]['comments']}
 
     # move every comment one component "down"
     for _next, curr in zip(srt_instances, srt_instances[1:]):
-        gapl['instances'][_next[0]]['comments'] = gapl['instances'][curr[0]]['comments']
+        gapl['instances'][_next[0]]['comments'] = \
+            gapl['instances'][curr[0]]['comments']
 
-    srt_grammars = sorted(gapl['grammars'].items(), key=lambda item: (item[1]['position']), reverse=True)
-    gapl['instances'][srt_instances[-1][0]]['comments'] = gapl['grammars'][srt_grammars[0][0]]['comments']
+    srt_grammars = sorted(gapl['grammars'].items(),
+                          key=lambda item: (item[1]['position']), reverse=True)
+    gapl['instances'][srt_instances[-1][0]]['comments'] = \
+        gapl['grammars'][srt_grammars[0][0]]['comments']
     for _next, curr in zip(srt_grammars, srt_grammars[1:]):
-        gapl['grammars'][_next[0]]['comments'] = gapl['grammars'][curr[0]]['comments']
+        gapl['grammars'][_next[0]]['comments'] = \
+            gapl['grammars'][curr[0]]['comments']
 
-    srt_algebras = sorted(gapl['algebras'].items(), key=lambda item: (item[1]['position']), reverse=True)
-    gapl['grammars'][srt_grammars[-1][0]]['comments'] = gapl['algebras'][srt_algebras[0][0]]['comments']
+    srt_algebras = sorted(gapl['algebras'].items(),
+                          key=lambda item: (item[1]['position']),
+                          reverse=True)
+    gapl['grammars'][srt_grammars[-1][0]]['comments'] = \
+        gapl['algebras'][srt_algebras[0][0]]['comments']
     for _next, curr in zip(srt_algebras, srt_algebras[1:]):
-        gapl['algebras'][_next[0]]['comments'] = gapl['algebras'][curr[0]]['comments']
+        gapl['algebras'][_next[0]]['comments'] = \
+            gapl['algebras'][curr[0]]['comments']
 
-    srt_signatures = sorted(gapl['signatures'].items(), key=lambda item: (item[1]['position']), reverse=True)
-    gapl['algebras'][srt_algebras[-1][0]]['comments'] = gapl['signatures'][srt_signatures[0][0]]['comments']
+    srt_signatures = sorted(gapl['signatures'].items(),
+                            key=lambda item: (item[1]['position']),
+                            reverse=True)
+    gapl['algebras'][srt_algebras[-1][0]]['comments'] = \
+        gapl['signatures'][srt_signatures[0][0]]['comments']
     for _next, curr in zip(srt_signatures, srt_signatures[1:]):
-        gapl['signatures'][_next[0]]['comments'] = gapl['signatures'][curr[0]]['comments']
+        gapl['signatures'][_next[0]]['comments'] = \
+            gapl['signatures'][curr[0]]['comments']
 
-    gapl['signatures'][srt_signatures[-1][0]]['comments'] = gapl['header']['comments'];
+    gapl['signatures'][srt_signatures[-1][0]]['comments'] = \
+        gapl['header']['comments']
+
 
 def _extract_example_inputs(gapl):
     if 'example_inputs' in gapl:
@@ -357,20 +393,29 @@ def parse_gapl(fp_program):
 
         for i in range(len(lines)):
             line = lines[i].strip()
-
-            if ((saw_signature, saw_algebra, saw_grammar, saw_instance) == (False, False, False, False)) and line.startswith('signature ') and ('(alphabet, ' in line):
+            tup = (saw_signature, saw_algebra, saw_grammar, saw_instance)
+            if ((tup == (False, False, False, False)) and
+               line.startswith('signature ') and
+               ('(alphabet, ' in line)):
                 saw_signature = True
                 gapl.update(_parse_gapl_header(block))
                 block = []
-            elif ((saw_signature, saw_algebra, saw_grammar, saw_instance) == (True, False, False, False)) and line.startswith('algebra ') and ((' implements ' in line) or (' auto ' in line)):
+            elif ((tup == (True, False, False, False)) and
+                  line.startswith('algebra ') and
+                  ((' implements ' in line) or
+                   (' auto ' in line))):
                 saw_algebra = True
                 gapl.update(_parse_gapl_signature(block))
                 block = []
-            elif ((saw_signature, saw_algebra, saw_grammar, saw_instance) == (True, True, False, False)) and line.startswith('grammar ') and (' uses ' in line) and ('axiom' in line):
+            elif ((tup == (True, True, False, False)) and
+                  line.startswith('grammar ') and
+                  (' uses ' in line) and ('axiom' in line)):
                 gapl.update(_parse_gapl_algebras(block))
                 saw_grammar = True
                 block = []
-            elif ((saw_signature, saw_algebra, saw_grammar, saw_instance) == (True, True, True, False)) and line.startswith('instance ') and ('=' in line) and (';' in line):
+            elif ((tup == (True, True, True, False)) and
+                  line.startswith('instance ') and
+                  ('=' in line) and (';' in line)):
                 gapl.update(_parse_gapl_grammars(block))
                 block = []
                 saw_instance = True
@@ -384,11 +429,14 @@ def parse_gapl(fp_program):
 
     return gapl
 
+
 def get_gapc_programs(fp_dir, verbose=sys.stderr):
     res = dict()
     for fp_gapl in sorted(glob.glob(os.path.join(fp_dir, '*.gap'))):
         name = fp_gapl.split('/')[-1][:-1*len('.gap')]
-        print("Parsing '%s' ..." % os.path.basename(fp_gapl), file=verbose, end="")
+        log("Parsing '%s' ..." % os.path.basename(fp_gapl), 'info', verbose)
         res[name] = parse_gapl(fp_gapl)
-        print(" found %i algebras, %i grammars and %i instances" % (len(res[name]['algebras']), len(res[name]['grammars']), len(res[name]['instances'])), file=verbose)
+        log(" found %i algebras, %i grammars and %i instances" % (
+            len(res[name]['algebras']), len(res[name]['grammars']),
+            len(res[name]['instances'])), 'info', verbose)
     return res

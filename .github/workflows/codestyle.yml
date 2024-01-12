@@ -38,4 +38,4 @@ jobs:
         conda init bash
         source ~/.bashrc
         conda activate bellmanscafe
-        flake8 *.py
+        flake8

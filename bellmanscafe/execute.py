@@ -6,7 +6,9 @@ import base64
 import os
 import glob
 
-from bellmanscafe.cafe import get_gapc_version, get_repo_commithash, log, get_codefiles_hash
+from bellmanscafe.cafe import get_gapc_version, get_repo_commithash, log, \
+    get_codefiles_hash
+
 
 def read_exit_status_file(fp):
     """Read a file into which the exit code has been written.
@@ -71,35 +73,45 @@ def compile_and_run_gapc(gapl_programs, user_input, settings,
 
     # update global commit hash of user repository as it might change during
     # server run time through cron jobs
-    settings['versions']['ADP_collection'] = get_repo_commithash(settings['paths']['gapc_programs'], verbose)
+    settings['versions']['ADP_collection'] = get_repo_commithash(
+        settings['paths']['gapc_programs'], verbose)
 
     # the instance is the application of the algebra product to the grammar
     instance = user_input['select_grammar'] + '('
     for idx in range(1, settings['max_algebras']+1):
         if user_input['algebra_%i' % idx] != 'empty':
             instance += user_input['algebra_%i' % idx]
-        if (idx < settings['max_algebras']) and (user_input['algebra_%i' % (idx+1)] != 'empty'):
+        if ((idx < settings['max_algebras']) and
+           (user_input['algebra_%i' % (idx+1)] != 'empty')):
             instance += user_input['product_%i' % idx]
         else:
             break
     instance += ')'
 
     hash_instance = hashlib.md5(("%s_%s_%s_%s" % (
-        user_input['select_program'], instance, user_input['plot_grammar'], 'outside_grammar' in user_input)).encode('utf-8')).hexdigest()
+        user_input['select_program'], instance, user_input['plot_grammar'],
+        'outside_grammar' in user_input)).encode('utf-8')).hexdigest()
     fp_workdir = os.path.join(settings['paths']['prefix_cache'], hash_instance)
     log('working directory for instance "%s" is "%s"\n' % (
         instance, fp_workdir), "info", verbose)
 
-    param_outside = " --outside_grammar ALL " if 'outside_grammar' in user_input else ""
+    param_outside = ""
+    if 'outside_grammar' in user_input:
+        param_outside = " --outside_grammar ALL "
 
     inputstrings = []
     for key, value in user_input.items():
         if key.startswith('userinput_'):
             inputstrings.append((int(key.split('_')[-1]), value))
-    inputstrings = [value for (pos, value) in sorted(inputstrings, key=lambda x: x[0])]
+    inputstrings = [value
+                    for (pos, value)
+                    in sorted(inputstrings, key=lambda x: x[0])]
 
-    fp_gapfile = os.path.join(settings['paths']['gapc_programs'], user_input['select_program']+'.gap')
-    fps_headerfiles = list(map(lambda x: os.path.join(settings['paths']['gapc_programs'], x), gapl_programs[user_input['select_program']]['imports']))
+    fp_gapfile = os.path.join(settings['paths']['gapc_programs'],
+                              user_input['select_program']+'.gap')
+    fps_headerfiles = list(map(
+        lambda x: os.path.join(settings['paths']['gapc_programs'], x),
+        gapl_programs[user_input['select_program']]['imports']))
     steps = {
         # 0) inject instance bcafe to original *.gap source file (as it might
         #    not be defined)
@@ -117,21 +129,26 @@ def compile_and_run_gapc(gapl_programs, user_input, settings,
         'make': {'cmds': 'make -f out.mf'},
 
         # 4) run the compiled binary with user input (not cached)
-        'run': {'cmds': '../out %s' % ' '.join(map(lambda x: '"%s"' % x, inputstrings))},
+        'run': {'cmds': '../out %s' % ' '.join(map(lambda x: '"%s"' % x,
+                                                   inputstrings))},
 
         # 5) OPTIONAL: if algebra product uses tikZ, images will be rendered
-        'tikz': {'cmds': '/usr/bin/time -v -o pdflatex.benchmark pdflatex tikz.tex '
-                         '2>> tikz.err && '
-                         '/usr/bin/time -v -o pdfmake.benchmark make -f tikz.makefile '
-                         '2>> tikz.err && '
-                         'mv -v tikz.log tikz.out 2>> tikz.err',
-                 'benchmarks': ['pdflatex.benchmark', 'pdfmake.benchmark']}
+        'tikz': {
+            'cmds':
+                '/usr/bin/time -v -o pdflatex.benchmark pdflatex tikz.tex '
+                '2>> tikz.err && '
+                '/usr/bin/time -v -o pdfmake.benchmark make -f tikz.makefile '
+                '2>> tikz.err && '
+                'mv -v tikz.log tikz.out 2>> tikz.err',
+            'benchmarks': ['pdflatex.benchmark', 'pdfmake.benchmark']}
     }
 
     # add default benchmarking to steps (except tikz)
     for name in steps.keys():
         if name not in ['tikz']:
-            steps[name]['cmds'] = 'time -v -o "%s.benchmark" %s > %s.out 2> %s.err' % (name, steps[name]['cmds'], name, name)
+            steps[name]['cmds'] = ('time -v -o "%s.benchmark" %s'
+                                   ' > %s.out 2> %s.err') % (
+                                   name, steps[name]['cmds'], name, name)
             steps[name]['benchmarks'] = ["%s.benchmark" % name]
     # steps = {name: 'time -v -o "%s.benchmark" %s > %s.out 2> %s.err' % (
     #          name, cmd, name, name) if name not in ['tikz'] else cmd
@@ -142,17 +159,20 @@ def compile_and_run_gapc(gapl_programs, user_input, settings,
         # if a matching cache dir exists, we test if the source file contents
         # has changed.
         hash_program = get_codefiles_hash([fp_gapfile] + fps_headerfiles)
-        invalid_cache = not os.path.exists(os.path.join(fp_workdir, '%s.codehash' % hash_program))
+        invalid_cache = not os.path.exists(
+            os.path.join(fp_workdir, '%s.codehash' % hash_program))
         if invalid_cache:
             shutil.rmtree(fp_workdir)
-            log('delete outdated cache dir "%s"\n' % fp_workdir, 'info', verbose)
+            log('delete outdated cache dir "%s"\n' % fp_workdir, 'info',
+                verbose)
 
     if not os.path.exists(fp_workdir):
         os.makedirs(fp_workdir, exist_ok=True)
         log('create working directory "%s"\n' % fp_workdir, 'info', verbose)
 
         hash_program = get_codefiles_hash([fp_gapfile] + fps_headerfiles)
-        with open(os.path.join(fp_workdir, '%s.codehash' % hash_program), 'w') as f:
+        with open(os.path.join(fp_workdir,
+                               '%s.codehash' % hash_program), 'w') as f:
             f.write('\n'.join([fp_gapfile] + fps_headerfiles))
 
         # copy *.gap and header source files into working directory
@@ -166,15 +186,18 @@ def compile_and_run_gapc(gapl_programs, user_input, settings,
                 # don't run the compiled binary in here since it shall not be
                 # part of the cache
                 continue
-            child = subprocess.run(steps[name]['cmds'], shell=True, text=True, cwd=fp_workdir)
+            child = subprocess.run(steps[name]['cmds'], shell=True,
+                                   text=True, cwd=fp_workdir)
             # we explicitly store the exit status into an extra file ... to
             # better indicate errors in the webpage
             with open(os.path.join(fp_workdir,
                                    '%s.exitstatus' % name), 'w') as f:
                 f.write('%i\n' % child.returncode)
-            log('executing (in %s) "%s"\n' % (fp_workdir, steps[name]['cmds']), 'info', verbose)
+            log('executing (in %s) "%s"\n' % (
+                fp_workdir, steps[name]['cmds']), 'info', verbose)
 
-    inputs_hash = hashlib.md5(''.join(inputstrings).encode('utf-8')).hexdigest()
+    inputs_hash = hashlib.md5(
+        ''.join(inputstrings).encode('utf-8')).hexdigest()
     fp_binary_workdir = os.path.join(fp_workdir, 'run_%s' % inputs_hash)
     uses_tikz = False
     if not os.path.exists(fp_binary_workdir):
@@ -183,8 +206,9 @@ def compile_and_run_gapc(gapl_programs, user_input, settings,
         # execute the binary with user input(s)
         child = subprocess.run(steps['run']['cmds'], shell=True, text=True,
                                cwd=fp_binary_workdir)
-        log('no cached results found, thus executing (in %s) "%s"\n'
-                        % (fp_binary_workdir, steps['run']['cmds']), 'info', verbose)
+        log('no cached results found, thus executing (in %s) "%s"\n' % (
+            fp_binary_workdir, steps['run']['cmds']),
+            'info', verbose)
         with open(os.path.join(fp_binary_workdir, 'run.exitstatus'), 'w') as f:
             f.write('%i\n' % child.returncode)
 
@@ -201,13 +225,15 @@ def compile_and_run_gapc(gapl_programs, user_input, settings,
                         os.path.join(fp_binary_workdir, 'run.out'),
                         os.path.join(fp_binary_workdir, 'tikz.tex'),
                         settings['limit_candidate_trees'])
-                    with open(os.path.join(fp_binary_workdir, 'num_candidates.txt'), 'w') as N:
+                    with open(os.path.join(fp_binary_workdir,
+                                           'num_candidates.txt'), 'w') as N:
                         N.write(str(num_candidates))
 
                     child = subprocess.run(steps['tikz']['cmds'], shell=True,
                                            text=True, cwd=fp_binary_workdir)
-                    log('executing (in %s) "%s"\n' % (fp_binary_workdir,
-                                                    steps['tikz']['cmds']), 'info', verbose)
+                    log('executing (in %s) "%s"\n' % (
+                        fp_binary_workdir, steps['tikz']['cmds']),
+                        'info', verbose)
                     with open(os.path.join(fp_binary_workdir,
                                            'tikz.exitstatus'), 'w') as f:
                         f.write('%i\n' % child.returncode)
@@ -220,13 +246,16 @@ def compile_and_run_gapc(gapl_programs, user_input, settings,
         fp_cache = fp_workdir
         if name in ["run", "tikz"]:
             fp_cache = fp_binary_workdir
-        rep = {'command': steps[name]['cmds'], 'stdout': [], 'stderr': [], 'cache': os.path.basename(fp_cache), 'runtime': 0, 'memory': 0}
+        rep = {'command': steps[name]['cmds'], 'stdout': [], 'stderr': [],
+               'cache': os.path.basename(fp_cache), 'runtime': 0, 'memory': 0}
         if (name not in ['tikz', 'dot']):
             with open(os.path.join(fp_cache, '%s.out' % name)) as f:
                 for i, line in enumerate(f.readlines()):
                     rep['stdout'].append(line)
                     if i >= settings['max_output_lines']:
-                        rep['stdout_warning'] = 'output was limited to first %i lines' % settings['max_output_lines']
+                        rep['stdout_warning'] = \
+                            'output was limited to first %i lines' % settings[
+                                'max_output_lines']
                         break
         if (name not in ['tikz']) or uses_tikz:
             with open(os.path.join(fp_cache, '%s.err' % name)) as f:
@@ -235,28 +264,34 @@ def compile_and_run_gapc(gapl_programs, user_input, settings,
             rep['exit_status'] = read_exit_status_file(
                 os.path.join(fp_cache, '%s.exitstatus' % name))
         if (name == 'tikz') and uses_tikz:
-            for rank, fp_candidate in enumerate(sorted(
-                    glob.glob(os.path.join(fp_cache, 'tikz-figure*.png')),
-                    key=lambda x: int(x.split('figure')[1].split('.')[0]))):
+            tikz_imgs = sorted(
+                glob.glob(os.path.join(fp_cache, 'tikz-figure*.png')),
+                key=lambda x: int(x.split('figure')[1].split('.')[0]))
+            for rank, fp_candidate in enumerate(tikz_imgs):
                 if (os.stat(fp_candidate).st_size > 0):
                     with open(fp_candidate, "rb") as image:
-                        rep['stdout'].append(base64.b64encode(image.read()).decode(
-                            'utf-8'))
+                        rep['stdout'].append(
+                            base64.b64encode(image.read()).decode('utf-8'))
                 if rank+1 >= settings['limit_candidate_trees']:
                     log(('number of candidates exceeds displaying limit of '
-                         'top %i!\n') % settings['limit_candidate_trees'], 'info', verbose)
+                         'top %i!\n') % settings['limit_candidate_trees'],
+                        'info', verbose)
                     break
             with open(os.path.join(fp_cache, 'num_candidates.txt'), 'r') as N:
-                rep['total_number_tikz_candidates'] = int(''.join(N.readlines()))
+                rep['total_number_tikz_candidates'] = int(
+                    ''.join(N.readlines()))
 
         for fp_benchmark in steps[name]['benchmarks']:
             try:
                 with open(os.path.join(fp_cache, fp_benchmark), 'r') as f:
                     for line in f.readlines():
-                        if ('User time (seconds):' in line) or ('System time (seconds):' in line):
-                            rep['runtime'] += float(line.strip().split(': ')[-1])
+                        if (('User time (seconds):' in line) or
+                           ('System time (seconds):' in line)):
+                            rep['runtime'] += float(
+                                line.strip().split(': ')[-1])
                         elif 'Maximum resident set size (kbytes):' in line:
-                            rep['memory'] += float(line.strip().split(': ')[-1])
+                            rep['memory'] += float(
+                                line.strip().split(': ')[-1])
             except FileNotFoundError:
                 pass
         # convert KB to MB
@@ -272,7 +307,8 @@ def compile_and_run_gapc(gapl_programs, user_input, settings,
     fp_plot = os.path.join(fp_workdir, "grammar.gif")
     if os.path.exists(fp_plot) and (os.stat(fp_plot).st_size > 0):
         with open(fp_plot, "rb") as image:
-            report['dot']['stdout'] = [base64.b64encode(image.read()).decode('utf-8')]
+            report['dot']['stdout'] = [base64.b64encode(
+                image.read()).decode('utf-8')]
     else:
         report['dot']['exit_status'] = 1
 
