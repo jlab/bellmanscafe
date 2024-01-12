@@ -13,7 +13,7 @@
 
 <!-- This script adds a title to the banner at the top of the page. -->
 <script type=text/javascript>
-    version = "v2.0"
+  document.getElementById("divbanner").innerHTML = "Bellman's Cafe {{settings['cafe_version']}}";
 
     window.programs = {{programs|safe}};
     window.user_input = {{user_input|safe}};
@@ -61,10 +61,8 @@
         var txt_instance = "";
         if (document.getElementById("select_grammar").value != "empty") {
           txt_instance += document.getElementById("select_grammar").value;
-          document.getElementById("submit").removeAttribute('disabled');
         } else {
           txt_instance += "MISSING GRAMMAR";
-          document.getElementById("submit").disabled="yes";
         }
         txt_instance += "(";
 
@@ -206,16 +204,11 @@
         }
 
         // grammar
-        var gra = '<option value="empty"';
-        if ((window.user_input['select_grammar'] == null) || (window.user_input['select_grammar'] == "empty")) {
-          gra += ' selected="selected"';
-        }
-        gra += '>Choose a grammar</option>';
-        document.getElementById("select_grammar").innerHTML = gra;
-        document.getElementById("select_grammar").size = (Object.keys(programs[selected_program]['grammars']).length + 1);
+        document.getElementById("select_grammar").size = Object.keys(programs[selected_program]['grammars']).length;
         for (const [key, value] of Object.entries(programs[selected_program]['grammars'])) {
-          gra = '<option value="' + key + '"';
-          if ((window.user_input['select_grammar'] != null) && (window.user_input['select_grammar'] == key)) {
+          var gra = '<option value="' + key + '"';
+          if (((window.user_input['select_grammar'] != null) && (window.user_input['select_grammar'] == key)) ||
+              ((window.user_input['select_grammar'] == null) && (key == Object.keys(programs[selected_program]['grammars'])[0]))) {
             gra += ' selected="selected"';
           }
           gra += '>' + key + '</option>';
@@ -318,7 +311,6 @@
           document.getElementById("tabs_results").scrollIntoView();
         }
       } else {
-        document.getElementById("submit").disabled = 'true';
         switch_tab(document.getElementById("tabs_results"), 'gapc');
       }
 
@@ -457,7 +449,7 @@
         </fieldset>
       </div>
       <div class="container_submit" id="container_submit">
-        <button type="submit" id="submit" onclick="execute_gapc();" disabled>Submit</button>
+        <button type="submit" id="submit" onclick="execute_gapc();">Submit</button>
       </div>
       <div class="container_results group" id="container_results">
         <legend>Execution Results</legend>
@@ -489,7 +481,7 @@
                       <div id="tikz_prev" onclick='switch_tikz_gallery("prev");'>❮</div>
                       {% for cand in results['tikz']['stdout'] %}
                         <div id="candidate_{{loop.index}}" class="tikz_candidate" style="display: {% if loop.index == 1 %}block;{% else %}none;{% endif %}">
-                          <img src="data:image/gif;base64,{{cand}}" style="height: 70vw; min-height: 330px;"/>
+                          <img src="data:image/gif;base64,{{cand}}"/>
                         </div>
                       {% endfor %}
                       <div id="tikz_next" onclick='switch_tikz_gallery("next");'>❯</div>

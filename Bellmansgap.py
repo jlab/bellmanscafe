@@ -8,6 +8,8 @@ from bellmanscafe.cafe import obtain_cafe_settings
 from bellmanscafe.parse_gapl import get_gapc_programs
 from bellmanscafe.execute import compile_and_run_gapc
 
+VERSION = "v2.0"
+
 # the Cafe shall let users interact with a collection of Bellman's GAP
 # programs like Needleman-Wunsch or ElMamun. The FP_GAPUSERSOURCES variable
 # must point to the path containing these sources.
@@ -33,16 +35,15 @@ logging.basicConfig(
     level=logging.DEBUG,
     format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
 
-
-
 settings = obtain_cafe_settings(PREFIX_CACHE, PREFIX_GAPUSERSOURCES, verbose=app.logger)
+settings['cafe_version'] = VERSION
 gapl_programs = get_gapc_programs(settings['paths']['gapc_programs'])
 
 
 # route for the start page "/"
-@app.route("/")
-def home():
-    return render_template("index.html")
+# @app.route("/")
+# def home():
+#     return render_template("index.html")
 
 
 # route for downloading a file
@@ -53,7 +54,7 @@ def download_file(filename):
                      as_attachment=False, mimetype="text/plain")
 
 # route for the bellman page "/bellman"
-@app.route("/bellman", methods=["GET", "POST"])
+@app.route("/", methods=["GET", "POST"])
 def bellman():
     user_input = dict()
     results = dict()
@@ -78,10 +79,10 @@ def bellman():
 
 
 
-# route for the support page
-@app.route("/support")
-def support():
-    return render_template('support.html')
+# # route for the support page
+# @app.route("/support")
+# def support():
+#     return render_template('support.html')
 
 
 if __name__ == "__main__":
