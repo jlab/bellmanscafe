@@ -18,7 +18,7 @@ class ParseGAPLTests(TestCase):
                       'userinput_1': 'FREIZEIT',
                       'userinput_2': 'ZEITGEIST'}
 
-        settings = {'paths': {'gapc_programs': 'bellmanscafe/test/data/',
+        settings = {'paths': {'gapc_programs': 'bellmanscafe/tests/data/',
                               'prefix_cache': './cache_dir/'},
                     'versions': {'gapc': 'kalle',
                                  'ADP_collection': 'heinz'},
