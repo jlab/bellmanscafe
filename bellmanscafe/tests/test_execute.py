@@ -26,7 +26,7 @@ class ParseGAPLTests(TestCase):
                     'max_output_lines': 5000}
 
         obs = compile_and_run_gapc(gapl_programs, user_input, settings)
-        print(obs)
+        self.assertEqual('( -3 , 4 )', obs['run']['stdout'][-1].strip())
 
 
 if __name__ == '__main__':

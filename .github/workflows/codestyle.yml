@@ -60,6 +60,11 @@ jobs:
         mamba-version: "*"
         python-version: "3.9"
         environment-file: environment.yml
+    - name: install gapc
+      run: |
+        sudo add-apt-repository ppa:janssenlab/software
+        sudo apt-get update
+        sudo apt-get install bellmansgapc
     - name: run python tests
       shell: bash -el {0}
       run: |
