@@ -8,24 +8,6 @@ from bellmanscafe.cafe import obtain_cafe_settings
 from bellmanscafe.parse_gapl import get_gapc_programs
 from bellmanscafe.execute import compile_and_run_gapc
 
-VERSION = "v2.0"
-
-# the Cafe shall let users interact with a collection of Bellman's GAP
-# programs like Needleman-Wunsch or ElMamun. The FP_GAPUSERSOURCES variable
-# must point to the path containing these sources.
-PREFIX_GAPUSERSOURCES = "../ADP_collection/"
-
-# the ADP_collection repository contains a directory "Resources" which contains
-# static content for the cafe, e.g. images. To serve these, we need a symlink
-# from flask static dir into the Resources subdir of the repo.
-if not os.path.exists("static/Resources"):
-    os.symlink("../" + PREFIX_GAPUSERSOURCES + "Resources", "static/Resources")
-
-# user submission leads to compilation and execution of new algera products
-# if the user re-submits the same algebra product (also called instance) it
-# does not need to be re-computed, therefore we are using a cache. JUST this
-# instance with user inputs have to be run.
-PREFIX_CACHE = "DOCKER/bcafe_cache/"
 
 app = Flask(__name__)
 app.secret_key = "xasdqfghuioiuwqenjdcbjhawbuomcujeq1217846421kopNSJJGWmc8u29"
@@ -35,9 +17,14 @@ logging.basicConfig(
     level=logging.DEBUG,
     format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
 
-settings = obtain_cafe_settings(PREFIX_CACHE, PREFIX_GAPUSERSOURCES, verbose=app.logger)
-settings['cafe_version'] = VERSION
+settings = obtain_cafe_settings(verbose=app.logger)  # see file bellmanscafe/cafe.py
 gapl_programs = get_gapc_programs(settings['paths']['gapc_programs'])
+
+# the ADP_collection repository contains a directory "Resources" which contains
+# static content for the cafe, e.g. images. To serve these, we need a symlink
+# from flask static dir into the Resources subdir of the repo.
+if not os.path.exists("static/Resources"):
+    os.symlink("../" + settings['paths']['gapc_programs'] + "Resources", "static/Resources")
 
 
 # route for the start page "/"
@@ -50,7 +37,7 @@ gapl_programs = get_gapc_programs(settings['paths']['gapc_programs'])
 @app.route("/<filename>/download")
 def download_file(filename):
     p = filename
-    return send_file(os.path.join(PREFIX_GAPUSERSOURCES, p),
+    return send_file(os.path.join(settings['paths']['gapc_programs'], p),
                      as_attachment=False, mimetype="text/plain")
 
 # route for the bellman page "/bellman"

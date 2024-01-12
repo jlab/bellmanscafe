@@ -59,8 +59,22 @@ def get_repo_commithash(fp_repo: str, verbose=sys.stderr):
     return version
 
 
-def obtain_cafe_settings(fp_cache, fp_gapc_programs, verbose=sys.stderr):
+def obtain_cafe_settings(verbose=sys.stderr):
     settings = dict()
+
+    # the Cafe shall let users interact with a collection of Bellman's GAP
+    # programs like Needleman-Wunsch or ElMamun. The FP_GAPUSERSOURCES variable
+    # must point to the path containing these sources.
+    fp_gapc_programs = "../ADP_collection/"
+
+    # user submission leads to compilation and execution of new algera products
+    # if the user re-submits the same algebra product (also called instance) it
+    # does not need to be re-computed, therefore we are using a cache. JUST this
+    # instance with user inputs have to be run.
+    fp_cache = "DOCKER/bcafe_cache/"
+
+    # don't forget to leave a changelog message
+    settings['cafe_version'] = "v2.0"
 
     # obtain gapc version number to prefix cache prefix. Thus, updated gapc
     # compiler will automatically lead to new cache
