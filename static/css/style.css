@@ -143,3 +143,13 @@ div#tikz_title {
 div#tikz_gallery {
   background-color: #ffffff;
 }
+
+div.sys_info {
+  color: #999999;
+  font-size: small;
+}
+div.stdout_warning {
+  color: #ff0000;
+  font-size: large;
+  text-align: center;
+}

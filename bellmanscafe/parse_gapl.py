@@ -325,6 +325,7 @@ def _shift_comments(gapl):
     for _next, curr in zip(srt_signatures, srt_signatures[1:]):
         gapl['signatures'][_next[0]]['comments'] = gapl['signatures'][curr[0]]['comments']
 
+    gapl['signatures'][srt_signatures[-1][0]]['comments'] = gapl['header']['comments'];
 
 def _extract_example_inputs(gapl):
     if 'example_inputs' in gapl:

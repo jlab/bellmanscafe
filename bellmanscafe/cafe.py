@@ -79,6 +79,9 @@ def obtain_cafe_settings(fp_cache, fp_gapc_programs, verbose=sys.stderr):
     # limit tikZ image generation to:
     settings['limit_candidate_trees'] = 20
 
+    # maximum output lines:
+    settings['max_output_lines'] = 5000
+
     return settings
 
 
