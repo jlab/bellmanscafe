@@ -316,9 +316,9 @@ def _parse_gapl_footer(block):
 
 
 def _shift_comments(gapl):
-    """All comments are by now associated to the "wrong" program component, i.e.
-       the component ABOVE the comment. However, if makes semantically more
-       sense to assign it to the component BELOW the comment.
+    """All comments are by now associated to the "wrong" program component,
+       i.e. the component ABOVE the comment. However, if makes semantically
+       more sense to assign it to the component BELOW the comment.
     """
     srt_instances = sorted(gapl['instances'].items(),
                            key=lambda item: (item[1]['position']),
