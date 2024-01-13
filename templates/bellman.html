@@ -73,7 +73,7 @@
           txt_instance += "&lt";
         }
         for (let i = 1; i <= programs[selected_program]['inputs'].length; i++) {
-          txt_instance += document.getElementById("userinput_" + i).value;
+          txt_instance += escapeHtml(document.getElementById("userinput_" + i).value);
           if (i < programs[selected_program]['inputs'].length) {
             txt_instance += ", "
           }
@@ -232,7 +232,7 @@
           document.getElementById("container_inputstrings").innerHTML +=
             '<div class="algprod_select">' +
             '<div class="title">Track ' + i + '</div>' +
-            '<div class="hintgroup"><input type="text" id="userinput_' + i + '" value="' + example + '" oninput="update_instance()" name="userinput_' + i + '" class="userstring"/><div class="hint">Try "' + predefined + '" for example.</div></div></div>';
+            '<div class="hintgroup"><input type="text" id="userinput_' + i + '" value="' + example + '" oninput="update_instance()" name="userinput_' + i + '" class="userstring"/><div class="hint">Try "' + escapeHtml(predefined) + '" for example.</div></div></div>';
         }
 
         // advanced options
