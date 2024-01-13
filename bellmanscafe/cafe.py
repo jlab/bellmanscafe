@@ -66,7 +66,7 @@ def obtain_cafe_settings(verbose=sys.stderr):
     # the Cafe shall let users interact with a collection of Bellman's GAP
     # programs like Needleman-Wunsch or ElMamun. The FP_GAPUSERSOURCES variable
     # must point to the path containing these sources.
-    fp_gapc_programs = "../Coll/"
+    fp_gapc_programs = "../ADP_collection/"
 
     # user submission leads to compilation and execution of new algera products
     # if the user re-submits the same algebra product (also called instance) it
