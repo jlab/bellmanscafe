@@ -67,6 +67,17 @@ def bellman():
         user_input=user_input, results=results)
 
 
+# route for downloading a stderr / stdout file of a compilation task
+@app.route("/downloadchannel/<cmp_cache>/<run_cache>/<task_channel>")
+def download_channel(cmp_cache, run_cache, task_channel):
+    path_components = [settings['paths']['prefix_cache']] + \
+        [p for p in [cmp_cache, run_cache] if p != '__'] + \
+        [task_channel]
+    fp_file = os.path.join(*path_components)
+    return send_file(fp_file,
+                     as_attachment=False, mimetype="text/plain")
+
+
 # # route for the support page
 # @app.route("/support")
 # def support():

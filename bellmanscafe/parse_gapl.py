@@ -436,7 +436,7 @@ def get_gapc_programs(fp_dir, verbose=sys.stderr):
         name = fp_gapl.split('/')[-1][:-1*len('.gap')]
         log("Parsing '%s' ..." % os.path.basename(fp_gapl), 'info', verbose)
         res[name] = parse_gapl(fp_gapl)
-        log(" found %i algebras, %i grammars and %i instances" % (
+        log(" found %i algebras, %i grammars and %i instances\n" % (
             len(res[name]['algebras']), len(res[name]['grammars']),
             len(res[name]['instances'])), 'info', verbose)
     return res

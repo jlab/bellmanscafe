@@ -164,3 +164,8 @@ div#divbanner {
     color: white;
     font-size: xx-large;
 }
+
+img.channeldownload {
+  height: 1em;
+  padding-right: 0.3em;
+}
