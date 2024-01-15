@@ -1,6 +1,7 @@
 div.tabs_header {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
 }
 
 div#code_download {
@@ -22,6 +23,7 @@ div#container_instance {
 
   position: -webkit-sticky; /* for browser compatibility */
   position: sticky;
+  z-index: 99;
   top: 10px;
   padding: 3px;
 }
