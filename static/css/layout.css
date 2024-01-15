@@ -18,8 +18,6 @@ div#container_algebraproduct {
 div#container_instance {
   display: flex;
   justify-content: center;
-  color:white;
-  background-color:#AF6557;
 
   position: -webkit-sticky; /* for browser compatibility */
   position: sticky;
@@ -93,4 +91,8 @@ div.jlab_logo {
   position: absolute;
   right: 0px;
   top: 20px;
+}
+
+div#code_download {
+  padding-bottom: 5px;
 }
