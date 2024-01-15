@@ -13,7 +13,8 @@
 
 <!-- This script adds a title to the banner at the top of the page. -->
 <script type=text/javascript>
-  document.getElementById("divbanner").innerHTML = "Bellman's Cafe {{settings['cafe_version']}}";
+  // add jlab logo to banner
+  document.getElementById("divbanner").innerHTML = "Bellman's Cafe {{settings['cafe_version']}}" + '<div class="jlab_logo"><a href="http://jlab.bio"><img src="{{ url_for("static", filename="jlab_logo.svg") }}" height="70" /></a></div>';
 
     window.programs = {{programs|safe}};
     window.user_input = {{user_input|safe}};
@@ -119,9 +120,6 @@
     }
 
     function update_user_form() {
-      // add jlab logo to banner
-      document.getElementById("divbanner").innerHTML = '<div class="jlab_logo"><a href="http://jlab.bio"><img src="{{ url_for("static", filename="jlab_logo.svg") }}" height="70" /></a></div>';
-
       if (window.user_input['select_program'] != null) {
         document.getElementById('select_program').value = window.user_input['select_program'];
       }
@@ -152,11 +150,11 @@
           if (i > 1) {
             // add an "empty" entry to choice box to i.e. deselect an algebra, but not for the leftmost algebra
             num_avail_algebras += 1;
-            empty_choice += '<option value="empty" selected="selected"></option>';
+            empty_choice += '<option class="select_option" value="empty" selected="selected"></option>';
           }
           var choice_algebra = '<div id="algebra_grp_' + i + '"><div class="title" class="algprod_select">Algebra ' + i + '</div><select id="algebra_' + i + '" size="' + num_avail_algebras + '" onchange="update_instance(); algebraproduct_visibility();" name="algebra_' + i + '">' + empty_choice;
           for (const [key, value] of Object.entries(programs[selected_program]['algebras'])) {
-            choice_algebra += '<option value="' + key + '"';
+            choice_algebra += '<option class="select_option" value="' + key + '"';
             if ((i == 1) && (key == Object.keys(programs[selected_program]['algebras'])[0])) {
               choice_algebra += ' selected="selected"';
             }
@@ -173,7 +171,7 @@
                                ['^', 'The Pareto product.'],
                                ['.', 'The take-one product. The difference to the lexicographic product is that only one co-optimal result is chosen in the case of co-optimal results.'],
                                ['|', 'The overlay product. With !A | B!, $A$ is used in the forward computation and $B$ is used during backtracing.']])) {
-              choice_product += '<option value="' + operator[0] + '" title="' + operator[1] + '"';
+              choice_product += '<option class="select_option" value="' + operator[0] + '" title="' + operator[1] + '"';
               if (operator[0] == '*') {
                 choice_product += 'selected="selected"';
               }
@@ -210,7 +208,7 @@
         document.getElementById("select_grammar").size = Object.keys(programs[selected_program]['grammars']).length;
         var gra = "";
         for (const [key, value] of Object.entries(programs[selected_program]['grammars'])) {
-          gra += '<option value="' + key + '"';
+          gra += '<option class="select_option" value="' + key + '"';
           if (((window.user_input['select_grammar'] != null) && (window.user_input['select_grammar'] == key)) ||
               ((window.user_input['select_grammar'] == null) && (key == Object.keys(programs[selected_program]['grammars'])[0]))) {
             gra += ' selected="selected"';
@@ -441,7 +439,7 @@
 
           <label for="plot_grammar">Level of detail for grammar visualization</label>
           <select id='plot_grammar' name='plot_grammar'>
-            <option value="1" selected="selected">basic (1)</option>
+            <option class="select_option"value="1" selected="selected">basic (1)</option>
             <option value="2">indices (2)</option>
             <option value="3">data types (3)</option>
             <option value="4">min/max yield size (4)</option>
