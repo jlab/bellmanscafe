@@ -187,3 +187,8 @@ option.select_option:checked {
   background-color: var(--jlab_blue);
   color: white;
 }
+
+div.footer {
+  font-size: small;
+  justify-content: space-between;
+}

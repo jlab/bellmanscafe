@@ -96,3 +96,8 @@ div.jlab_logo {
 div#code_download {
   padding-bottom: 5px;
 }
+
+div.footer {
+  display: flex;
+  flex-direction: row;
+}
