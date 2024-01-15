@@ -119,6 +119,9 @@
     }
 
     function update_user_form() {
+      // add jlab logo to banner
+      document.getElementById("divbanner").innerHTML = '<div class="jlab_logo"><a href="http://jlab.bio"><img src="{{ url_for("static", filename="jlab_logo.svg") }}" height="70" /></a></div>';
+
       if (window.user_input['select_program'] != null) {
         document.getElementById('select_program').value = window.user_input['select_program'];
       }

@@ -88,3 +88,9 @@ div.sys_info {
   justify-content: space-between;
   margin-top: auto;
 }
+
+div.jlab_logo {
+  position: absolute;
+  right: 0px;
+  top: 20px;
+}
