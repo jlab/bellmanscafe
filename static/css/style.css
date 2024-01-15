@@ -1,6 +1,6 @@
 :root {
-  --jlab_blue: #0068b4;
-  --jlab_lightblue: #89c7f4;
+  --jlab_blue: #0068b4;      /* was: #AF6557 */
+  --jlab_lightblue: #89c7f4; /* was: #B8E1A3 */
 }
 
 /* For Tabs */
