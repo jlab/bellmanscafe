@@ -1,12 +1,17 @@
+:root {
+  --jlab_blue: #0068b4;
+  --jlab_lightblue: #89c7f4;
+}
+
 /* For Tabs */
 div.tab_label {
   min-width:120px;
   text-align: center;
-  background-color:#AF6557;
+  background-color: var(--jlab_lightblue);
   padding:10px 5px;
   border-radius:3px;
   margin-right:2px;
-  color:white;
+  color:black;
 }
 div.tab_label_error {
   background-color:#ffE1A3;
@@ -17,12 +22,12 @@ div.tab_label:hover{
 }
 
 div.active_tab_label {
-  background-color:#B8E1A3;
-  color:black;
+  background-color: var(--jlab_blue);
+  color:white;
 }
 
 div.tab {
-  background-color:#B8E1A3;
+  background-color: var(--jlab_lightblue);
   min-height:250px;
   border-radius:3px;
   padding:20px 15px;
@@ -35,7 +40,7 @@ div.tab_error {
 /* For Accordion */
 /* Style the buttons that are used to open and close the accordion panel */
 button.accordion {
- background-color: #eee;
+ background-color: var(--jlab_lightblue);
  color: #444;
  cursor: pointer;
  padding: 18px;
@@ -48,12 +53,13 @@ button.accordion {
 
 /* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
 button.active, button.accordion:hover {
- background-color: #ccc;
+ background-color: var(--jlab_blue);
+ color: white;
 }
 
 /* Style the accordion panel. Note: hidden by default */
 div.panel {
-  padding: 0 18px;
+  padding: 10px 5px;
   background-color: white;
   display: none;
   overflow: hidden;
@@ -92,11 +98,13 @@ div.codefile a:before {
 
 /* Border around multiple elements */
 div.group {
-    border:5px outset #AF6557;
+    border:5px outset var(--jlab_lightblue);
     margin-top: 15px;
     margin-bottom: 20px;
+    margin-left: 5px;
+    margin-right: 5px;
     padding-left: 5px;
-    padding-right: 20px;
+    padding-right: 5px;
     padding-top: 5px;
     padding-bottom: 10px;
 }
@@ -128,8 +136,9 @@ div.title {
 }
 
 div#container_algebraproduct, div#container_grammar, div#container_inputstrings {
-  border: 1px solid #AF6557;
-  margin: 5px;
+  border: 1px solid var(--jlab_lightblue);
+  margin-top: 5px;
+  margin-bottom: 5px;
   padding: 5px;
 }
 
@@ -155,7 +164,7 @@ div.tikz_candidate img {
 }
 
 div#divbanner {
-    background-color: #AF6557;
+    background-color: var(--jlab_lightblue);
     min-width: 400px;
     max-width: 2400px;
     height: 120px;
@@ -168,4 +177,14 @@ div#divbanner {
 img.channeldownload {
   height: 1em;
   padding-right: 0.3em;
+}
+
+div#container_instance {
+  color:white;
+  background-color: var(--jlab_blue);
+}
+
+option.select_option:checked {
+  background-color: var(--jlab_blue);
+  color: white;
 }
