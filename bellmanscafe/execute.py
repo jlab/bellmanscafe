@@ -149,9 +149,11 @@ def compile_and_run_gapc(gapl_programs, user_input, settings,
     # add default benchmarking to steps (except tikz)
     for name in steps.keys():
         if name not in ['tikz']:
-            steps[name]['cmds'] = ('time -v -o "%s.benchmark" %s'
+            steps[name]['cmds'] = ('ulimit -t %s; '  # limit CPU time
+                                   'time -v -o "%s.benchmark" %s'
                                    ' > %s.out 2> %s.err') % (
-                                   name, steps[name]['cmds'], name, name)
+                                   settings['max_cpu_time'], name,
+                                   steps[name]['cmds'], name, name)
             steps[name]['benchmarks'] = ["%s.benchmark" % name]
     # steps = {name: 'time -v -o "%s.benchmark" %s > %s.out 2> %s.err' % (
     #          name, cmd, name, name) if name not in ['tikz'] else cmd

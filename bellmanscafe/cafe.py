@@ -99,6 +99,9 @@ def obtain_cafe_settings(verbose=sys.stderr):
     # maximum output lines:
     settings['max_output_lines'] = 5000
 
+    # maximum step execution CPU time in seconds
+    settings['max_cpu_time'] = 1 * 60 * 60  # = 1 hour
+
     return settings
 
 
