@@ -292,10 +292,20 @@
         update_instance();
         algebraproduct_visibility();
         var step = 'run';
-        {% if ('tikz' in results) and (results['tikz']['stdout']|length > 0) %}  //schaun mer mal
+        {% if ('tikz' in results) and (results['tikz']['stdout']|length > 0) %}
           step = 'tikz';
           document.getElementById("tikz_title").innerHTML = tikz_candidate_title(1);
         {% endif %}
+
+        // if any step produces an error, i.e. exit_status != 0, we activate the according tab for the user
+        var exit_stati = { {% for step in results.keys() %}{% if (results[step] is mapping) and ('exit_status' in results[step].keys()) %}{{step}}: {{results[step]['exit_status']}}, {% endif %}{% endfor %} };
+        for (tabstep of document.getElementById("tabs_results").querySelectorAll(".tab_label")) {
+          if (exit_stati[tabstep.id] != 0) {
+            step = tabstep.id;
+            break;
+          }
+        }
+
         switch_tab(document.getElementById("tabs_results"), step);
         for (comptype of (['signatures', 'algebras', 'grammars'])) {
           var first_name = Object.entries(programs[selected_program][comptype])[0][0];
