@@ -23,7 +23,8 @@ class ParseGAPLTests(TestCase):
                     'versions': {'gapc': 'kalle',
                                  'ADP_collection': 'heinz'},
                     'max_algebras': 5,
-                    'max_output_lines': 5000}
+                    'max_output_lines': 5000,
+                    'max_cpu_time': 100}
 
         obs = compile_and_run_gapc(gapl_programs, user_input, settings)
         print(obs)
