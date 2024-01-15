@@ -166,7 +166,6 @@ div.tikz_candidate img {
 div#divbanner {
     background-color: var(--jlab_lightblue);
     min-width: 400px;
-    max-width: 2400px;
     height: 120px;
     position: relative;
     text-align: center;
