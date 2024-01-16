@@ -10,24 +10,24 @@ from bellmanscafe.execute import compile_and_run_gapc
 
 app = Flask(__name__)
 
-for fp_config in ['gunicorn.conf.py',
-                  os.path.join('instance', 'secret_config.py')]:
-    if os.path.exists(fp_config):
-        app.config.from_pyfile(fp_config)
-log('Flask settings:\n----------------\n' +
-    '\n'.join(['\t%s: %s' % (_key, app.config[_key])
-               for _key
-               in sorted(app.config.keys())]) +
-    '\n----------------\n', verbose=app.logger, level="info")
-
-# see file bellmanscafe/cafe.py
-settings = obtain_cafe_settings(app.config, verbose=app.logger)
-log('Cafe settings: %s' % settings, verbose=app.logger, level="info")
-
 logging.basicConfig(
     # filename='bellmansgap.log',
     level=logging.DEBUG,
     format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
+
+for fp_config in ['gunicorn.conf.py',
+                  os.path.join('instance', 'secret_config.py')]:
+    if os.path.exists(fp_config):
+        app.config.from_pyfile(fp_config)
+log('\nFlask settings:\n' + ('-' * 80) + '\n' +
+    '\n'.join(['\t%s: %s' % (_key, app.config[_key])
+               for _key
+               in sorted(app.config.keys())]) +
+    '\n' + ('-' * 80) + '\n', verbose=app.logger, level="info")
+
+# see file bellmanscafe/cafe.py
+settings = obtain_cafe_settings(app.config, verbose=app.logger)
+log('Cafe settings: %s' % settings, verbose=app.logger, level="info")
 
 # parse *.gap files
 gapl_programs = get_gapc_programs(settings['paths']['gapc_programs'])
