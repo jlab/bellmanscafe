@@ -14,10 +14,10 @@ for fp_config in ['gunicorn.conf.py',
                   os.path.join('instance', 'secret_config.py')]:
     if os.path.exists(fp_config):
         app.config.from_pyfile(fp_config)
-log('Flask settings:\n----------------\n' + \
+log('Flask settings:\n----------------\n' +
     '\n'.join(['\t%s: %s' % (_key, app.config[_key])
                for _key
-               in sorted(app.config.keys())]) + \
+               in sorted(app.config.keys())]) +
     '\n----------------\n', verbose=app.logger, level="info")
 
 # see file bellmanscafe/cafe.py
