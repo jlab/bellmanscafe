@@ -3,20 +3,28 @@ import os
 from flask import Flask, render_template, request, send_file
 import logging
 
-from bellmanscafe.cafe import obtain_cafe_settings
+from bellmanscafe.cafe import obtain_cafe_settings, log
 from bellmanscafe.parse_gapl import get_gapc_programs
 from bellmanscafe.execute import compile_and_run_gapc
 
 
 app = Flask(__name__)
 
+for fp_config in ['gunicorn.conf.py', os.path.join('instance', 'secret_config.py')]:
+    if os.path.exists(fp_config):
+        app.config.from_pyfile(fp_config)
+log('Flask settings:\n----------------\n' + '\n'.join(['\t%s: %s' % (_key, app.config[_key]) for _key in sorted(app.config.keys())]) + '\n----------------\n', verbose=app.logger, level="info")
+
+# see file bellmanscafe/cafe.py
+settings = obtain_cafe_settings(app.config, verbose=app.logger)
+log('Cafe settings: %s' % settings, verbose=app.logger, level="info")
+
 logging.basicConfig(
     # filename='bellmansgap.log',
     level=logging.DEBUG,
     format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
 
-# see file bellmanscafe/cafe.py
-settings = obtain_cafe_settings(verbose=app.logger)
+# parse *.gap files
 gapl_programs = get_gapc_programs(settings['paths']['gapc_programs'])
 
 # the ADP_collection repository contains a directory "Resources" which contains

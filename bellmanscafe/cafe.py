@@ -60,47 +60,26 @@ def get_repo_commithash(fp_repo: str, verbose=sys.stderr):
     return version
 
 
-def obtain_cafe_settings(verbose=sys.stderr):
-    settings = dict()
+def obtain_cafe_settings(config, verbose=sys.stderr):
+    gapc_version = get_gapc_version(verbose)
 
-    # the Cafe shall let users interact with a collection of Bellman's GAP
-    # programs like Needleman-Wunsch or ElMamun. The FP_GAPUSERSOURCES variable
-    # must point to the path containing these sources.
-    fp_gapc_programs = "../ADP_collection/"
-
-    # user submission leads to compilation and execution of new algera products
-    # if the user re-submits the same algebra product (also called instance) it
-    # does not need to be re-computed, therefore we are using a cache. JUST
-    # this instance with user inputs have to be run.
-    fp_cache = "DOCKER/bcafe_cache/"
-
-    # don't forget to leave a changelog message
-    settings['cafe_version'] = "v2.0"
-
-    # obtain gapc version number to prefix cache prefix. Thus, updated gapc
-    # compiler will automatically lead to new cache
-    settings['versions'] = dict()
-    settings['versions']['gapc'] = get_gapc_version(verbose)
-    settings['versions']['ADP_collection'] = get_repo_commithash(
-        fp_gapc_programs, verbose)
-    settings['versions']['cafe'] = get_repo_commithash("./", verbose)
-
-    settings['paths'] = dict()
-    settings['paths']['prefix_cache'] = os.path.join(
-        fp_cache, 'gapc_v%s' % settings['versions']['gapc'])
-    settings['paths']['gapc_programs'] = fp_gapc_programs
-
-    # maximum number of allowed algebras
-    settings['max_algebras'] = 5
-
-    # limit tikZ image generation to:
-    settings['limit_candidate_trees'] = 20
-
-    # maximum output lines:
-    settings['max_output_lines'] = 5000
-
-    # maximum step execution CPU time in seconds
-    settings['max_cpu_time'] = 1 * 60 * 60  # = 1 hour
+    settings = {
+        'paths': {
+            'gapc_programs': config['FP_GAPC_PROGRAMS'],
+            'prefix_cache': os.path.join(config['FP_CACHE'],
+                                         'gapc_v%s' % gapc_version),
+        },
+        'versions': {
+            'gapc': gapc_version,
+            'ADP_collection': get_repo_commithash(config['FP_GAPC_PROGRAMS'],
+                                                  verbose),
+            'cafe': get_repo_commithash("./", verbose),
+        },
+        'max_algebras': config['MAX_ALGEBRAS'],
+        'limit_candidate_trees': config['LIMIT_CANDIDATE_TREES'],
+        'max_output_lines': config['MAX_OUTPUT_LINES'],
+        'max_cpu_time': config['MAX_CPU_TIME'],
+    }
 
     return settings
 
