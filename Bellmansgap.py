@@ -9,7 +9,6 @@ from bellmanscafe.execute import compile_and_run_gapc
 
 
 app = Flask(__name__)
-app.secret_key = "xasdqfghuioiuwqenjdcbjhawbuomcujeq1217846421kopNSJJGWmc8u29"
 
 logging.basicConfig(
     # filename='bellmansgap.log',
@@ -85,4 +84,4 @@ def download_channel(cmp_cache, run_cache, task_channel):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
