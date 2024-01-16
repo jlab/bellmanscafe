@@ -10,10 +10,15 @@ from bellmanscafe.execute import compile_and_run_gapc
 
 app = Flask(__name__)
 
-for fp_config in ['gunicorn.conf.py', os.path.join('instance', 'secret_config.py')]:
+for fp_config in ['gunicorn.conf.py',
+                  os.path.join('instance', 'secret_config.py')]:
     if os.path.exists(fp_config):
         app.config.from_pyfile(fp_config)
-log('Flask settings:\n----------------\n' + '\n'.join(['\t%s: %s' % (_key, app.config[_key]) for _key in sorted(app.config.keys())]) + '\n----------------\n', verbose=app.logger, level="info")
+log('Flask settings:\n----------------\n' + \
+    '\n'.join(['\t%s: %s' % (_key, app.config[_key])
+               for _key
+               in sorted(app.config.keys())]) + \
+    '\n----------------\n', verbose=app.logger, level="info")
 
 # see file bellmanscafe/cafe.py
 settings = obtain_cafe_settings(app.config, verbose=app.logger)
