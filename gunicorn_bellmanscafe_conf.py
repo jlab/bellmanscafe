@@ -11,3 +11,5 @@ errorlog = '/var/log/gunicorn/error_log_bellmanscafe.log'
 # errorlog = 'error_log_bellmanscafe.log'
 # also send app.logger.info messages to errorlog
 capture_output = "True"
+
+app.config['SECRET_KEY'] = 'ultra secret key, only set in server copy of this file'
