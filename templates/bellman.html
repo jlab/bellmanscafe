@@ -14,7 +14,7 @@
 <!-- This script adds a title to the banner at the top of the page. -->
 <script type=text/javascript>
   // add jlab logo to banner
-  document.getElementById("divbanner").innerHTML = "Bellman's Cafe v{{settings['versions']['cafe']}}" + '<div class="jlab_logo"><a href="http://jlab.bio"><img src="{{ url_for("static", filename="jlab_logo.svg") }}" height="70" /></a></div>';
+  document.getElementById("divbanner").innerHTML = "Bellman's Cafe v{{settings['versions']['flask']}}" + '<div class="jlab_logo"><a href="http://jlab.bio"><img src="{{ url_for("static", filename="jlab_logo.svg") }}" height="70" /></a></div>';
 
     window.programs = {{programs|safe}};
     window.user_input = {{user_input|safe}};

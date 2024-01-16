@@ -74,6 +74,7 @@ def obtain_cafe_settings(config, verbose=sys.stderr):
             'ADP_collection': get_repo_commithash(config['FP_GAPC_PROGRAMS'],
                                                   verbose),
             'cafe': get_repo_commithash("./", verbose),
+            'flask': config['CAFE_VERSION'],
         },
         'max_algebras': config['MAX_ALGEBRAS'],
         'limit_candidate_trees': config['LIMIT_CANDIDATE_TREES'],
