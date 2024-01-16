@@ -320,7 +320,7 @@
           result_program = "{{results['program']}}";
         {% endif %}
         if (result_program == selected_program) {
-          document.getElementById("tabs_results").scrollIntoView();
+          document.getElementById("submit").scrollIntoView();
         }
       } else {
         switch_tab(document.getElementById("tabs_results"), 'gapc');
@@ -481,11 +481,13 @@
               {% if task in results.keys() %}
                 <div id="result_command_{{task}}" class="channel"><pre><code class="language-bash command">{{results[task]['command']|safe}}</code></pre><div class="channel_name">COMMAND</div></div>
                 {% if task == 'dot' %}
-                  {% if results[task]['exit_status'] == 0 %}
-                    <img src="data:image/gif;base64,{{results[task]['stdout'][0]}}" width="100%"/>
-                  {% else %}
-                    <img src="static/error.png" width="100%"/>
-                  {% endif %}
+                  <div class="result_stdout_dot">
+                    {% if results[task]['exit_status'] == 0 %}
+                      <img src="data:image/gif;base64,{{results[task]['stdout'][0]}}" width="100%"/>
+                    {% else %}
+                      <img src="static/error.png" height="300"/>
+                    {% endif %}
+                  </div>
                 {% elif task == 'tikz' %}
                   <div id="result_stdout_{{task}}">
                     <div id="tikz_title">candidate 1 of {{results['tikz']['stdout']|length}}</div>
