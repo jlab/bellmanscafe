@@ -6,11 +6,11 @@ bind = '0.0.0.0:8000'
 print_config = False
 
 # number of cores being busy with the cafe system
-workers = '8'
+workers = 8
 
 # timeout of workers, i.e. cap execution time
 # currently, set to an hour!!
-timeout = '3610'
+timeout = 3610
 
 worker_class = 'sync'
 
@@ -29,8 +29,6 @@ loglevel = "debug"
 
 # ------------ flask settings --------------
 DEBUG = False
-
-STEFAN = "warum nur nicht"
 
 # ---------- bellman's cafe settings -------
 
@@ -57,4 +55,4 @@ LIMIT_CANDIDATE_TREES = 20
 # maximum output lines:
 MAX_OUTPUT_LINES = 5000
 
-MAX_CPU_TIME = 3600  # = 1 hour. Keep in sync with gunicorn's "timeout"!
+MAX_CPU_TIME = timeout - 10  # an hour +/- 10 seconds
