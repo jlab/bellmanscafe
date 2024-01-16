@@ -1,3 +1,7 @@
+# Stefan's Infos
+  - when developing, start server via `gunicorn  Bellmansgap:app --error-logfile=- --workers=1` otherwise 8 workers will be started and stderr is redirected into logfile
+  - IP of virtual server is 134.176.31.227
+
 Additional Information of the server
 
 # bellmanscafe
@@ -9,16 +13,16 @@ $ pip install Flask
 In einen Ordner das Python Skript einfügen und einen weiteren Ordner "templates" anlegen. In den Ordner "templates" die HTML Skripte einfügen. Das Python Skript ausführen, Website über Lokal Host starten.
 
 All html files are now stored in the templates folder, html files in the base folder are no longer used.
-To run the website on your local machine clone the git (alternatively download Bellmansgap.py and the "templates" folder in the same location). 
+To run the website on your local machine clone the git (alternatively download Bellmansgap.py and the "templates" folder in the same location).
 
 Prerequisites:
-You will need python3 and Flask in order for this to work. 
+You will need python3 and Flask in order for this to work.
 
-In Ubuntu 20.04 you can install them using the following commands: 
+In Ubuntu 20.04 you can install them using the following commands:
 
-sudo apt-get update <br> sudo apt-get install python3.8 python3-pip <br> sudo pip install Flask 
+sudo apt-get update <br> sudo apt-get install python3.8 python3-pip <br> sudo pip install Flask
 
-In your Linux terminal navigate to the folder that Bellmansgap.py and the templates folder have been downloaded to and run Bellmansgap.py by typing: 
+In your Linux terminal navigate to the folder that Bellmansgap.py and the templates folder have been downloaded to and run Bellmansgap.py by typing:
 
 python3 Bellmansgap.py
 
@@ -57,29 +61,29 @@ To reach the server you need to ssh to lummerland first.
 (Optional):
     To make it easier you can create a file named config in your .ssh directory (if it doesn't already exist).
     Edit the config file and add the lines:
-    
+
     Host lummerland
         HostName lummerland.computational.bio.uni-giessen.de
         User username
         IdentityFile ~/.ssh/id_rsa_bcf
         ForwardAgent yes
         IdentitiesOnly yes
-        
+
     It is important that all the lines except the first one are indented.
     Instead of username you should put your own username (For example Daniel Mustermann would put dmustermann as his username).
     Next to IdentityFile you should put the location of your private key.
     And the corresponding public key would also need to be under your account on lummerland already.
-    If you don't know what that means or need a refresher, check out (the explanation for linux is on the bottom): 
+    If you don't know what that means or need a refresher, check out (the explanation for linux is on the bottom):
     https://dokuwiki.computational.bio.uni-giessen.de/doku.php?id=system:beginners:remoteaccess
-    
+
     With the config file set up you can use ssh lummerland to connect to lummerland from your Linux-Terminal.
-    
-If you don't want to set up the config file you can also use: 
+
+If you don't want to set up the config file you can also use:
 ssh username@lummerland.computational.bio.uni-giessen.de
 (If both options don't work, possibly your ssh service isn't working correctly.
-sudo service ssh restart and other commands might help. 
+sudo service ssh restart and other commands might help.
 This website might also be helpful: https://phoenixnap.com/kb/ssh-to-connect-to-remote-server-linux-or-windows)
-    
+
 1.2 Jump to the server
 From lummerland you can ssh to the server under the ip-address 134.176.31.227.
 If no public key has been deposited on the server yet and you need to access it via your username and password, use:
@@ -110,16 +114,16 @@ Host bellmanscafe
     User username
     IdentityFile ~/.ssh/id_rsa_bellman
     IdentitiesOnly yes
-    
+
 Again take care to indent every line except the first.
 Also username should be exchanged with your own username on the server this time (probably again something like dmustermann)
 and the IdentityFile should be your private key.
 
 With this you can use ssh bellmanscafe to jump to the server from lummerland.
 
-Now you should be able to access the server without having to type your username or password: 
+Now you should be able to access the server without having to type your username or password:
 ssh bellmanscafe
-    
+
 
 Whenever you connect to the server you might need to type bash and press Enter in order to obtain the terminal interface you are familiar with.
 (If bash is already activated you would see: username@bellmanscafe:/$, where username is your username on the server.
@@ -152,7 +156,7 @@ Execute the shell script to (update and) copy the .gap files from ADP_collection
 
 1.3.3 Add a cronjob to crontab that automatically executes the shell script once a day (to keep ADP_collection up to date on the server)
 Start crontab in the terminal: crontab -e
-If you haven't used crontab before on the server it will ask you which editor you want to use, 
+If you haven't used crontab before on the server it will ask you which editor you want to use,
 you can choose the recommended (probably nano) or any other editor that is already  installed on the server.
 A file will be opened in the editor. Paste (SHIFT+CTRL+V) the following line to the end of the file:
 45 11 * * * /bin/bash /home/username/bellmanscafe/pull_and_copy_ADP_collection.sh
@@ -179,16 +183,16 @@ Success!
 2. Editing and updating the website
 In order to work on the website you need to a clone of bellmanscafe on your local machine (e.g. on your laptop).
 
-2.1 Setting up access to github from your local machine 
+2.1 Setting up access to github from your local machine
 Just like before we need to create a keypair in our .ssh directory: ssh-keygen ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa_github_account
 And again we need to copy the content of the new public key to our github account under Settings-> SSH and GPG Keys.
-(Alternatively we could copy and paste the content of our github private key on the server 
+(Alternatively we could copy and paste the content of our github private key on the server
 to a new file with the exact same name in the .ssh directory of our local machine (e.g. laptop),
 then we wouldn't have to add a new public key to our github account.)
 
 2.2 Cloning bellmanscafe and ADP_collection to local machine
 Now we can clone bellmanscafe and ADP_collection to our local machine (e.g. laptop):
-In the terminal of your local machine (e.g. laptop), 
+In the terminal of your local machine (e.g. laptop),
 navigate to the directory you want to clone the repositories to (e.g. our home directory): cd ~
 Clone bellmanscafe: git clone git@github.com:jlab/bellmanscafe.git
 Then clone ADP_collection: git clone git@github.com:jlab/ADP_collection.git
@@ -199,7 +203,7 @@ For example if you want to start working on version 2.0:
 Navigate to bellmanscafe: cd ~/bellmanscafe
 Create (and switch to) a new branch called v2.0: git checkout -b v2.0
 Check if it was successful with: git branch
-When making changes you can check which files you have changed in the bellmanscafe directory by using: git status 
+When making changes you can check which files you have changed in the bellmanscafe directory by using: git status
 To view the results of your changes you can:
 Navigate to bellmanscafe: cd ~/bellmanscafe
 Run the python script: python3 Bellmansgap.py

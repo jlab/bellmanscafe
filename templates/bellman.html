@@ -3,776 +3,556 @@
 <!-- This section supplements the head section of the base.html file-->
 {% block head %}
 
+<link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/loader.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+<script src="{{ url_for('static', filename='js/highlight.min.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/highlight_default.css') }}">
+<script>hljs.highlightAll();</script>
+
 <!-- This script adds a title to the banner at the top of the page. -->
 <script type=text/javascript>
-    version = "v1.13"
-    divbanner = document.getElementById('divbanner');
-    divbanner.innerHTML += "<center><FONT color='#ffffff' size='6'>Bellman's Cafe "+ version +"</FONT></center>";
-</script>
+  // add jlab logo to banner
+  document.getElementById("divbanner").innerHTML = "Bellman's Cafe v{{settings['versions']['flask']}}" + '<div class="jlab_logo"><a href="http://jlab.bio"><img src="{{ url_for("static", filename="jlab_logo.svg") }}" height="70" /></a></div>';
 
-<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    window.programs = {{programs|safe}};
+    window.user_input = {{user_input|safe}};
+    window.accodions_registered = 'False';
+
+    function escapeHtml(unsafe) {
+      return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function get_algebraproduct_string() {
+      var selected_program = document.getElementById('select_program').value;
+      var txt_algproduct = "";
+
+      if (selected_program != "empty") {
+        for (let i = 1; i <= {{settings['max_algebras']}}; i++) {
+          if (document.getElementById("algebra_" + i).value != "empty") {
+            txt_algproduct += document.getElementById("algebra_" + i).value;
+
+            if (i < {{settings['max_algebras']}}) {
+              var operator = "";
+              if (document.getElementById("algebra_" + (i+1)).value != "empty") {
+                txt_algproduct += " " + document.getElementById("product_" + i).value + " ";
+              }
+              txt_algproduct += operator;
+            }
+          } else {
+            break;
+          }
+        }
+      }
+
+      return txt_algproduct;
+    }
+
+    function update_instance() {
+      var selected_program = document.getElementById('select_program').value;
+
+      if (selected_program != "empty") {
+        // display selected instance
+        var txt_instance = "";
+        if (document.getElementById("select_grammar").value != "empty") {
+          txt_instance += document.getElementById("select_grammar").value;
+        } else {
+          txt_instance += "MISSING GRAMMAR";
+        }
+        txt_instance += "(";
+
+        txt_instance += get_algebraproduct_string();
+
+        txt_instance += ", ";
+        if (programs[selected_program]['inputs'].length > 1) {
+          txt_instance += "&lt";
+        }
+        for (let i = 1; i <= programs[selected_program]['inputs'].length; i++) {
+          txt_instance += escapeHtml(document.getElementById("userinput_" + i).value);
+          if (i < programs[selected_program]['inputs'].length) {
+            txt_instance += ", "
+          }
+        }
+        if (programs[selected_program]['inputs'].length > 1) {
+          txt_instance += "&gt;";
+        }
+
+        txt_instance += ")";
+        document.getElementById("container_instance").innerHTML = "Your instance: " + txt_instance;
+      }
+    }
+
+    function algebraproduct_visibility() {
+      for (let i = {{settings['max_algebras']}}-1; i >= 1; i--) {
+        if (document.getElementById("algebra_" + i).value == 'empty') {
+          for (j = i+1; j <= {{settings['max_algebras']}}; j++) {
+            document.getElementById("algebra_grp_" + j).style.display = 'none';
+          }
+          for (j = i; j < {{settings['max_algebras']}}; j++) {
+            document.getElementById("product_grp_" + j).style.display = 'none';
+          }
+        } else {
+          document.getElementById("algebra_grp_" + (i+1)).style.display = 'block';
+          document.getElementById("product_grp_" + i).style.display = 'block';
+        }
+      }
+    }
+
+    function tikz_candidate_title(current) {
+      var value = 'candidate x of y';
+      {% if ('tikz' in results.keys()) %}
+        value = 'candidate ' + current + " of {{results['tikz']['total_number_tikz_candidates']}}";
+        {% if (('total_number_tikz_candidates' in results['tikz'].keys()) and (results['tikz']['total_number_tikz_candidates'] > settings['limit_candidate_trees'])) %}
+          value += " (display limited to top {{settings['limit_candidate_trees']}})";
+        {% endif %}
+      {% endif %}
+      return value;
+    }
+
+    function prefix_comment(line) {
+      return '// ' + line;
+    }
+
+    function update_user_form() {
+      if (window.user_input['select_program'] != null) {
+        document.getElementById('select_program').value = window.user_input['select_program'];
+      }
+
+      var selected_program = document.getElementById('select_program').value;
+
+      if (selected_program != "empty") {
+        // header information
+        var comment = "";
+        for (cmt of Object.entries(programs[selected_program]['header']['comments'])) {
+          comment += cmt[1];
+        }
+        document.getElementById("container_header_info").innerHTML = comment;
+        if (comment == "") {
+          document.getElementById("grp_header_info").style.display = "none";
+        } else {
+          document.getElementById("grp_header_info").style.display = "block";
+        }
+
+        // algebra product
+        // create choice options for algebras and products.
+        // for algebra 1, top algebra is selected, for others the "empty" algebra is selected
+        // the '*' product is selected in all product selectors
+        document.getElementById("container_algebraproduct").innerHTML = "";
+        for (let i = 1; i <= {{settings['max_algebras']}}; i++) {
+          var num_avail_algebras = Object.keys(programs[selected_program]['algebras']).length;
+          var empty_choice = '';
+          if (i > 1) {
+            // add an "empty" entry to choice box to i.e. deselect an algebra, but not for the leftmost algebra
+            num_avail_algebras += 1;
+            empty_choice += '<option class="select_option" value="empty" selected="selected"></option>';
+          }
+          var choice_algebra = '<div id="algebra_grp_' + i + '"><div class="title" class="algprod_select">Algebra ' + i + '</div><select id="algebra_' + i + '" size="' + num_avail_algebras + '" onchange="update_instance(); algebraproduct_visibility();" name="algebra_' + i + '">' + empty_choice;
+          for (const [key, value] of Object.entries(programs[selected_program]['algebras'])) {
+            choice_algebra += '<option class="select_option" value="' + key + '"';
+            if ((i == 1) && (key == Object.keys(programs[selected_program]['algebras'])[0])) {
+              choice_algebra += ' selected="selected"';
+            }
+            choice_algebra += '>' + key + '</option>';
+          }
+          choice_algebra += '</select></div>';
+
+          var choice_product = "";
+          if (i < {{settings['max_algebras']}}) {
+            choice_product = '<div id="product_grp_' + i + '" class="algprod_select"><div>Operator ' + i + '</div><select id="product_' + i + '" size="6" onchange="update_instance()" name="product_' + i + '" class="select_operator">';
+            for (operator of ([['*', 'The lexicographic product.'],
+                               ['/', 'The interleaved product.'],
+                               ['%', 'The cartesian product.'],
+                               ['^', 'The Pareto product.'],
+                               ['.', 'The take-one product. The difference to the lexicographic product is that only one co-optimal result is chosen in the case of co-optimal results.'],
+                               ['|', 'The overlay product. With !A | B!, $A$ is used in the forward computation and $B$ is used during backtracing.']])) {
+              choice_product += '<option class="select_option" value="' + operator[0] + '" title="' + operator[1] + '"';
+              if (operator[0] == '*') {
+                choice_product += 'selected="selected"';
+              }
+              choice_product += '>' + operator[0] + '</option>';
+            }
+            choice_product += '</select></div>';
+          }
+          document.getElementById("container_algebraproduct").innerHTML += choice_algebra + choice_product;
+        }
+
+        // after choice boxes have been created, we now change which element is selected, depending on previous user input
+        for (let i = 1; i <= {{settings['max_algebras']}}; i++) {
+          if (window.user_input['algebra_' + i] != null) {
+            for (elm_option of document.getElementById("algebra_" + i).querySelectorAll("option")) {
+              if (window.user_input['algebra_' + i] == elm_option.value) {
+                elm_option.selected = 'selected';
+              } else {
+                elm_option.removeAttribute('selected');
+              }
+            }
+          }
+          if ((i < {{settings['max_algebras']}}) && (window.user_input['product_' + i] != null)) {
+            for (elm_option of document.getElementById("product_" + i).querySelectorAll("option")) {
+              if (window.user_input['product_' + i] == elm_option.value) {
+                elm_option.selected = 'selected';
+              } else {
+                elm_option.removeAttribute('selected');
+              }
+            }
+          }
+        }
+
+        // grammar
+        document.getElementById("select_grammar").size = Object.keys(programs[selected_program]['grammars']).length;
+        var gra = "";
+        for (const [key, value] of Object.entries(programs[selected_program]['grammars'])) {
+          gra += '<option class="select_option" value="' + key + '"';
+          if (((window.user_input['select_grammar'] != null) && (window.user_input['select_grammar'] == key)) ||
+              ((window.user_input['select_grammar'] == null) && (key == Object.keys(programs[selected_program]['grammars'])[0]))) {
+            gra += ' selected="selected"';
+          }
+          gra += '>' + key + '</option>';
+        }
+        document.getElementById("select_grammar").innerHTML = gra;
+
+        // input strings
+        document.getElementById("container_inputstrings").innerHTML = '<div class="title">Your input strings</div>';
+        for (let i = 1; i <= programs[selected_program]['inputs'].length; i++) {
+          var example = '1+2*3';
+          var predefined = example;
+          if (programs[selected_program]['example_inputs'].length == programs[selected_program]['inputs'].length) {
+            predefined = programs[selected_program]['example_inputs'][i-1];
+          }
+          if (window.user_input['userinput_' + i] == null) {
+            example = predefined;
+          } else {
+            example = window.user_input['userinput_' + i];
+          }
+          document.getElementById("container_inputstrings").innerHTML +=
+            '<div class="algprod_select">' +
+            '<div class="title">Track ' + i + '</div>' +
+            '<div class="hintgroup"><input type="text" id="userinput_' + i + '" value="' + example + '" oninput="update_instance()" name="userinput_' + i + '" class="userstring"/><div class="hint">Try "' + escapeHtml(predefined) + '" for example.</div></div></div>';
+        }
+
+        // advanced options
+        if (window.user_input['plot_grammar'] == null) {
+          window.user_input['plot_grammar'] = "1";
+        }
+        for (opt of document.getElementById("plot_grammar").children) {
+          if (opt.value != window.user_input['plot_grammar']) {
+            opt.removeAttribute('selected');
+          } else {
+            opt.selected = 'selected';
+          }
+        }
+        if (window.user_input['outside_grammar'] == null) {
+          document.getElementById("outside_grammar").removeAttribute("checked");
+        } else {
+          document.getElementById("outside_grammar").checked = "on";
+        }
+
+        // code
+        //code_download
+        var downloadfiles = "";
+        downloadfiles += '<div class="codefile"><a href="' + select_program.value + '.gap/download">' + selected_program + '.gap</a></div>'
+        for (file of programs[selected_program]['imports']) {
+          downloadfiles += '<div class="codefile"><a href="' + file + '/download">' + file + '</a></div>';
+        }
+        document.getElementById("code_download").innerHTML = downloadfiles;
+
+        document.getElementById("container_code_header").innerHTML = '<pre><code class="language-cpp">' + programs[selected_program]['header']['code'].map(escapeHtml).join('') + '</code></pre>';
+        for (comptype of (['signatures', 'algebras', 'grammars'])) {
+          var elements = '<div class="tabs_header" id="tabs_' + comptype + '">';
+          for (const [name, value] of Object.entries(programs[selected_program][comptype])) {
+            elements += '<div class="tab_label" onclick="switch_tab(this.parentNode, this.id);" id="' + name + '">' + name + '</div>';
+          }
+          elements += '</div>';
+          for (const [name, value] of Object.entries(programs[selected_program][comptype])) {
+            elements += '<div id="tab_' + name + '" class="tab"><pre><code class="language-cpp">';
+            if (programs[selected_program][comptype][name]['comments'].length > 0) {
+              elements += programs[selected_program][comptype][name]['comments'].map(prefix_comment).map(escapeHtml).join('') + '\n';
+            }
+            elements += programs[selected_program][comptype][name]['code'].map(escapeHtml).join('') + '</code></pre></div>';
+          }
+          document.getElementById("container_code_" + comptype).innerHTML = elements;
+        }
+        var code_instances = "";
+        for (comptype of (['instances'])) {
+          for (const [name, value] of Object.entries(programs[selected_program][comptype])) {
+            if (programs[selected_program][comptype][name]['comments'].length > 0) {
+              code_instances += programs[selected_program][comptype][name]['comments'].map(prefix_comment).map(escapeHtml).join('') + '\n';
+            }
+            code_instances += programs[selected_program][comptype][name]['code'].map(escapeHtml).join('');
+          }
+        }
+        document.getElementById("container_code_instances").innerHTML = '<pre><code class="language-cpp">' + code_instances + '</code></pre>';
+
+        update_instance();
+        algebraproduct_visibility();
+        var step = 'run';
+        {% if ('tikz' in results) and (results['tikz']['stdout']|length > 0) %}
+          step = 'tikz';
+          document.getElementById("tikz_title").innerHTML = tikz_candidate_title(1);
+        {% endif %}
+
+        // if any step produces an error, i.e. exit_status != 0, we activate the according tab for the user
+        var exit_stati = { {% for step in results.keys() %}{% if (results[step] is mapping) and ('exit_status' in results[step].keys()) %}{{step}}: {{results[step]['exit_status']}}, {% endif %}{% endfor %} };
+        for (tabstep of document.getElementById("tabs_results").querySelectorAll(".tab_label")) {
+          if (exit_stati[tabstep.id] != 0) {
+            step = tabstep.id;
+            break;
+          }
+        }
+
+        switch_tab(document.getElementById("tabs_results"), step);
+        for (comptype of (['signatures', 'algebras', 'grammars'])) {
+          var first_name = Object.entries(programs[selected_program][comptype])[0][0];
+          switch_tab(document.getElementById("tabs_" + comptype), first_name);
+        }
+
+        document.getElementById("program").style.display = "block";
+        document.getElementById("container_instance").style.display = "flex";
+
+        var result_program = "empty";
+        {% if 'program' in results.keys() %}
+          result_program = "{{results['program']}}";
+        {% endif %}
+        if (result_program == selected_program) {
+          document.getElementById("submit").scrollIntoView();
+        }
+      } else {
+        switch_tab(document.getElementById("tabs_results"), 'gapc');
+      }
+
+      hljs.highlightAll();
+      accordeon();
+    }
+
+    function execute_gapc() {
+      // The components of the loading animation are added to the body in html.
+      // The animation is then automatically started by the css-code, namely @keyframes loader and @keyframes loader-inner.
+      $('body').append('<div id="loader" class="loader-wrapper"><span class="loader"><span class="loader-inner"></span></span></div>');
+    }
+
+    window.addEventListener("load", (event) => {
+      update_user_form();
+    });
+
+    function switch_tab(container, name) {
+      for (divtab of container.querySelectorAll(".tab_label")) {
+        if (divtab.id == name) {
+          divtab.classList.add('active_tab_label');
+          if (container.parentElement.id == "container_results") {
+            container.parentElement.querySelector(".tab#tab_"+divtab.id).style.display = "flex";
+          } else {
+            container.parentElement.querySelector(".tab#tab_"+divtab.id).style.display = "block";
+          }
+        } else {
+          divtab.classList.remove('active_tab_label');
+          container.parentElement.querySelector(".tab#tab_"+divtab.id).style.display = "none";
+        }
+      }
+    }
+
+    function switch_tikz_gallery(direction) {
+      var num_candidates = document.querySelectorAll(".tikz_candidate").length;
+      var shown_candidate = 0;
+      for (div_candidate of document.querySelectorAll(".tikz_candidate")) {
+        shown_candidate += 1;
+        if (div_candidate.style.display != 'none') {
+          if ((direction == 'next') && (div_candidate.nextElementSibling.classList.contains('tikz_candidate'))) {
+            div_candidate.nextElementSibling.style.display = 'block';
+            shown_candidate += 1;
+          }
+          if ((direction == 'prev') && (div_candidate.previousElementSibling.classList.contains('tikz_candidate'))) {
+            div_candidate.previousElementSibling.style.display = 'block';
+            shown_candidate -= 1;
+          }
+          if (((direction == 'next') && (div_candidate.nextElementSibling.classList.contains('tikz_candidate'))) || ((direction == 'prev') && (div_candidate.previousElementSibling.classList.contains('tikz_candidate')))) {
+            div_candidate.style.display = 'none';
+            document.getElementById("tikz_title").innerHTML = tikz_candidate_title(shown_candidate);
+            break;
+          }
+        }
+      }
+    }
+
+    function accordeon() {
+      if (window.accodions_registered != 'True') {
+        var acc = document.getElementsByClassName("accordion");
+        var i;
+        for (i = 0; i < acc.length; i++) {
+          acc[i].addEventListener("click", function() {
+            /* Toggle between adding and removing the "active" class,
+            to highlight the button that controls the panel */
+            this.classList.toggle("active");
+
+            /* Toggle between hiding and showing the active panel */
+            var panel = this.nextElementSibling;
+            if (panel.style.display === "block") {
+              panel.style.display = "none";
+            } else {
+              panel.style.display = "block";
+            }
+          });
+        }
+        window.accodions_registered = 'True';
+      }
+    }
+</script>
 
 
 {% endblock %}
 
 <!-- This section supplements the body section of the base.html file-->
 {% block body %}
-
-<script>
-
-        // This code snippet was originally used to play the loading animation, when the page is loading.
-        // It might be re-employed later.
-        /*
-        $(window).on("load",function(){
-          $(".loader-wrapper").fadeOut("slow");
-        });
-        */
-
-        //The loader element that contains the components of the loading animation is removed at the start of the page
-        //and is rebuilt when the submit button is clicked.
-        loader = document.getElementById("loader");
-        $('body').removeChild(loader);
-</script>
-
-<div style= "padding-left: 20px;padding-right: 20px;padding-top: 20px;">
-<!-- Title of the page-->
-<h1>Welcome to Bellman's Cafe</h1>
-</div>
-
-<!-- This div represents the input section(top side) of the page.-->
-<div id="divtop">
-
-<!-- In this form element combo-boxes can be selected and input can be typed, which is submitted via the post-method.-->
-<form method="post">
-
-<div id="divbox1">
-<p><label for="program"><FONT size='4'>Program:</FONT></label>
-<!-- Selection box for the programs or .gap files themselves, on selection the progFunction() method is executed.-->
-<!-- Almost all of the combo-boxes unintentionally have two ids, which might be the cause of why a lot of attempts failed
-    to add the selected value to previously selected values.
-    Although a workaround was found the duplicate ids might later be removed for a cleaner code.-->
-<select id="programselect" onchange=progFunction(this) name="program" id="program">
-  <!-- The default option Choose a program-->
-  <option value="">Choose a program</option>
-  <!-- In this script the options for programselect are created-->
-  <script type=text/javascript>
-    //Jinja is used to recover the gapfiles list from the return values of @app.route("/bellman") of Bellmansgap.py.
-    var gapfiles = {{ gapfiles|safe }};
-    //gapfiles contains the names of all the files in the working directory that end on ".gap"
-    gapfiles.forEach(function(element) {
-        //each filename is stripped of everything after the ".", including the "." and saved in the variable program
-        //in case there was no "." in the filename, it is just saved normally
-        let program = element.substring(0, element.lastIndexOf('.')) || element;
-        //for each program an option is then created as html
-        document.write('<option value="'+program+'">'+program+'</option>');
-    });
-  </script>
-</select>
-
-<span id="Downloads">
-<!-- This link is used to download the selected gap file and is hidden until a gap file was selected. -->
-<a href="" id="gapFileDownload" download>Download the gap file</a>
-<!-- For each header file imported in the gap file, a link will be added here.-->
-</span>
-
-<!-- This div contains the hint Please select a program and is only shown before any program was selected.-->
-<div id ="tip">
-<FONT color = '#AF6557' size='4'><p>Please select a Program.</p></FONT>
-</div>
-
-<!-- The div for information on the programs is created as blank and will be filled on selection of a program.-->
-<div id="textbox" style="visibility:hidden">
-<!--
-<p>
-    Infotext:
-</p>
--->
-</div>
-
-<br>
-
-<div id="exercise" style="visibility:hidden">
-    <!--Your Input:-->
-</div>
-</div>
-
-<!-- This script contains the progFunction() that is executed when a selection is made in the programselect combo-box.-->
-<script type="text/javascript">
-//This is progFunction() that is executed when a selection is made in the programselect combo-box.
-function progFunction(selectProgramObject) {
-    //Via Jinja the variables gramdict and algdict are recovered from the Flask app.
-    var gramdict = {{ gramdict|safe }};
-    var algdict = {{ algdict|safe }};
-    //The selected value from the programselect is saved in a variable.
-    var selectedProgram = selectProgramObject.value;
-
-    //If the default option "Choose a program", which has the value "" was selected,
-    //the alg1select, alg2select, alg3Select, operator, textbox and exercise elements are emptied to
-    //return them to their default state.
-    if(selectedProgram == ""){
-        var alg1Select = document.getElementById("alg1select");
-        while (alg1Select.firstChild) {
-            alg1Select.removeChild(alg1Select.firstChild);
-        }
-
-        var operat = document.getElementById("operator1")
-        operat.selectedIndex = 0;
-
-        var alg2Select = document.getElementById("alg2select");
-        while (alg2Select.firstChild) {
-            alg2Select.removeChild(alg2Select.firstChild);
-        }
-
-        var operat2 = document.getElementById("operator2")
-        operat2.selectedIndex = 0;
-
-        var alg3Select = document.getElementById("alg3select");
-        while (alg3Select.firstChild) {
-            alg3Select.removeChild(alg3Select.firstChild);
-        }
-
-        var textbox = document.getElementById("textbox");
-        textbox.innerHTML = "<p>Infotext:</p>";
-
-        var exercisediv = document.getElementById("exercise");
-        exercisediv.innerHTML="Your Input: (For example: 1+2*3)";
-    }
-
-    //Depending on the program the number of inputs can vary.
-    //The default example_value is for now fixed, but should later also vary by program.
-    var example_value = "\"1+2*3\"";
-
-    //The inputstringsnumberdict is recovered via Jinja and holds the number of inputs required for every parsed program.
-    var inputstringsnumberdict = {{ inputstringsnumberdict|safe }};
-    //n is the number of inputs required for the selected program.
-    var n = inputstringsnumberdict[selectedProgram];
-
-    //The exercise div is intialized with a paragraph.
-    var exercisediv = document.getElementById("exercise");
-    exercisediv.innerHTML="Your Input: (For example 1+2*3)";
-
-    //user_form_input is recovered via Jinja and holds the values in the combo-boxes that were selected by the user
-    //and the typed input from the exercise div, before submit was pressed.
-    //If submit hasn't been pressed yet this session, this dictionary is empty.
-    var user_form_input = {{ user_form_input|safe }};
-
-    //A for loop iterating n times
-    for (let i = 1; i <= n; i++) {
-        //If previously entered input exists for the exercises, they are used, otherwise the default value is used and saved in example_value.
-        if (user_form_input.hasOwnProperty("ex"+i)) {
-            example_value = user_form_input["ex"+i];
-        } else {
-            example_value = "\"1+2*3\"";
-        }
-        //The exercise elements are created with html containing the example_value as value.
-        exercisediv.innerHTML+='<p><input type="text" id="ex"'+i+'" name="ex'+i+'" value = '+example_value+' /></p>';
-        exercisediv.style.visibility = 'visible';
-    }
-
-
-    //The combo-boxes for grammar, algebras, operator as well as the textbox containing information about the program are created here.
-
-    //The grammars and algebras that were parsed for this program are extracted from the dictionaries and saved in new variables.
-    var grammarsList = gramdict[selectedProgram];
-    var algebrasList = algdict[selectedProgram].sort();
-
-    //The grammarselect combo-box is first emptied.
-    var grammarSelect = document.getElementById("grammarselect");
-    while (grammarSelect.firstChild) {
-        grammarSelect.removeChild(grammarSelect.firstChild);
-    }
-    //The default option is created with a value of "" and appended.
-    var defaultOption = document.createElement("option");
-    defaultOption.value = "";
-    defaultOption.text = "Choose a grammar";
-    grammarSelect.appendChild(defaultOption);
-
-    //For each grammar in the grammarsList for this program an option is created and appended.
-    grammarsList.forEach(function(grammarString) {
-        var option = document.createElement("option");
-        option.value = grammarString;
-        option.text = grammarString;
-        grammarSelect.appendChild(option);
-    });
-    //The first option (after the default option) is selected.
-    grammarSelect.selectedIndex = 1;
-
-    //The algebra 1 combo-box is emptied.
-    var alg1Select = document.getElementById("alg1select");
-    while (alg1Select.firstChild) {
-        alg1Select.removeChild(alg1Select.firstChild);
-    }
-    //For each algebra parsed for this program and element is created and appended.
-    algebrasList.forEach(function(algebraString) {
-        var option = document.createElement("option");
-        option.value = algebraString;
-        option.text = algebraString;
-        alg1Select.appendChild(option);
-    });
-    //Since the first option is always selected automatically, it still works,
-    //but explicitly selecting the first option would in line with the rest of the code and
-    //should be added here later.
-
-    //Since the operators stay the same and are not dependant on the program, the combo-box
-    //does not need to be emtpied and rebuilt.
-    //The first option of the operator combo-box is selected and its onchange-function is executed
-    //in order to trigger the display of information about the operator.
-    var operatorSelect = document.getElementById("operator1");
-    operatorSelect.selectedIndex = 1;
-    operatorFunction(operatorSelect);
-
-    //The algebra 2 combo-box is emptied.
-    var alg2Select = document.getElementById("alg2select");
-    while (alg2Select.firstChild) {
-        alg2Select.removeChild(alg2Select.firstChild);
-    }
-
-    //For the second operator the operator is only selected, but the infotext is not updated.
-    var operatorSelect2 = document.getElementById("operator2");
-    operatorSelect2.selectedIndex = 1;
-
-    //The algebra 3 combo-box is emptied.
-    var alg3Select = document.getElementById("alg3select");
-    while (alg3Select.firstChild) {
-        alg3Select.removeChild(alg3Select.firstChild);
-    }
-    //Since the user can choose to execute only one algebra, the algebra 2 and 3 combo-boxes have the empty option.
-    var emptyOption = document.createElement("option");
-    emptyOption.value = "";
-    emptyOption.text = "";
-    alg2Select.appendChild(emptyOption);
-    var emptyOption2 = document.createElement("option");
-    emptyOption2.value = "";
-    emptyOption2.text = "";
-    alg3Select.appendChild(emptyOption2);
-
-    algebrasList = algdict[selectedProgram].sort();
-    //Each parsed algebra is then added to the options of the algebra 2 and 3 combo-boxes.
-    algebrasList.forEach(function(algebraString) {
-        var option = document.createElement("option");
-        option.value = algebraString;
-        option.text = algebraString;
-        alg2Select.appendChild(option);
-        var option2 = document.createElement("option");
-        option2.value = algebraString;
-        option2.text = algebraString;
-        alg3Select.appendChild(option2);
-    });
-    //The second algebra (after the empty option) is selected for combo-box 2, making it different from the pre-selected algebra 1 option.
-    // And the third is selected for combo-box 3, making it different from the other two.
-    alg2Select.selectedIndex = 2;
-    alg3Select.selectedIndex = 0;
-
-    //An infotext corresponding to the selected program is added to the textbox div.
-    var infotextsdict = {{ infotextsdict|safe }};
-    var infotextslist = infotextsdict[selectedProgram];
-    var textbox = document.getElementById("textbox");
-
-    textbox.innerHTML = "<p>Infotext:</p>";
-    //A black border around the textbox is added.
-    textbox.style = "border:1px solid black;";
-    textbox.style.visibility = 'visible';
-
-    infotextslist.forEach(function(infotext) {
-            textbox.innerHTML += infotext;
-        });
-    // Make divbox2 and submitButton visible.
-    var divbox2 = document.getElementById("divbox2");
-    divbox2.style.visibility = 'visible';
-
-    var advanced_options = document.getElementById("advanced_options");
-    advanced_options.style.visibility = 'visible';
-
-    var submitButton = document.getElementById("submit");
-    submitButton.style.visibility = 'visible';
-
-    // Make tip disappear
-    var tip = document.getElementById("tip");
-    tip.style.display = 'none';
-
-    // Set download link to selectedProgram + ".gap" and set its visibility to visible.
-    var gapFileName = selectedProgram + ".gap";
-    var gapFileDownloadLink = document.getElementById("gapFileDownload")
-    gapFileDownloadLink.href = "{{url_for('download_file', filename='replaceString')}}".replace("replaceString", gapFileName);
-    gapFileDownloadLink.innerHTML = "Download " + gapFileName;
-    gapFileDownloadLink.style.visibility = 'visible';
-
-    //Remove all siblings of gapFileDownloadLink in the span.
-    var downloadsSpan = document.getElementById("Downloads");
-    while (gapFileDownloadLink.nextSibling) {
-        downloadsSpan.removeChild(gapFileDownloadLink.nextSibling);
-    }
-
-    // Create download links for each header and add them to the span.
-    var headersdict = {{ headersdict|safe }}
-    var headerslist = headersdict[selectedProgram];
-    for (var index in headerslist) {
-        var headerFileDownloadLink = document.createElement('a');
-        headerFileDownloadLink.id = "headerFileDownload";
-        headerFileDownloadLink.href = "{{url_for('download_file', filename='replaceString')}}".replace("replaceString", headerslist[index].trim().replace(/['"]+/g, ''));
-        headerFileDownloadLink.innerHTML = "Download " + headerslist[index].trim().replace(/['"]+/g, '');
-        headerFileDownloadLink.style.visibility = 'visible';
-        downloadsSpan.appendChild(headerFileDownloadLink);
-    }
-}
-</script>
-<!-- Moving the progFunction to an external file didn't work.
-<script type="text/javascript" src="{{ url_for('static', filename='javascript/progFunction.js') }}"></script>
--->
-
-<!-- Since 3 algebras and 2 operators appear on the page per default, the counters are set respectively.-->
-<script type=text/javascript>
-    var globalAlgebrasCounter = 3;
-    var globalOperatorsCounter = 2;
-</script>
-
-<div id="divbox2" style="visibility:hidden">
-<div id="algsOpInfo">
-<div id="algebrasdiv">
-<!-- Empty combo-boxes are created for grammar and algebra 1, they will be filled once a program is selected.-->
-<p><label for="gra">Grammar:</label>
-
-<!-- gramFunction() will be executed when the grammar selected is changed. However this is deprecated and will be changed.-->
-<select id="grammarselect" onchange=gramFunction(this) name="gra" id="gra">
-  <option value="">Choose a grammar</option>
-</select>
-
-</p>
-
-<div><label for="alg1">Algebra 1:</label>
-
-<select id="alg1select" name="alg1" id="alg1">
-</select>
-</div>
-
-<div>
-<!-- The operator combo-box is created staticly since it does not change. operatorFunction() is executed when a new operator is selected.-->
-<span><label for="operator1">Product Operator 1:</label>
-
-<select name="operator1" id="operator1" onchange=operatorFunction(this)>
-  <option value=""></option>
-  <option value="*">*</option>
-  <option value="/">/</option>
-  <option value="%">%</option>
-  <option value="^">^</option>
-  <option value=".">.</option>
-  <option value="|">|</option>
-</select>
-
-<script type=text/javascript>
-    function operatorFunction(operatorSelectObject) {
-
-        var operatorinfo = document.getElementById("operatorinfo");
-        //The operatorinfo div is reset. (which might be unnecessary here)
-        //operatorinfo.innerHTML = "<p>Info:</p>";
-        operatorinfo.style = "border:1px solid black;";
-        operatorinfo.style.visibility = 'visible';
-
-        var selectedOperator = operatorSelectObject.value;
-
-    }
-</script>
-</span>
-
-<!-- An empty combo-box is created for algebra 2, that will be filled when a program is selected.-->
-<span><label for="alg2">Algebra 2:</label>
-
-<select id="alg2select" name="alg2" id="alg2">
-    <option value=""></option>
-</select>
-</span>
-<span>&nbsp;</span>
-</div>
-
-<div>
-<span><label for="operator2">Product Operator 2:</label>
-
-<select name="operator2" id="operator2">
-  <option value=""></option>
-  <option value="*">*</option>
-  <option value="/">/</option>
-  <option value="%">%</option>
-  <option value="^">^</option>
-  <option value=".">.</option>
-  <option value="|">|</option>
-</select>
-</span>
-
-<span><label for="alg3">Algebra 3:</label>
-
-<select id="alg3select" name="alg3" id="alg3">
-    <option value=""></option>
-</select>
-</span>
-</div>
-<button type="button" id="addAlgebraButton" onclick="addAlgebraFunction(this)">+ Additional Algebra</button>
-
-<script>
-    function addAlgebraFunction(addAlgebraButton) {
-        //The global counters for algebras and operators are incremented.
-        globalAlgebrasCounter += 1;
-        globalOperatorsCounter += 1;
-
-        //New div is created that will hold new operator select and algebra select.
-        var newAlgebraDiv = document.createElement("div");
-        newAlgebraDiv.id = "algebradiv" + globalAlgebrasCounter;
-
-        //Creating operator span
-        var operatorSpan = document.createElement("span");
-        operatorSpan.style.paddingRight = "2px";
-
-        //A label is added for the operator.
-        const operatorLabel = document.createElement("label");
-        operatorLabel.innerHTML = "Product Operator " +  globalOperatorsCounter + ":";
-        operatorLabel.setAttribute("for", "operator" + globalOperatorsCounter);
-        operatorSpan.appendChild(operatorLabel);
-
-        //New operator select is created and appended to the div.
-        var newOperatorSelect = document.createElement("select");
-        newOperatorSelect.id = "operator"+globalOperatorsCounter;
-        newOperatorSelect.name = "operator"+globalOperatorsCounter;
-        newOperatorSelect.style.marginLeft = "4px";
-
-        //Adding options to newOperatorSelect.
-        var options = ["*", "/", "%", "^", ".", "|"];
-        options.forEach(function(operator) {
-            var opt = document.createElement("option");
-            opt.value = operator;
-            opt.innerHTML = operator;
-            newOperatorSelect.appendChild(opt);
-        });
-
-        operatorSpan.appendChild(newOperatorSelect);
-
-        //Adding operatorSpan to the div
-        newAlgebraDiv.appendChild(operatorSpan);
-
-
-        //Creating algebraselect span
-        var algSpan = document.createElement("span");
-        algSpan.style.paddingLeft = "2px";
-
-        //A label is added for the select element (corresponding to the number of Algebras).
-        const label = document.createElement("label");
-        label.innerHTML = "Algebra " +  globalAlgebrasCounter + ":";
-        label.setAttribute("for", "alg" + globalAlgebrasCounter);
-        algSpan.appendChild(label);
-
-        //New algebra select is created and appended to the div.
-        var newAlgebraSelect = document.createElement("select");
-        newAlgebraSelect.id = "alg"+globalAlgebrasCounter;
-        newAlgebraSelect.name = "alg"+globalAlgebrasCounter;
-        newAlgebraSelect.style.marginLeft = "4px";
-        algSpan.appendChild(newAlgebraSelect);
-
-        //Adding algSpan to the div
-        newAlgebraDiv.appendChild(algSpan);
-
-        // selectedProgram is extracted from the progSelect.
-        var progSelect = document.getElementById("programselect");
-        var selectedProgram = progSelect.value;
-
-        //algdict is imported from flask via Jinja
-        var algdict = {{ algdict|safe }};
-
-        //First an empty option is added:
-        var emptyOption = document.createElement("option");
-        emptyOption.value = "";
-        emptyOption.text = "";
-        newAlgebraSelect.appendChild(emptyOption);
-
-        //newAlgebraSelect is populated with the algebrasList from the selectedProgram.
-        algebrasList = algdict[selectedProgram].sort();
-        algebrasList.forEach(function(algebraString) {
-            var option = document.createElement("option");
-            option.value = algebraString;
-            option.text = algebraString;
-            newAlgebraSelect.appendChild(option);
-        });
-
-
-        // The new algebra div is finally inserted before the addAlgebraButton.
-        var parent = addAlgebraButton.parentElement;
-        parent.insertBefore(newAlgebraDiv, addAlgebraButton);
-
-        if (globalAlgebrasCounter >= 5) {
-            addAlgebraButton.style.display = "none";
-        }
-    }
-</script>
-
-</div>
-<!-- A div is created that will hold information on the selected operator.-->
-<div id="operatorinfo" style="visibility:hidden">
-
-* : The lexicographic product.
-<br>
-/ : The interleaved product.
-<br>
-% : The cartesian product.
-<br>
-^ : The Pareto product.
-<br>
-. : The take-one product. The difference to the lexicographic product is that only one co-optimal result is chosen in the case of co-optimal results.
-<br>
-| : The overlay product. With !A | B!, $A$ is used in the forward computation and $B$ is used during backtracing.
-
-</div>
-</div>
-
-</div>
-
-<div id="advanced_options" style="visibility:hidden">
-  <fieldset>
-    <legend>Advanced Settings</legend>
-
-    <label for="plot_grammar">Level of detail for grammar visualization</label>
-    <select id='plot_grammar' name='plot_grammar'>
-      <option value="1" selected>basic (1)</option>
-      <option value="2">indices (2)</option>
-      <option value="3">data types (3)</option>
-      <option value="4">min/max yield size (4)</option>
-      <option value="5">table dimensions (5)</option>
-    </select>
-
-    <input type="checkbox" id="outside_grammar" name="outside_grammar"></input>
-    <label for="outside_grammar">generate outside grammar</label>
-  </fieldset>
-
-</div>
-
-<!-- The submit button element. loadFunction() starts the loading animation and is executed when the submit button is clicked.-->
-<p><button type="submit" id="submit" style="visibility:hidden" onclick="loadFunction();">Submit</button></p>
-
-<!-- This script contains the loadFunction().-->
-<script type=text/javascript>
-    function loadFunction() {
-        //The components of the loading animation are added to the body in html.
-        //The animation is then automatically started by the css-code, namely @keyframes loader and @keyframes loader-inner.
-        $('body').append('<div id="loader" class="loader-wrapper"><span class="loader"><span class="loader-inner"></span></span></div>');
-    }
-</script>
-
-</form>
-
-</div>
-
-<!-- divbottomouter contains divbottom and nothing more.
-    It is used to hide the results box by its visibility being hidden.
-    Its visibility is set to visible at the very end of the html file.-->
-<div id="divbottomouter" style="visibility:hidden">
-
-<!-- This html section constructs the tabs
-        and is (mostly) taken directly from:
-        https://makitweb.com/simple-tabbed-content-area-with-html-css-and-jquery/-->
-
-<!-- divbottom contains the results section (bottom side) of the bellman page.-->
-    <div id="divbottom" class="tabs">
-        <ul class="tabs-list">
-            <li ><a href="#tab1" id="title_input">Input</a></li>
-            <li ><a href="#tab2" id="title_gapc">Gapc</a></li>
-            <li ><a href="#tab_grammar" id="title_plot">Grammar Plot</a></li>
-            <li ><a href="#tab3" id='title_make'>Make</a></li>
-            <li class="active" id='title_binary'><a href="#tab4">Result</a></li>
-        </ul>
-
-        <div id="tab1" class="tab">
-            <p>
-            <!-- This script creates the inputreminderstring for Tab 1.-->
-            <script type=text/javascript>
-                //The inputreminderlist is recovered via Jinja from the Flask app.
-                var inputreminder = {{ inputreminderlist|safe }}
-                //An inputreminderstring is built in a for loop, that contains information about the previously selected values and typed input.
-                var inputreminderstring = "";
-                inputreminder.forEach(function(line) {
-                        inputreminderstring = inputreminderstring + line;
-                    });
-                inputreminderstring += "<br><div> Your Input was: "+{{exlist|safe}}+"</div><br>"
-                //The inputreminderstring is then written to Tab 1.
-                document.write(inputreminderstring);
-            </script>
-            </p>
-        </div>
-        <div id="tab2" class="tab">
-            <p>
-            <script type=text/javascript>
-                var result = {{ result|safe }}
-                var resultstring = "";
-                result[0][0].forEach(function(line){
-                    resultstring = resultstring + line + "<br>";
-                });
-                document.write(resultstring);
-                // TODO (smj): avoid duplication of code, which should color the out box orange iff step exited with non zero
-                if (result[0][1] != "0") {
-                  document.getElementById("tab2").style.backgroundColor = '#ffE1A3';
-                } else {
-                  document.getElementById("tab2").style.backgroundColor = null;
-                }
-            </script>
-            </p>
-        </div>
-        <div id="tab_grammar" class="tab">
-          <img src="" border="1" id="grammarplot" name="grammarplot" width="100%"/>
-          <script type=text/javascript>
-              var result = {{ result|safe }}
-              var resultstring = "data:image/gif;base64,";
-              if (result[3][1] != '0') {
-                resultstring = 'static/error.png';
-              } else {
-                resultstring = resultstring + result[3][0];
-              }
-              document.getElementById('grammarplot').src = resultstring;
-              if (result[3][1] != "0") {
-                document.getElementById("tab_grammar").style.backgroundColor = '#ffE1A3';
-              } else {
-                document.getElementById("tab_grammar").style.backgroundColor = null;
-              }
-          </script>
-        </div>
-        <div id="tab3" class="tab">
-            <p>
-            <script type=text/javascript>
-                var result = {{ result|safe }}
-                var resultstring = "";
-                result[1][0].forEach(function(line){
-                    resultstring = resultstring + line + "<br>";
-                });
-                document.write(resultstring);
-                if (result[1][1] != "0") {
-                  document.getElementById("tab3").style.backgroundColor = '#ffE1A3';
-                } else {
-                  document.getElementById("tab3").style.backgroundColor = null;
-                }
-            </script>
-            </p>
-        </div>
-        <div id="tab4" class="tab active">
-            <p>
-            <script type=text/javascript>
-                var result = {{ result|safe }}
-                var resultstring = "";
-                result[2][0].forEach(function(line){
-                    resultstring = resultstring + line + "<br>";
-                });
-                document.write(resultstring);
-                if (result[2][1] != "0") {
-                  document.getElementById("tab4").style.backgroundColor = '#ffE1A3';
-                } else {
-                  document.getElementById("tab4").style.backgroundColor = null;
-                }
-            </script>
-            </p>
-        </div>
+<div class="container_cafe">
+  <div class="container_instance" id="container_instance" style="display: none;">container instance</div>
+
+  <form method="post">
+    <div class="container_program group">
+      <legend>Select Program</legend>
+      <select id='select_program' name='select_program' onchange="window.user_input={}; update_user_form();">
+        <option value="empty">Choose a program</option>
+        {% for key, value in programs.items() %}
+          <option value="{{key}}">{{key}}</option>
+        {% endfor %}
+      </select>
     </div>
 
-    <!-- End of tabs html section -->
+    <div id="program" style="display: none;">
+      <div class="group" id="grp_header_info" style="display: none;">
+        <button type="button" class="accordion">Problem Description</button>
+        <div class="container_header_info panel" id="container_header_info" style="display: block;">
+        </div>
+      </div>
+      <div class="group">
+        <legend>Algebraproduct, Grammar, Inputstrings</legend>
+        <div class="container_algebraproduct" id="container_algebraproduct">
+        </div>
+        <div class="container_grammar" id="container_grammar">
+          <div id="grammar_grp" class="algprod_select">
+            <div class="title">Grammar</div>
+            <select id='select_grammar' name='select_grammar' onchange="update_instance()">
+            </select>
+          </div>
+        </div>
+        <div class="container_inputstrings" id="container_inputstrings">
+          container inputstrings
+        </div>
+      </div>
+      <div class="container_advancedsettings group">
+        <fieldset>
+          <legend>Advanced Settings</legend>
 
+          <label for="plot_grammar">Level of detail for grammar visualization</label>
+          <select id='plot_grammar' name='plot_grammar'>
+            <option class="select_option"value="1" selected="selected">basic (1)</option>
+            <option value="2">indices (2)</option>
+            <option value="3">data types (3)</option>
+            <option value="4">min/max yield size (4)</option>
+            <option value="5">table dimensions (5)</option>
+          </select>
 
+          <input type="checkbox" id="outside_grammar" name="outside_grammar"></input>
+          <label for="outside_grammar">generate outside grammar</label>
+        </fieldset>
+      </div>
+      <div class="container_submit" id="container_submit">
+        <button type="submit" id="submit" onclick="execute_gapc();">Submit</button>
+      </div>
+      <div class="container_results group" id="container_results">
+        <legend>Execution Results</legend>
+        {% set result_tabs = [('gapc', 'Gapc'), ('dot', 'Grammar Plot'), ('make', 'Make'), ('run', 'Result'), ('tikz', 'Candidates')] %}
+
+        <div id="tabs_results" class="tabs_header">
+          {% for (task, label) in result_tabs %}
+            {% if (task != 'tikz') or (('tikz' in results) and (results[task]['stdout']|length > 0)) %}
+              <div id="{{task}}" class="tab_label{% if (task in results.keys()) and (results[task]['exit_status'] != 0) %} tab_label_error{% endif %}" onclick='switch_tab(this.parentNode, this.id);'>{{label}}</div>
+            {% endif %}
+          {% endfor %}
+        </div>
+
+        {% for (task, label) in result_tabs %}
+          {% if (task != 'tikz') or (('tikz' in results.keys()) and (results['tikz']['stdout']|length > 0)) %}
+            <div id="tab_{{task}}" class="tab{% if (task in results.keys()) and (results[task]['exit_status'] != 0) %} tab_error{% endif %}">
+              {% if task in results.keys() %}
+                <div id="result_command_{{task}}" class="channel"><pre><code class="language-bash command">{{results[task]['command']|safe}}</code></pre><div class="channel_name">COMMAND</div></div>
+                {% if task == 'dot' %}
+                  <div class="result_stdout_dot">
+                    {% if results[task]['exit_status'] == 0 %}
+                      <img src="data:image/gif;base64,{{results[task]['stdout'][0]}}" width="100%"/>
+                    {% else %}
+                      <img src="static/error.png" height="300"/>
+                    {% endif %}
+                  </div>
+                {% elif task == 'tikz' %}
+                  <div id="result_stdout_{{task}}">
+                    <div id="tikz_title">candidate 1 of {{results['tikz']['stdout']|length}}</div>
+                    <div id="tikz_gallery">
+                      <div id="tikz_prev" onclick='switch_tikz_gallery("prev");'>❮</div>
+                      {% for cand in results['tikz']['stdout'] %}
+                        <div id="candidate_{{loop.index}}" class="tikz_candidate" style="display: {% if loop.index == 1 %}block;{% else %}none;{% endif %}">
+                          <img src="data:image/gif;base64,{{cand}}"/>
+                        </div>
+                      {% endfor %}
+                      <div id="tikz_next" onclick='switch_tikz_gallery("next");'>❯</div>
+                    </div>
+                  </div>
+                {% else %}
+                  {% if results[task]['stdout']|length > 0 %}
+                    {% if 'stdout_warning' in results[task].keys() %}
+                      <div class="stdout_warning">{{results[task]['stdout_warning']}}</div>
+                    {% endif %}
+                    <div id="result_stdout_{{task}}" class="channel"><pre><code class="language-bash stdout">{{''.join(results[task]['stdout'])|safe}}</code></pre><div class="channel_name"><a href="downloadchannel/{% if results['gapc']['cache'] != results[task]['cache'] %}{{results['gapc']['cache']}}/{% else %}__/{% endif %}{{results[task]['cache']}}/{{task}}.out"><img class="channeldownload" src="{{ url_for('static', filename='download-svgrepo-com.svg') }}"/></a>STDOUT</div></div>
+                  {% endif %}
+                {% endif %}
+                {% if results[task]['stderr']|length > 0 %}
+                  <div id="result_stderr_{{task}}" class="channel"><pre><code class="language-bash stderr">{{''.join(results[task]['stderr'])|safe}}</code></pre><div class="channel_name"><a href="downloadchannel/{% if results['gapc']['cache'] != results[task]['cache'] %}{{results['gapc']['cache']}}/{% else %}__/{% endif %}{{results[task]['cache']}}/{{task}}.err"><img class="channeldownload" src="{{ url_for('static', filename='download-svgrepo-com.svg') }}"/></a>STDERR</div></div>
+                {% endif %}
+                <div class="sys_info">
+                  <div id="cache_{{task}}" class="cache">cache directory: {{results[task]['cache']}}</div>
+                  <div id="runtime_{{task}}" class="runtime">executed in {{results[task]['runtime']}} sec.</div>
+                  <div id="memory_{{task}}" class="memory">memory: {{results[task]['memory']}} MB</div>
+                </div>
+              {% endif %}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <div class="container_code group" id="container_code">
+        <legend>Source Code</legend>
+        <div id="code_download"></div>
+        <button type="button" class="accordion">Header</button>
+        <div class="panel" id="container_code_header">container code header</div>
+        <button type="button" class="accordion">Signature</button>
+        <div class="panel" id="container_code_signatures">container code signatures</div>
+        <button type="button" class="accordion">Algebras</button>
+        <div class="panel" id="container_code_algebras">container code algebras</div>
+        <button type="button" class="accordion">Grammars</button>
+        <div class="panel" id="container_code_grammars">container code grammars</div>
+        <button type="button" class="accordion">Instances</button>
+        <div class="panel" id="container_code_instances">container code instances</div>
+      </div>
+    </div>
+  </form>
 </div>
 
-<!-- Script for tab activation.
-    This section is taken directly from:
-    https://makitweb.com/simple-tabbed-content-area-with-html-css-and-jquery/-->
-<script type="text/javascript">
-$(document).ready(function(){
-
-  $(".tabs-list li a").click(function(e){
-     e.preventDefault();
-  });
-
-  $(".tabs-list li").click(function(){
-     var tabid = $(this).find("a").attr("href");
-     $(".tabs-list li,.tabs div.tab").removeClass("active");   // removing active class from tab
-
-     $(".tab").hide();   // hiding open tab
-     $(tabid).show();    // show tab
-     $(this).addClass("active"); //  adding active class to clicked tab
-
-  });
-
-});
-</script>
-<!-- End of tabs javascript section -->
-
-<!-- This script resets the values of all the combo-boxes to the values that were selected before submit was pressed.
-    This is a workaround, since selecting the values upon creation of the combo-boxes did not work.
-    (Possibly due to multiple ids on the combo-boxes' html-elements.)-->
-<script type=text/javascript>
-
-    function resetValuesFunction() {
-        var max_num_algebras = 5;
-        var user_form_input = {{ user_form_input|safe }};
-
-        //The values of the combo-boxes are set to the values
-        //saved in user_form_input.
-        var progSelect = document.getElementById("programselect");
-        progSelect.value = user_form_input["program"];
-        //Since the value changing is not registered by onchange in this case,
-        //the onchange function progFunction() has to be executed manually.
-        progFunction(progSelect);
-
-        var inputstringsnumberdict = {{ inputstringsnumberdict|safe }};
-        var n = inputstringsnumberdict[user_form_input["program"]];
-
-        var gramSelect = document.getElementById("grammarselect");
-        gramSelect.value = user_form_input["gra"];
-
-        var alg1Sel = document.getElementById("alg1select");
-        alg1Sel.value = user_form_input["alg1"];
-
-        var operatorSel = document.getElementById("operator1");
-        operatorSel.value = user_form_input["operator1"];
-        //As is the case with the progFunction() of programselect, operatorFunction() has to be executed manually her too.
-        operatorFunction(operatorSel);
-
-        var alg2Sel = document.getElementById("alg2select");
-        alg2Sel.value = user_form_input["alg2"];
-
-        var operator2Sel = document.getElementById("operator2");
-        operator2Sel.value = user_form_input["operator2"];
-
-        var alg3Sel = document.getElementById("alg3select");
-        alg3Sel.value = user_form_input["alg3"];
-
-
-        var addAlgebraButton = document.getElementById("addAlgebraButton");
-
-
-        if ("alg4" in user_form_input) {// && user_form_input["operator3"] != "") {
-            addAlgebraFunction(addAlgebraButton);
-            alg4select = document.getElementById("alg4");
-            alg4select.value = user_form_input["alg4"];
-            if ("operator3" in user_form_input) {
-                operator3select = document.getElementById("operator3");
-                operator3select.value = user_form_input["operator3"];
-            }
-        }
-
-        if ("alg5" in user_form_input) {// && user_form_input["operator4"] != "") {
-            addAlgebraFunction(addAlgebraButton);
-            alg5select = document.getElementById("alg5");
-            alg5select.value = user_form_input["alg5"];
-            if ("operator4" in user_form_input) {
-                operator4select = document.getElementById("operator4");
-                operator4select.value = user_form_input["operator4"];
-            }
-        }
-
-        if (globalAlgebrasCounter >= max_num_algebras && globalOperatorsCounter >= max_num_algebras-1) {
-            addAlgebraButton.style.display = 'none';
-        }
-
-        document.getElementById("plot_grammar").value = user_form_input['plot_grammar'];
-        document.getElementById("outside_grammar").checked = user_form_input['outside_grammar'] != null;
-    }
-    //resetValuesFunction() is executed just before the submit button as well as after all other elements have been built.
-    resetValuesFunction();
-    var divbottomouter = document.getElementById("divbottomouter");
-    divbottomouter.style.visibility = 'visible';
-    document.getElementById('divbottom').scrollIntoView();
-</script>
-
-<span style="font-size: small;">
-gapc version: <a href="https://github.com/jlab/gapc" target="_new">{{ gapc_version|safe }}</a>, ADP_collection version: <a href="https://github.com/jlab/ADP_collection/commit/{{ repo_hash|safe }}" target="_new">{{ repo_hash|safe }}</a>, cafe version: <a href="https://github.com/jlab/bellmanscafe/commit/{{ cafe_hash|safe }}" target="_new">{{ cafe_hash|safe }}</a>.
-</span>
+<div class="footer">
+  <div>
+    gapc version: <a href="https://github.com/jlab/gapc" target="_new">{{ settings['versions']['gapc']|safe }}</a>,
+  </div>
+  <div>
+    ADP_collection version: <a href="https://github.com/jlab/ADP_collection/commit/{{ settings['versions']['ADP_collection']|safe }}" target="_new">{{ settings['versions']['ADP_collection']|safe }}</a>,
+  </div>
+  <div>
+    cafe version: <a href="https://github.com/jlab/bellmanscafe/commit/{{ settings['versions']['cafe']|safe }}" target="_new">{{ settings['versions']['cafe']|safe }}</a>,
+  </div>
+  <div>
+    contact and help: <a href="mailto:stefan.janssen@computational.bio.uni-giessen.de?subject=Bellman's%20Cafe{% if 'gapc' in results.keys() %}&body=please%20do%20not%20remove%20the%20following%20cache%20information%20if%20you%20have%20questions%20about%20a%20specific%20instance%20execution,%20as%20it%20will%20help%20debugging:%20{{results['gapc']['cache']}}{% if 'run' in results.keys() %},%20{{results['run']['cache']}}{% endif %}{% endif %}">stefan.janssen@computational.bio.uni-giessen.de</a>.
+  </div>
+</div>
 {% endblock %}

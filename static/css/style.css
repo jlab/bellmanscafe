@@ -1,0 +1,196 @@
+:root {
+  --jlab_blue: #0068b4;      /* was: #AF6557 */
+  --jlab_lightblue: #89c7f4; /* was: #B8E1A3 */
+  --jlab_error: #ffE1A3;
+}
+
+/* For Tabs */
+div.tab_label {
+  min-width:120px;
+  text-align: center;
+  background-color: var(--jlab_lightblue);
+  padding:10px 5px;
+  border-radius:3px;
+  margin-right:2px;
+  color:black;
+}
+div.tab_label_error {
+  color: var(--jlab_error) !important;
+  font-weight: bold;
+}
+
+div.tab_label:hover{
+  cursor:pointer;
+}
+
+div.active_tab_label {
+  background-color: var(--jlab_blue);
+  color:white;
+}
+
+div.tab {
+  background-color: var(--jlab_lightblue);
+  min-height:250px;
+  border-radius:3px;
+  padding:20px 15px;
+}
+
+div.tab_error {
+  background-color: var(--jlab_error);
+}
+
+/* For Accordion */
+/* Style the buttons that are used to open and close the accordion panel */
+button.accordion {
+ background-color: var(--jlab_lightblue);
+ color: #444;
+ cursor: pointer;
+ padding: 18px;
+ width: 100%;
+ text-align: left;
+ border: none;
+ outline: none;
+ transition: 0.4s;
+}
+
+/* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
+button.active, button.accordion:hover {
+ background-color: var(--jlab_blue);
+ color: white;
+}
+
+/* Style the accordion panel. Note: hidden by default */
+div.panel {
+  padding: 10px 5px;
+  background-color: white;
+  display: none;
+  overflow: hidden;
+}
+
+button.accordion:after {
+  content: '\02795'; /* Unicode character for "plus" sign (+) */
+  font-size: 13px;
+  color: #777;
+  float: right;
+  margin-left: 5px;
+}
+
+button.active:after {
+  content: "\2796"; /* Unicode character for "minus" sign (-) */
+}
+
+/* Files to download */
+div.codefile {
+  background-color:#edeae8;
+  border-width: 1px;
+  border-radius: 5px;
+  border-style: dotted;
+  border-color: #AF6557;
+  margin-left: 0.3em;
+  margin-right: 0.25em;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+div.codefile a:before {
+  content: "Download ";
+
+}
+
+
+
+/* Border around multiple elements */
+div.group {
+    border:5px outset var(--jlab_lightblue);
+    margin-top: 15px;
+    margin-bottom: 20px;
+    margin-left: 5px;
+    margin-right: 5px;
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 5px;
+    padding-bottom: 10px;
+}
+
+
+div.channel_name {
+  background-color: #999999;
+  color: white;
+  padding-left: 1em;
+  padding-right: 1em;
+}
+code.command {
+  background-color: #AAAAAA;
+}
+code.stderr {
+  background-color: #F2E3E3;
+}
+code.stdout {
+  background-color: #ffffff;
+}
+
+select.select_operator {
+  margin-left: 4px;
+  margin-right: 4px;
+}
+
+div.title {
+  text-align: center;
+}
+
+div#container_algebraproduct, div#container_grammar, div#container_inputstrings {
+  border: 1px solid var(--jlab_lightblue);
+  margin-top: 5px;
+  margin-bottom: 5px;
+  padding: 5px;
+}
+
+div#tikz_title {
+  text-align: center;
+}
+div#tikz_gallery {
+  background-color: #ffffff;
+}
+
+div.sys_info {
+  color: #999999;
+  font-size: small;
+}
+div.stdout_warning {
+  color: #ff0000;
+  font-size: large;
+  text-align: center;
+}
+
+div.tikz_candidate img {
+  max-height: 700px;
+}
+
+div#divbanner {
+    background-color: var(--jlab_lightblue);
+    min-width: 400px;
+    height: 120px;
+    position: relative;
+    text-align: center;
+    color: white;
+    font-size: xx-large;
+}
+
+img.channeldownload {
+  height: 1em;
+  padding-right: 0.3em;
+}
+
+div#container_instance {
+  color:white;
+  background-color: var(--jlab_blue);
+}
+
+option.select_option:checked {
+  background-color: var(--jlab_blue);
+  color: white;
+}
+
+div.footer {
+  font-size: small;
+  justify-content: space-between;
+}

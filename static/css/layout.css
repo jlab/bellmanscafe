@@ -1,0 +1,108 @@
+div.tabs_header {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+div#code_download {
+  display: flex;
+  flex-direction: row;
+}
+
+div#container_algebraproduct {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+div#container_instance {
+  display: flex;
+  justify-content: center;
+
+  position: -webkit-sticky; /* for browser compatibility */
+  position: sticky;
+  z-index: 99;
+  top: 10px;
+  padding: 3px;
+}
+
+div#container_submit {
+  display: flex;
+  justify-content: center;
+}
+
+div.channel {
+  position: relative;
+}
+
+div.channel_name {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+}
+
+div.algprod_select {
+   text-align: center;
+ }
+
+div.hintgroup {
+  display: flex;
+  flex-direction: row;
+}
+
+input.userstring {
+  flex-grow: 1;
+  margin-right: 1em;
+}
+
+div#code_download {
+  display: flex;
+  flex-direction: row;
+}
+
+div#result_stdout_tikz {
+  display: flex;
+  flex-direction: column;
+}
+div#tikz_gallery {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+div#tikz_prev, div#tikz_next {
+  cursor: pointer;
+  text-align: center;
+  background: rgba(.7, .7, .7, 0.5);
+  max-width: 2em;
+}
+
+div.tab {
+  display: flex;
+  flex-direction: column;
+}
+div.sys_info {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+div.jlab_logo {
+  position: absolute;
+  right: 0px;
+  top: 20px;
+}
+
+div#code_download {
+  padding-bottom: 5px;
+}
+
+div.footer {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+div.result_stdout_dot {
+  text-align: center;
+}

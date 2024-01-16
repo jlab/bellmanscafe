@@ -7,8 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
-
+  python_codestyle:
     runs-on: ubuntu-latest
 
     steps:
@@ -38,4 +37,44 @@ jobs:
         conda init bash
         source ~/.bashrc
         conda activate bellmanscafe
-        flake8 *.py
+        flake8
+
+  python_tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v3
+    - name: setup conda
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        # This uses *miniforge*, rather than *minicond*. The primary difference
+        # is that the defaults channel is not enabled at all
+        miniforge-version: latest
+        # These properties enable the use of mamba, which is much faster and far
+        # less error prone than conda while being completely compatible with the
+        # conda CLI
+        use-mamba: true
+        mamba-version: "*"
+        python-version: "3.9"
+        environment-file: environment.yml
+    - name: install gapc
+      run: |
+        sudo add-apt-repository ppa:janssenlab/software
+        sudo apt-get update
+        sudo apt-get install bellmansgapc
+    - name: run python tests
+      shell: bash -el {0}
+      run: |
+        nosetests bellmanscafe --with-doctest --with-coverage
+    - name: convert coverage
+      shell: bash -el {0}
+      run: |
+        coverage lcov
+    - name: send coverage report
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: "coverage.lcov"

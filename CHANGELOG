@@ -1,3 +1,28 @@
+v2.1
+  * export secret key into instance dependent config file
+  * harmonize settings such that important ones are now accessible in gunicorn.cong.py
+
+v2.0
+  * basically a complete re-write of the server. I am only listing the new features here:
+    * directly jump to the interactive page
+    * top banner that lists the user selected instance as a constant reminder of what shall be executed: "Your instance: ..."
+    * algebras and product operator choice is dynamically added when user makes a choice other then empty for the rightmost algebra. Max is currently set to 5 algebras (change via cafe.py)
+    * IF "example inputs: " is found as a comment in the *.gap source file, these strings are used to pre-populate input fields and to giva a hint.
+    * results are split into following fields and nicely rendered via highlight.js
+      - command
+      - stdout
+      - stderr (if any)
+      - used cache directory, runtime and max RSS
+    * source code is listed as an accordion to the page
+    * source "download" with txt mimetype
+    * IF top comment exists in *.gap file, a "Problem Description" is given as an accordion
+
+v1.14
+  * add in another tab right of "results" iff user requests algebra product that contains the auto tikZ algebra. This tabs allows to iterate through individual candidate visualizations. It should be limited to the top 20 candidates to avoid server overload.
+  * execute compiled binary in separate sub-directories for advanced caching. Also avoid concurrency issues should multiple user run the same instance at the same time.
+  * log execution resources via /usr/bin/time (currently not displaying results)
+  * provide problem dependent example input, if defined in gap source file as a line starting with "'example inputs: '"
+
 v1.13
   * improved error reporting a little: 1) missing grammar plots are indicated via a static error image 2) exit status for each step are recorded and divs are colored orange if exit status is non-zero
 
