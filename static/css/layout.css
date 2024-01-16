@@ -100,4 +100,9 @@ div#code_download {
 div.footer {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
+}
+
+div.result_stdout_dot {
+  text-align: center;
 }
