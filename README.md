@@ -1,5 +1,6 @@
 # Stefan's Infos
   - when developing, start server via `gunicorn  Bellmansgap:app --error-logfile=- --workers=1` otherwise 8 workers will be started and stderr is redirected into logfile
+  - IP of virtual server is 134.176.31.227
 
 Additional Information of the server
 

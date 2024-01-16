@@ -1,3 +1,7 @@
+v2.1
+  * export secret key into instance dependent config file
+  * harmonize settings such that important ones are now accessible in gunicorn.cong.py
+
 v2.0
   * basically a complete re-write of the server. I am only listing the new features here:
     * directly jump to the interactive page
