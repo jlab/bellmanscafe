@@ -1,3 +1,6 @@
+v2.2
+  * fix concurrency issues, see https://github.com/jlab/bellmanscafe/issues/60
+
 v2.1
   * export secret key into instance dependent config file
   * harmonize settings such that important ones are now accessible in gunicorn.cong.py
