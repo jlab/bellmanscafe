@@ -1,10 +1,10 @@
 import sys
 sys.path.append('../')
 
-from io import StringIO
-import os
+from io import StringIO  # noqa: E402
+import os  # noqa: E402
 from unittest import TestCase, main  # noqa: E402
-from bellmanscafe.execute import compile_and_run_gapc   # noqa: E402
+from bellmanscafe.execute import compile_and_run_gapc  # noqa: E402
 
 
 class ParseGAPLTests(TestCase):
@@ -15,10 +15,10 @@ class ParseGAPLTests(TestCase):
                            'select_grammar': 'gra_needlemanwunsch',
                            'plot_grammar': '1',
                            'algebra_1': 'alg_similarity',
-                          'product_1': '*',
-                          'algebra_2': 'alg_count',
-                          'userinput_1': 'FREIZEIT',
-                          'userinput_2': 'ZEITGEIST'}
+                           'product_1': '*',
+                           'algebra_2': 'alg_count',
+                           'userinput_1': 'FREIZEIT',
+                           'userinput_2': 'ZEITGEIST'}
 
         self.settings = {'paths': {'gapc_programs': 'tests/data/',
                                    'prefix_cache': './cache_dir/'},
@@ -34,7 +34,8 @@ class ParseGAPLTests(TestCase):
         self.assertEqual('( -3 , 4 )', obs['run']['stdout'][-1].strip())
 
     def test_concurrency(self):
-        ERRMSG = 'looks like another process is trying to build the same instan'
+        ERRMSG = ('looks like another process is trying to build '
+                  'the same instan')
         # first execution
         log = StringIO("")
         obs = compile_and_run_gapc(
