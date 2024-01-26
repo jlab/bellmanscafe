@@ -59,7 +59,7 @@ def modify_tikz_file(fp_orig, fp_limited, max_candidates=20):
 
 
 def compile_and_run_gapc(gapl_programs, user_input, settings,
-                         verbose=sys.stderr):
+                         verbose=sys.stderr, retry=10, waitfor=20):
     """Compiles a binary for a given instance (aka algebra product).
 
     Parameters
@@ -180,11 +180,11 @@ def compile_and_run_gapc(gapl_programs, user_input, settings,
            (not os.path.exists(os.path.join(fp_workdir, 'binary.ready'))):
             # we now assume that another process is currently building the
             # binary. Thus, we wait for X seconds and double check again
-            for i in range(10):
+            for i in range(retry):
                 log('looks like another process is trying to build the same'
                     ' instance. Wait for it for 20sec ... %i\n' % i, 'info',
                     verbose)
-                time.sleep(20)
+                time.sleep(waitfor)
                 if os.path.exists(os.path.join(fp_workdir, 'binary.ready')):
                     break
             # if waiting for 20sec, 10 times did not suffice to generate
