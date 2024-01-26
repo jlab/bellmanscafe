@@ -2,6 +2,7 @@ import sys
 sys.path.append('../')
 
 from io import StringIO
+import os
 from unittest import TestCase, main  # noqa: E402
 from bellmanscafe.execute import compile_and_run_gapc   # noqa: E402
 
@@ -19,7 +20,7 @@ class ParseGAPLTests(TestCase):
                           'userinput_1': 'FREIZEIT',
                           'userinput_2': 'ZEITGEIST'}
 
-        self.settings = {'paths': {'gapc_programs': 'bellmanscafe/tests/data/',
+        self.settings = {'paths': {'gapc_programs': 'tests/data/',
                                    'prefix_cache': './cache_dir/'},
                          'versions': {'gapc': 'kalle',
                                       'ADP_collection': 'heinz'},
@@ -33,17 +34,25 @@ class ParseGAPLTests(TestCase):
         self.assertEqual('( -3 , 4 )', obs['run']['stdout'][-1].strip())
 
     def test_concurrency(self):
+        ERRMSG = 'looks like another process is trying to build the same instan'
         # first execution
+        log = StringIO("")
         obs = compile_and_run_gapc(
-            self.gapl_programs, self.user_input, self.settings)
+            self.gapl_programs, self.user_input, self.settings, verbose=log)
         self.assertEqual('( -3 , 4 )', obs['run']['stdout'][-1].strip())
+        self.assertTrue(ERRMSG not in log.getvalue())
+
+        # remove indicator file of first execution
+        os.remove(os.path.join(self.settings['paths']['prefix_cache'],
+                               obs['gapc']['cache'],
+                               'binary.ready'))
 
         # second execution
         log = StringIO("")
         obs = compile_and_run_gapc(
             self.gapl_programs, self.user_input, self.settings,
             retry=1, waitfor=1, verbose=log)
-        print(log)
+        self.assertTrue(ERRMSG in log.getvalue())
 
 
 if __name__ == '__main__':
