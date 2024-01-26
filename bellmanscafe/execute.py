@@ -5,6 +5,7 @@ import subprocess
 import base64
 import os
 import glob
+import time
 
 from bellmanscafe.cafe import get_gapc_version, get_repo_commithash, log, \
     get_codefiles_hash
@@ -131,11 +132,16 @@ def compile_and_run_gapc(gapl_programs, user_input, settings,
         # 3) compiling c++ into binary
         'make': {'cmds': 'make -f out.mf'},
 
-        # 4) run the compiled binary with user input (not cached)
+        # 4) create a file to indicate that binary execution (or abortion) is
+        #    complete. This avoids concurrency issues, where two users are
+        #    tiggering execution of the same instance
+        'flag_ready_binary': {'cmds': 'touch binary.ready'},
+
+        # 5) run the compiled binary with user input (not cached)
         'run': {'cmds': '../out %s' % ' '.join(map(lambda x: '"%s"' % x,
                                                    inputstrings))},
 
-        # 5) OPTIONAL: if algebra product uses tikZ, images will be rendered
+        # 6) OPTIONAL: if algebra product uses tikZ, images will be rendered
         'tikz': {
             'cmds':
                 '/usr/bin/time -v -o pdflatex.benchmark pdflatex tikz.tex '
@@ -166,6 +172,27 @@ def compile_and_run_gapc(gapl_programs, user_input, settings,
         hash_program = get_codefiles_hash([fp_gapfile] + fps_headerfiles)
         invalid_cache = not os.path.exists(
             os.path.join(fp_workdir, '%s.codehash' % hash_program))
+        # due to concurrency, another process might be in the status of
+        # building this instance at this moment. Instance building should at
+        # the very end create an empty file "binary.ready". If this file is NOT
+        # there, the cache should not be used
+        if (invalid_cache is False) and \
+           (not os.path.exists(os.path.join(fp_workdir, 'binary.ready'))):
+            # we now assume that another process is currently building the
+            # binary. Thus, we wait for X seconds and double check again
+            for i in range(10):
+                log('looks like another process is trying to build the same'
+                    ' instance. Wait for it for 20sec ... %i\n' % i, 'info',
+                    verbose)
+                time.sleep(20)
+                if os.path.exists(os.path.join(fp_workdir, 'binary.ready')):
+                    break
+            # if waiting for 20sec, 10 times did not suffice to generate
+            # binary, something might have gone wrong and we try to build it
+            # here again!
+            invalid_cache = True
+        # if cache is invalid, due to program file changes OR previous attempts
+        # failed, delete the cache and try again.
         if invalid_cache:
             shutil.rmtree(fp_workdir)
             log('delete outdated cache dir "%s"\n' % fp_workdir, 'info',
