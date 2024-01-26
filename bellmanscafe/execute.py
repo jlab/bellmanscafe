@@ -182,8 +182,8 @@ def compile_and_run_gapc(gapl_programs, user_input, settings,
             # binary. Thus, we wait for X seconds and double check again
             for i in range(retry):
                 log('looks like another process is trying to build the same'
-                    ' instance. Wait for it for 20sec ... %i\n' % i, 'info',
-                    verbose)
+                    ' instance. Wait for it for %isec ... %i\n' % (waitfor, i),
+                    'info', verbose)
                 time.sleep(waitfor)
                 if os.path.exists(os.path.join(fp_workdir, 'binary.ready')):
                     break
