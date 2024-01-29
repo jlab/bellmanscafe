@@ -44,7 +44,7 @@ FP_GAPC_PROGRAMS = "../ADP_collection/"
 FP_CACHE = "DOCKER/bcafe_cache/"
 
 # don't forget to leave a changelog message
-CAFE_VERSION = "2.1"
+CAFE_VERSION = "2.2"
 
 # maximum number of allowed algebras
 MAX_ALGEBRAS = 5
