@@ -134,7 +134,7 @@ def compile_and_run_gapc(gapl_programs, user_input, settings,
 
         # 4) create a file to indicate that binary execution (or abortion) is
         #    complete. This avoids concurrency issues, where two users are
-        #    tiggering execution of the same instance
+        #    triggering execution of the same instance
         'flag_ready_binary': {'cmds': 'touch binary.ready'},
 
         # 5) run the compiled binary with user input (not cached)
