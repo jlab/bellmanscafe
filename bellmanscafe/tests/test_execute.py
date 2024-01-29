@@ -35,7 +35,7 @@ class ParseGAPLTests(TestCase):
 
     def test_concurrency(self):
         ERRMSG = ('looks like another process is trying to build '
-                  'the same instan')
+                  'the same instance')
         # first execution
         log = StringIO("")
         obs = compile_and_run_gapc(
