@@ -51,7 +51,7 @@ if not os.path.exists("static/Resources"):
 def download_file(filename):
     p = filename
     return send_file(os.path.join(settings['paths']['gapc_programs'], p),
-                     as_attachment=False, mimetype="text/plain")
+                     as_attachment=True, mimetype="text/plain")
 
 
 # route for the bellman page "/bellman"
