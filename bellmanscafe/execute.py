@@ -130,7 +130,8 @@ def compile_and_run_gapc(gapl_programs, user_input, settings,
         # 1) transpiling via gapc
         'gapc': {'cmds': ('echo "\ninstance bcafe=%s;" >> "%s" '
                           '&& gapc -i "bcafe" --plot-grammar %s %s %s ') % (
-            instance, os.path.basename(fp_gapfile_combined), user_input['plot_grammar'],
+            instance, os.path.basename(fp_gapfile_combined),
+            user_input['plot_grammar'],
             param_outside,
             os.path.basename(fp_gapfile_combined))},
 
@@ -177,7 +178,8 @@ def compile_and_run_gapc(gapl_programs, user_input, settings,
     if os.path.exists(fp_workdir):
         # if a matching cache dir exists, we test if the source file contents
         # has changed.
-        hash_program = get_codefiles_hash([fp_gapfile_combined] + [tpl[0] for tpl in fps_headerfiles])
+        hash_program = get_codefiles_hash(
+            [fp_gapfile_combined] + [tpl[0] for tpl in fps_headerfiles])
         invalid_cache = not os.path.exists(
             os.path.join(fp_workdir, '%s.codehash' % hash_program))
         # due to concurrency, another process might be in the status of
@@ -215,15 +217,19 @@ def compile_and_run_gapc(gapl_programs, user_input, settings,
             with open(fp_gapfile_combined, 'w') as w:
                 w.write(''.join(_include_code(f.readlines(), fp_gapfile)))
 
-        hash_program = get_codefiles_hash([fp_gapfile_combined] + [tpl[0] for tpl in fps_headerfiles])
+        hash_program = get_codefiles_hash(
+            [fp_gapfile_combined] + [tpl[0] for tpl in fps_headerfiles])
         with open(os.path.join(fp_workdir,
                                '%s.codehash' % hash_program), 'w') as f:
-            f.write('\n'.join([fp_gapfile_combined] + [tpl[0] for tpl in fps_headerfiles]))
+            f.write('\n'.join(
+                [fp_gapfile_combined] + [tpl[0] for tpl in fps_headerfiles]))
 
         # copy header source files into working directory
         for (fp_src, fp_relative_dst) in fps_headerfiles:
             if os.path.dirname(fp_relative_dst) != "":
-                os.makedirs(os.path.join(fp_workdir, os.path.dirname(fp_relative_dst)), exist_ok=True)
+                os.makedirs(os.path.join(
+                    fp_workdir, os.path.dirname(fp_relative_dst)),
+                    exist_ok=True)
             fp_dst = os.path.join(fp_workdir, fp_relative_dst)
             print(fp_src, fp_dst)
             shutil.copy(fp_src, fp_dst)

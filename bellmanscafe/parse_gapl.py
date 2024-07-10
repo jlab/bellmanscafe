@@ -397,7 +397,8 @@ def _include_code(lines, fp_current):
     for line in lines:
         hit = pattern.match(line)
         if hit is not None:
-            fp_subfile = os.path.join(os.path.dirname(fp_current), hit.group(1))
+            fp_subfile = os.path.join(
+                os.path.dirname(fp_current), hit.group(1))
             if os.path.exists(fp_subfile):
                 with open(fp_subfile, 'r') as f:
                     sublines = f.readlines()
@@ -422,7 +423,8 @@ def _header_includes(fp_prefix, imports):
                 if hit is not None:
                     fp_sub = os.path.join(os.path.dirname(imp), hit.group(1))
                     if os.path.exists(os.path.join(fp_prefix, fp_sub)):
-                        include_files.extend(_header_includes(fp_prefix, [fp_sub]))
+                        include_files.extend(
+                            _header_includes(fp_prefix, [fp_sub]))
     return list(set(include_files))
 
 
@@ -486,6 +488,7 @@ def parse_gapl(fp_program):
 
 def get_gapc_programs(fp_dir, verbose=sys.stderr):
     res = dict()
+    log("hier starte ich: %s" % fp_dir)
     for fp_gapl in sorted(glob.glob(os.path.join(fp_dir, '*.gap'))):
         name = fp_gapl.split('/')[-1][:-1*len('.gap')]
         log("Parsing '%s' ..." % os.path.basename(fp_gapl), 'info', verbose)
