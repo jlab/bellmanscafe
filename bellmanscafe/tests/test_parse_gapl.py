@@ -102,11 +102,13 @@ class ParseGAPLTests(TestCase):
         obs = parse_gapl('bellmanscafe/tests/data/alignments.gap')
         self.assertEqual([
             'algebras',
+            'codelines',
             'example_inputs',
             'footer',
             'grammars',
             'header',
             'imports',
+            'include_files',
             'inputs',
             'instances',
             'signatures'], sorted(obs.keys()))
