@@ -215,7 +215,7 @@ def compile_and_run_gapc(gapl_programs, user_input, settings,
         # create a gap file that contains all includes in working directory
         with open(fp_gapfile, 'r') as f:
             with open(fp_gapfile_combined, 'w') as w:
-                w.write(''.join(_include_code(f.readlines(), fp_gapfile)))
+                w.write(''.join(_include_code(f.readlines(), fp_gapfile)[0]))
 
         hash_program = get_codefiles_hash(
             [fp_gapfile_combined] + [tpl[0] for tpl in fps_headerfiles])
