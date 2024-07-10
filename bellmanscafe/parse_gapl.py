@@ -135,6 +135,9 @@ def _parse_gapl_header(block: [str]):
                     # only add external imports, i.e. those not in the rtlib
                     # flagged via double quotes
                     gapl_imports.append(external.replace('"', ''))
+                if external.startswith('//'):
+                    # once we encounter a comment, stop parsing
+                    break
         elif line.startswith('input '):
             # obtain right part of input line
             inp = ' '.join(line.split(' ')[1:])
@@ -380,10 +383,17 @@ def _extract_example_inputs(gapl):
 
 
 def _include_code(lines, fp_current):
-    """Make sub-file 'include' of gapc explicit by joining all code lines"""
+    """Make sub-file 'include' of gapc explicit by joining all code lines.
+
+    Returns
+    -------
+    [str], [str]: Tuple of two lists. First list are all code lines combined,
+                  second list contains included file paths.
+    """
     pattern = re.compile(r'\s*include "(.+)"')
 
     comb_lines = []
+    sub_files = []
     for line in lines:
         hit = pattern.match(line)
         if hit is not None:
@@ -391,11 +401,29 @@ def _include_code(lines, fp_current):
             if os.path.exists(fp_subfile):
                 with open(fp_subfile, 'r') as f:
                     sublines = f.readlines()
-                    comb_lines.extend(_include_code(sublines, fp_current))
+                    sub_files.append(fp_subfile)
+                    res_lines, res_files = _include_code(sublines, fp_current)
+                    comb_lines.extend(res_lines)
+                    sub_files.extend(res_files)
         else:
             comb_lines.append(line)
 
-    return comb_lines
+    return comb_lines, sub_files
+
+
+def _header_includes(fp_prefix, imports):
+    pattern = re.compile(r'^#include\s+"(\S+\.hh)"')
+
+    include_files = imports.copy()
+    for imp in imports:
+        with open(os.path.join(fp_prefix, imp), 'r') as f:
+            for line in f.readlines():
+                hit = pattern.match(line)
+                if hit is not None:
+                    fp_sub = os.path.join(os.path.dirname(imp), hit.group(1))
+                    if os.path.exists(os.path.join(fp_prefix, fp_sub)):
+                        include_files.extend(_header_includes(fp_prefix, [fp_sub]))
+    return list(set(include_files))
 
 
 def parse_gapl(fp_program):
@@ -408,7 +436,9 @@ def parse_gapl(fp_program):
         saw_grammar = False
         saw_instance = False
 
-        lines = _include_code(f.readlines(), fp_program)
+        lines, includefiles = _include_code(f.readlines(), fp_program)
+        gapl['include_files'] = includefiles
+        gapl['codelines'] = lines
         block = []
 
         for i in range(len(lines)):
@@ -446,6 +476,10 @@ def parse_gapl(fp_program):
 
     _shift_comments(gapl)
     gapl['example_inputs'] = _extract_example_inputs(gapl)
+
+    # extend recurvively included header files
+    gapl['imports'] = _header_includes(
+        os.path.dirname(fp_program), gapl['imports'])
 
     return gapl
 
