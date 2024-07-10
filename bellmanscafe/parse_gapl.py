@@ -2,6 +2,7 @@ import sys
 import glob
 import os
 import markdown
+import re
 from bellmanscafe.cafe import log
 
 
@@ -378,6 +379,25 @@ def _extract_example_inputs(gapl):
     return example_inputs
 
 
+def _include_code(lines, fp_current):
+    """Make sub-file 'include' of gapc explicit by joining all code lines"""
+    pattern = re.compile(r'\s*include "(.+)"')
+
+    comb_lines = []
+    for line in lines:
+        hit = pattern.match(line)
+        if hit is not None:
+            fp_subfile = os.path.join(os.path.dirname(fp_current), hit.group(1))
+            if os.path.exists(fp_subfile):
+                with open(fp_subfile, 'r') as f:
+                    sublines = f.readlines()
+                    comb_lines.extend(_include_code(sublines, fp_current))
+        else:
+            comb_lines.append(line)
+
+    return comb_lines
+
+
 def parse_gapl(fp_program):
     """Parses a GAP-L code file and returns elements in a dict structure."""
     gapl = dict()
@@ -388,7 +408,7 @@ def parse_gapl(fp_program):
         saw_grammar = False
         saw_instance = False
 
-        lines = f.readlines()
+        lines = _include_code(f.readlines(), fp_program)
         block = []
 
         for i in range(len(lines)):
