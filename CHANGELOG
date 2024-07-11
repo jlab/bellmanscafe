@@ -1,3 +1,6 @@
+v2.3
+  * switch to nose2 for testing
+
 v2.2
   * fix concurrency issues, see https://github.com/jlab/bellmanscafe/issues/60
 
