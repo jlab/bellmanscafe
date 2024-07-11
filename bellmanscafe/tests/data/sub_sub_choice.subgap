@@ -1,0 +1,3 @@
+  choice [Rope] h([Rope] candidates) {
+    return candidates;
+  }
