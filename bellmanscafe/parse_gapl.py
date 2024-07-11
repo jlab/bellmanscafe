@@ -2,6 +2,7 @@ import sys
 import glob
 import os
 import markdown
+import re
 from bellmanscafe.cafe import log
 
 
@@ -134,6 +135,10 @@ def _parse_gapl_header(block: [str]):
                     # only add external imports, i.e. those not in the rtlib
                     # flagged via double quotes
                     gapl_imports.append(external.replace('"', ''))
+                    break  # only import ONE quote enclosed file
+                if external.startswith('//'):
+                    # once we encounter a comment, stop parsing
+                    break
         elif line.startswith('input '):
             # obtain right part of input line
             inp = ' '.join(line.split(' ')[1:])
@@ -364,7 +369,7 @@ def _shift_comments(gapl):
 
 
 def _extract_example_inputs(gapl):
-    if 'example_inputs' in gapl:
+    if 'example_inputs' in gapl.keys():
         return gapl['example_inputs']
 
     example_inputs = []
@@ -378,6 +383,52 @@ def _extract_example_inputs(gapl):
     return example_inputs
 
 
+def _include_code(lines, fp_current):
+    """Make sub-file 'include' of gapc explicit by joining all code lines.
+
+    Returns
+    -------
+    [str], [str]: Tuple of two lists. First list are all code lines combined,
+                  second list contains included file paths.
+    """
+    pattern = re.compile(r'\s*include "(.+)"')
+
+    comb_lines = []
+    sub_files = []
+    for line in lines:
+        hit = pattern.match(line)
+        if hit is not None:
+            fp_subfile = os.path.join(
+                os.path.dirname(fp_current), hit.group(1))
+            if os.path.exists(fp_subfile):
+                with open(fp_subfile, 'r') as f:
+                    sublines = f.readlines()
+                    sub_files.append(fp_subfile)
+                    res_lines, res_files = _include_code(sublines, fp_current)
+                    comb_lines.extend(res_lines)
+                    sub_files.extend(res_files)
+        else:
+            comb_lines.append(line)
+
+    return comb_lines, sub_files
+
+
+def _header_includes(fp_prefix, imports):
+    pattern = re.compile(r'^#include\s+"(\S+\.hh)"')
+
+    include_files = imports.copy()
+    for imp in imports:
+        with open(os.path.join(fp_prefix, imp), 'r') as f:
+            for line in f.readlines():
+                hit = pattern.match(line)
+                if hit is not None:
+                    fp_sub = os.path.join(os.path.dirname(imp), hit.group(1))
+                    if os.path.exists(os.path.join(fp_prefix, fp_sub)):
+                        include_files.extend(
+                            _header_includes(fp_prefix, [fp_sub]))
+    return sorted(list(set(include_files)))
+
+
 def parse_gapl(fp_program):
     """Parses a GAP-L code file and returns elements in a dict structure."""
     gapl = dict()
@@ -388,7 +439,9 @@ def parse_gapl(fp_program):
         saw_grammar = False
         saw_instance = False
 
-        lines = f.readlines()
+        lines, includefiles = _include_code(f.readlines(), fp_program)
+        gapl['include_files'] = includefiles
+        gapl['codelines'] = lines
         block = []
 
         for i in range(len(lines)):
@@ -427,6 +480,10 @@ def parse_gapl(fp_program):
     _shift_comments(gapl)
     gapl['example_inputs'] = _extract_example_inputs(gapl)
 
+    # extend recurvively included header files
+    gapl['imports'] = _header_includes(
+        os.path.dirname(fp_program), gapl['imports'])
+
     return gapl
 
 
@@ -434,9 +491,12 @@ def get_gapc_programs(fp_dir, verbose=sys.stderr):
     res = dict()
     for fp_gapl in sorted(glob.glob(os.path.join(fp_dir, '*.gap'))):
         name = fp_gapl.split('/')[-1][:-1*len('.gap')]
-        log("Parsing '%s' ..." % os.path.basename(fp_gapl), 'info', verbose)
+        if verbose:
+            log("Parsing '%s' ..." % os.path.basename(fp_gapl),
+                'info', verbose)
         res[name] = parse_gapl(fp_gapl)
-        log(" found %i algebras, %i grammars and %i instances\n" % (
-            len(res[name]['algebras']), len(res[name]['grammars']),
-            len(res[name]['instances'])), 'info', verbose)
+        if verbose:
+            log(" found %i algebras, %i grammars and %i instances\n" % (
+                len(res[name]['algebras']), len(res[name]['grammars']),
+                len(res[name]['instances'])), 'info', verbose)
     return res

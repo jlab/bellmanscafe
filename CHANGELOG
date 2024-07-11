@@ -1,3 +1,6 @@
+v2.4
+  * In preparation of serving multiple source repositories, this PR extends the cafe's ability to handle source files that make (recursive) use of gapl includes or recursive header imports.
+
 v2.3
   * switch to nose2 for testing
 

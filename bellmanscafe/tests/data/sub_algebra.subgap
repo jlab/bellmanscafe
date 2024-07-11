@@ -1,0 +1,35 @@
+algebra alg_pretty implements sig_elmamun(alphabet=char, answer=Rope) {
+  Rope number(int value) {
+    Rope res;
+    append(res, value);
+    return res;
+  }
+  Rope add(Rope left, char opSymbol, Rope right) {
+    Rope res;
+    append(res, '(');
+    append(res, left);
+    append(res, opSymbol);
+    append(res, right);
+    append(res, ')');
+    return res;
+  }
+  Rope mult(Rope left, char opSymbol, Rope right) {
+    Rope res;
+    append(res, '(');
+    append(res, left);
+    append(res, opSymbol);
+    append(res, right);
+    append(res, ')');
+    return res;
+  }
+  Rope minus(Rope left, char opSymbol, Rope right) {
+    Rope res;
+    append(res, '(');
+    append(res, left);
+    append(res, opSymbol);
+    append(res, right);
+    append(res, ')');
+    return res;
+  }
+  include "sub_sub_choice.subgap"
+}

@@ -1,10 +1,11 @@
 import os
 
+from tempfile import mkstemp
 from flask import Flask, render_template, request, send_file
 import logging
 
 from bellmanscafe.cafe import obtain_cafe_settings, log
-from bellmanscafe.parse_gapl import get_gapc_programs
+from bellmanscafe.parse_gapl import (get_gapc_programs, parse_gapl)
 from bellmanscafe.execute import compile_and_run_gapc
 
 
@@ -47,10 +48,20 @@ if not os.path.exists("static/Resources"):
 
 
 # route for downloading a file
-@app.route("/<filename>/download")
+@app.route("/<path:filename>/download")
 def download_file(filename):
     p = filename
-    return send_file(os.path.join(settings['paths']['gapc_programs'], p),
+    fp_codefile = os.path.join(settings['paths']['gapc_programs'], p)
+    if fp_codefile.endswith(".gap"):
+        gapl = parse_gapl(fp_codefile)
+        if gapl['include_files'] != []:
+            # original code file 'includes' from further files
+            # produce a combined version for download here
+            _, fp_codefile = mkstemp()
+            with open(fp_codefile, 'w') as f:
+                f.write(''.join(gapl['codelines']))
+
+    return send_file(fp_codefile,
                      as_attachment=False, mimetype="text/plain")
 
 

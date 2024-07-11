@@ -1,9 +1,11 @@
+import os
 import sys
 sys.path.append('../')
 
 from unittest import TestCase, main  # noqa: E402
 from bellmanscafe.parse_gapl import _extract_comments, _parse_gapl_header, \
-    _merge, _parse_gapl_signature, parse_gapl   # noqa: E402
+    _merge, _parse_gapl_signature, parse_gapl, _include_code, \
+    _extract_example_inputs, _header_includes, get_gapc_programs   # noqa: E402
 
 
 class ParseGAPLTests(TestCase):
@@ -33,6 +35,9 @@ class ParseGAPLTests(TestCase):
             "codeLeft /* comment in the middle with http://url */ codeRight"])
 
         self.assertEqual(exp, obs)
+
+        with self.assertRaisesRegex(ValueError, 'Delimiter #FUSE# in block!'):
+            obs = _extract_comments(['Hello#FUSE#World'])
 
     def test_merge(self):
         obs = _merge(dict(),
@@ -88,6 +93,12 @@ class ParseGAPLTests(TestCase):
         self.assertEqual(['raw'], obs['inputs'])
         self.assertEqual(5, len(obs['header']['comments']))
 
+        obs = _parse_gapl_header(['import "1.hh" //"2.hh"\n'])
+        self.assertEqual(obs['imports'], ['1.hh'])
+
+        obs = _parse_gapl_header(['import "1.hh" "2.hh"\n'])
+        self.assertEqual(obs['imports'], ['1.hh'])
+
     def test_parse_gapl_signature(self):
         obs = _parse_gapl_signature([
             'signature sig_rna(alphabet, answer) {\n',
@@ -102,11 +113,13 @@ class ParseGAPLTests(TestCase):
         obs = parse_gapl('bellmanscafe/tests/data/alignments.gap')
         self.assertEqual([
             'algebras',
+            'codelines',
             'example_inputs',
             'footer',
             'grammars',
             'header',
             'imports',
+            'include_files',
             'inputs',
             'instances',
             'signatures'], sorted(obs.keys()))
@@ -154,6 +167,40 @@ class ParseGAPLTests(TestCase):
         self.assertEqual(17, len(obs['signatures']['sig_alignments']['code']))
 
         self.assertEqual(['ZEITGEIST', 'FREIZEIT'], obs['example_inputs'])
+
+    def test__include_code(self):
+        fp_root = 'bellmanscafe/tests/data/elmamun_include.gap'
+        with open(fp_root, "r") as f:
+            obs = _include_code(f.readlines(), fp_root)
+        exp_files = [os.path.join(os.path.dirname(fp_root), x)
+                     for x in ['sub_algebra.subgap', 'sub_sub_choice.subgap']]
+        self.assertEqual(obs[1], exp_files)
+
+        self.assertTrue('instance pp = gra_elmamun(alg_pretty);\n' in obs[0])
+        self.assertTrue(('algebra alg_pretty implements sig_elmamun('
+                         'alphabet=char, answer=Rope) {\n') in obs[0])
+        self.assertTrue('  choice [Rope] h([Rope] candidates) {\n' in obs[0])
+
+    def test__extract_example_inputs(self):
+        obs = _extract_example_inputs({'example_inputs': ['foo']})
+        self.assertEqual(obs, ['foo'])
+
+        gapl = {'instances': {'foo': {'comments': [
+            'example inputs: 1+2*3*4+5']}}}
+        self.assertEqual(_extract_example_inputs(gapl), ['1+2*3*4+5'])
+
+    def test__header_includes(self):
+        fp_root = 'bellmanscafe/tests/data/elmamun_include.gap'
+        gapl = parse_gapl(fp_root)
+        self.assertEqual(gapl['imports'], ['ext_1.hh', 'ext_sub_1.hh'])
+
+        obs = _header_includes('bellmanscafe/tests/data/', ['ext_1.hh'])
+        self.assertEqual(obs, ['ext_1.hh', 'ext_sub_1.hh'])
+
+    def test_get_gapc_programs(self):
+        self.assertEqual(
+            len(get_gapc_programs('bellmanscafe/tests/data/', verbose=None)),
+            5)
 
 
 if __name__ == '__main__':
