@@ -227,8 +227,10 @@ def compile_and_run_gapc(gapl_programs, user_input, settings,
             f.write('\n'.join(
                 [fp_gapfile_combined] + [tpl[0] for tpl in fps_headerfiles]))
 
-        # copy *.gap  and header source files into working directory
-        for (fp_src, fp_relative_dst) in [(fp_gapfile_combined, os.path.basename(fp_origgapfile))] + fps_headerfiles:
+        # copy *.gap (=fps_gapl) and header source files (=fps_headerfiles)
+        # into working directory
+        fps_gapl = [(fp_gapfile_combined, os.path.basename(fp_origgapfile))]
+        for (fp_src, fp_relative_dst) in fps_gapl + fps_headerfiles:
             if os.path.dirname(fp_relative_dst) != "":
                 os.makedirs(os.path.join(
                     fp_workdir, os.path.dirname(fp_relative_dst)),
