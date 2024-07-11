@@ -6,6 +6,7 @@ import base64
 import os
 import glob
 import time
+from tempfile import mkstemp
 
 from bellmanscafe.cafe import get_gapc_version, get_repo_commithash, log, \
     get_codefiles_hash
@@ -112,28 +113,33 @@ def compile_and_run_gapc(gapl_programs, user_input, settings,
                     for (pos, value)
                     in sorted(inputstrings, key=lambda x: x[0])]
 
-    fp_gapfile = os.path.join(settings['paths']['gapc_programs'],
-                              user_input['select_program']+'.gap')
-    # since an original gapc file might contain includes of sub-files,
-    # we first recursively combine the gapc file and store it in the working
-    # directory
-    fp_gapfile_combined = os.path.join(fp_workdir,
-                                       user_input['select_program']+'.gap')
+    # the gap file which the user intends to compile might have sub-file
+    # includes. Therefore we here generate one file that combines code from all
+    # potential includes as a temporary file
+    _, fp_gapfile_combined = mkstemp()
+    fp_origgapfile = os.path.join(settings['paths']['gapc_programs'],
+                                  user_input['select_program']+'.gap')
+    with open(fp_origgapfile, 'r') as fr:
+        with open(fp_gapfile_combined, 'w') as fw:
+            fw.write(''.join(_include_code(fr.readlines(), fp_origgapfile)[0]))
 
-    # list of tuples for src and dst file paths
+    # the gapL code might have imported external header files, they are listed
+    # in the "imports" key. We here create a list of tuples for file paths of
+    # these imports: [(path in file system, path relative to gapL)]
     fps_headerfiles = list(map(
         lambda x: (os.path.join(settings['paths']['gapc_programs'], x), x),
         gapl_programs[user_input['select_program']]['imports']))
+
     steps = {
         # 0) inject instance bcafe to original *.gap source file (as it might
         #    not be defined)
         # 1) transpiling via gapc
         'gapc': {'cmds': ('echo "\ninstance bcafe=%s;" >> "%s" '
                           '&& gapc -i "bcafe" --plot-grammar %s %s %s ') % (
-            instance, os.path.basename(fp_gapfile_combined),
+            instance, os.path.basename(fp_origgapfile),
             user_input['plot_grammar'],
             param_outside,
-            os.path.basename(fp_gapfile_combined))},
+            os.path.basename(fp_origgapfile))},
 
         # 2) convert grammar plot into gif
         'dot': {'cmds': 'dot -Tgif out.dot -o grammar.gif'},
@@ -212,20 +218,17 @@ def compile_and_run_gapc(gapl_programs, user_input, settings,
         os.makedirs(fp_workdir, exist_ok=True)
         log('create working directory "%s"\n' % fp_workdir, 'info', verbose)
 
-        # create a gap file that contains all includes in working directory
-        with open(fp_gapfile, 'r') as f:
-            with open(fp_gapfile_combined, 'w') as w:
-                w.write(''.join(_include_code(f.readlines(), fp_gapfile)[0]))
-
         hash_program = get_codefiles_hash(
             [fp_gapfile_combined] + [tpl[0] for tpl in fps_headerfiles])
         with open(os.path.join(fp_workdir,
                                '%s.codehash' % hash_program), 'w') as f:
+            # for debugging: content of the codehash file is the list of
+            # files used to come up with the hash value
             f.write('\n'.join(
                 [fp_gapfile_combined] + [tpl[0] for tpl in fps_headerfiles]))
 
-        # copy header source files into working directory
-        for (fp_src, fp_relative_dst) in fps_headerfiles:
+        # copy *.gap  and header source files into working directory
+        for (fp_src, fp_relative_dst) in [(fp_gapfile_combined, os.path.basename(fp_origgapfile))] + fps_headerfiles:
             if os.path.dirname(fp_relative_dst) != "":
                 os.makedirs(os.path.join(
                     fp_workdir, os.path.dirname(fp_relative_dst)),
