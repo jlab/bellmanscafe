@@ -135,6 +135,7 @@ def _parse_gapl_header(block: [str]):
                     # only add external imports, i.e. those not in the rtlib
                     # flagged via double quotes
                     gapl_imports.append(external.replace('"', ''))
+                    break  # only import ONE quote enclosed file
                 if external.startswith('//'):
                     # once we encounter a comment, stop parsing
                     break
@@ -368,7 +369,7 @@ def _shift_comments(gapl):
 
 
 def _extract_example_inputs(gapl):
-    if 'example_inputs' in gapl:
+    if 'example_inputs' in gapl.keys():
         return gapl['example_inputs']
 
     example_inputs = []
@@ -425,7 +426,7 @@ def _header_includes(fp_prefix, imports):
                     if os.path.exists(os.path.join(fp_prefix, fp_sub)):
                         include_files.extend(
                             _header_includes(fp_prefix, [fp_sub]))
-    return list(set(include_files))
+    return sorted(list(set(include_files)))
 
 
 def parse_gapl(fp_program):
@@ -488,12 +489,13 @@ def parse_gapl(fp_program):
 
 def get_gapc_programs(fp_dir, verbose=sys.stderr):
     res = dict()
-    log("hier starte ich: %s" % fp_dir)
     for fp_gapl in sorted(glob.glob(os.path.join(fp_dir, '*.gap'))):
         name = fp_gapl.split('/')[-1][:-1*len('.gap')]
-        log("Parsing '%s' ..." % os.path.basename(fp_gapl), 'info', verbose)
+        if verbose:
+            log("Parsing '%s' ..." % os.path.basename(fp_gapl), 'info', verbose)
         res[name] = parse_gapl(fp_gapl)
-        log(" found %i algebras, %i grammars and %i instances\n" % (
-            len(res[name]['algebras']), len(res[name]['grammars']),
-            len(res[name]['instances'])), 'info', verbose)
+        if verbose:
+            log(" found %i algebras, %i grammars and %i instances\n" % (
+                len(res[name]['algebras']), len(res[name]['grammars']),
+                len(res[name]['instances'])), 'info', verbose)
     return res
