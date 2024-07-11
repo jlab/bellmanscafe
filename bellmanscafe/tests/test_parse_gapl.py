@@ -1,3 +1,4 @@
+import os
 import sys
 sys.path.append('../')
 
@@ -5,7 +6,6 @@ from unittest import TestCase, main  # noqa: E402
 from bellmanscafe.parse_gapl import _extract_comments, _parse_gapl_header, \
     _merge, _parse_gapl_signature, parse_gapl, _include_code, \
     _extract_example_inputs, _header_includes, get_gapc_programs   # noqa: E402
-import os
 
 
 class ParseGAPLTests(TestCase):
@@ -198,7 +198,9 @@ class ParseGAPLTests(TestCase):
         self.assertEqual(obs, ['ext_1.hh', 'ext_sub_1.hh'])
 
     def test_get_gapc_programs(self):
-        self.assertEqual(len(get_gapc_programs('bellmanscafe/tests/data/', verbose=None)), 5)
+        self.assertEqual(
+            len(get_gapc_programs('bellmanscafe/tests/data/', verbose=None)),
+            5)
 
 
 if __name__ == '__main__':

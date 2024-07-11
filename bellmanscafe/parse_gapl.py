@@ -492,7 +492,8 @@ def get_gapc_programs(fp_dir, verbose=sys.stderr):
     for fp_gapl in sorted(glob.glob(os.path.join(fp_dir, '*.gap'))):
         name = fp_gapl.split('/')[-1][:-1*len('.gap')]
         if verbose:
-            log("Parsing '%s' ..." % os.path.basename(fp_gapl), 'info', verbose)
+            log("Parsing '%s' ..." % os.path.basename(fp_gapl),
+                'info', verbose)
         res[name] = parse_gapl(fp_gapl)
         if verbose:
             log(" found %i algebras, %i grammars and %i instances\n" % (
