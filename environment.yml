@@ -4,7 +4,7 @@ channels:
   - defaults
 dependencies:
   - flake8
-  - nose
+  - nose2
   - coverage >= 6  # to ensure lcov option is available
   - flask
   - gunicorn

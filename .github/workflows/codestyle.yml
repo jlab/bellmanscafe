@@ -68,7 +68,7 @@ jobs:
     - name: run python tests
       shell: bash -el {0}
       run: |
-        nosetests bellmanscafe --with-doctest --with-coverage
+        nose2 bellmanscafe --plugin nose2.plugins.doctests --with-doctest --with-coverage
     - name: convert coverage
       shell: bash -el {0}
       run: |
