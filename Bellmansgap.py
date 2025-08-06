@@ -37,7 +37,7 @@ gapl_programs = get_gapc_programs(settings['paths']['gapc_programs'])
 # static content for the cafe, e.g. images. To serve these, we need a symlink
 # from flask static dir into the Resources subdir of the repo.
 if not os.path.exists("static/Resources"):
-    os.symlink("../" + settings['paths']['gapc_programs'] + "Resources",
+    os.symlink(os.path.join(settings['paths']['gapc_programs'], "Resources"),
                "static/Resources")
 
 

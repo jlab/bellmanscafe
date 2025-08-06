@@ -11,32 +11,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: update apt
-      run: sudo apt-get update
-    - name: Install dependencies
-      run: sudo apt-get install python3 python3-pip
-
-    # configure conda
-    - name: Setup for conda
-      uses: conda-incubator/setup-miniconda@v2
-      with:
-        auto-update-conda: true
-        python-version: 3.9
-    - name: create conda env
+    - uses: actions/checkout@v3
+    - name: Install flake8
       run: |
-        conda config --add channels conda-forge
-        conda config --add channels anaconda
-        conda create -q --yes -n bellmanscafe python=3.9 flake8 markdown
-        conda init bash
-        source ~/.bashrc
-        conda activate bellmanscafe
-    - uses: actions/checkout@v2
-
+            pip install flake8
     - name: codestyle check
       run: |
-        conda init bash
-        source ~/.bashrc
-        conda activate bellmanscafe
         flake8
 
   python_tests:
@@ -45,35 +25,18 @@ jobs:
     steps:
     - name: Checkout Repo
       uses: actions/checkout@v3
-    - name: Set up Python
-      uses: actions/setup-python@v3
-    - name: setup conda
-      uses: conda-incubator/setup-miniconda@v2
-      with:
-        # This uses *miniforge*, rather than *minicond*. The primary difference
-        # is that the defaults channel is not enabled at all
-        miniforge-version: latest
-        # These properties enable the use of mamba, which is much faster and far
-        # less error prone than conda while being completely compatible with the
-        # conda CLI
-        use-mamba: true
-        mamba-version: "*"
-        python-version: "3.9"
-        environment-file: environment.yml
+    - name: Install pytest
+      run: |
+        pip install pytest-cov markdown
     - name: install gapc
       run: |
         sudo add-apt-repository ppa:janssenlab/software
         sudo apt-get update
         sudo apt-get install bellmansgapc
-    - name: run python tests
-      shell: bash -el {0}
+    - name: Execute tests
       run: |
-        nose2 bellmanscafe --plugin nose2.plugins.doctests --with-doctest --with-coverage
-    - name: convert coverage
-      shell: bash -el {0}
-      run: |
-        coverage lcov
-    - name: send coverage report
+        PYTHONPATH=. pytest --cov=bellmanscafe --cov-report=lcov
+    - name: Send coverage report to Coveralls
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}

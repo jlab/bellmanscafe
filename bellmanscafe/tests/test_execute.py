@@ -7,7 +7,7 @@ from unittest import TestCase, main  # noqa: E402
 from bellmanscafe.execute import compile_and_run_gapc  # noqa: E402
 
 
-class ParseGAPLTests(TestCase):
+class ExecuteTests(TestCase):
     def setUp(self):
         self.gapl_programs = {'alignments': {'imports': ["ext_alignment.hh"]}}
 
