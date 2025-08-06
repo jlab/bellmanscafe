@@ -35,7 +35,7 @@ jobs:
         sudo apt-get install bellmansgapc
     - name: Execute tests
       run: |
-        cd bellmanscafe && pytest --cov=bellmanscafe/bellmanscafe --cov-report=lcov
+        PYTHONPATH=. pytest --cov=bellmanscafe --cov-report=lcov
     - name: debug
       run: |
         ls -la bellmanscafe/coverage.lcov
@@ -44,4 +44,4 @@ jobs:
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: "bellmanscafe/coverage.lcov"
+        path-to-lcov: "coverage.lcov"
