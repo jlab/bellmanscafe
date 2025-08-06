@@ -110,7 +110,7 @@ class ParseGAPLTests(TestCase):
         self.assertEqual(['sig_rna'], list(obs['signatures'].keys()))
 
     def test_parse_gapl(self):
-        obs = parse_gapl('bellmanscafe/tests/data/alignments.gap')
+        obs = parse_gapl('tests/data/alignments.gap')
         self.assertEqual([
             'algebras',
             'codelines',
@@ -169,7 +169,7 @@ class ParseGAPLTests(TestCase):
         self.assertEqual(['ZEITGEIST', 'FREIZEIT'], obs['example_inputs'])
 
     def test__include_code(self):
-        fp_root = 'bellmanscafe/tests/data/elmamun_include.gap'
+        fp_root = 'tests/data/elmamun_include.gap'
         with open(fp_root, "r") as f:
             obs = _include_code(f.readlines(), fp_root)
         exp_files = [os.path.join(os.path.dirname(fp_root), x)
@@ -190,16 +190,16 @@ class ParseGAPLTests(TestCase):
         self.assertEqual(_extract_example_inputs(gapl), ['1+2*3*4+5'])
 
     def test__header_includes(self):
-        fp_root = 'bellmanscafe/tests/data/elmamun_include.gap'
+        fp_root = 'tests/data/elmamun_include.gap'
         gapl = parse_gapl(fp_root)
         self.assertEqual(gapl['imports'], ['ext_1.hh', 'ext_sub_1.hh'])
 
-        obs = _header_includes('bellmanscafe/tests/data/', ['ext_1.hh'])
+        obs = _header_includes('tests/data/', ['ext_1.hh'])
         self.assertEqual(obs, ['ext_1.hh', 'ext_sub_1.hh'])
 
     def test_get_gapc_programs(self):
         self.assertEqual(
-            len(get_gapc_programs('bellmanscafe/tests/data/', verbose=None)),
+            len(get_gapc_programs('tests/data/', verbose=None)),
             5)
 
 
