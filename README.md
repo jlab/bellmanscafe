@@ -1,3 +1,7 @@
+[![Tests_pass](https://github.com/jlab/bellmanscafe/actions/workflows/codestyle.yml/badge.svg?branch=main)](https://github.com/jlab/bellmanscafe/actions/workflows/codestyle.yml)
+
+[![Coverage Status](https://coveralls.io/repos/github/jlab/bellmanscafe/badge.svg?branch=main)](https://coveralls.io/github/jlab/bellmanscafe?branch=main)
+
 # Bellman's Cafe
 
 Interactive web-pages to explore Algebraic Dynamic Programming with live examples. Online version at [bellmanscafe.jlab.bio](http://bellmanscafe.jlab.bio)
