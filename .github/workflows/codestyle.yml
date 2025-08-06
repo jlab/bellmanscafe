@@ -47,7 +47,7 @@ jobs:
       uses: actions/checkout@v3
     - name: Install pytest
       run: |
-        pip install pytest-cov
+        pip install pytest-cov markdown
     - name: install gapc
       run: |
         sudo add-apt-repository ppa:janssenlab/software
