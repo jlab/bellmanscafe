@@ -27,7 +27,7 @@ jobs:
       - name: Read version from file
         id: vars
         run: |
-          VERSION=$(cat bellmanscafe/instance/example_secret_config.py | grep CAFE_VERSION | cut -d '=' -f 2 | tr -d " ")
+          VERSION=$(cat instance/example_secret_config.py | grep CAFE_VERSION | cut -d '=' -f 2 | tr -d " ")
           echo "IMAGE_TAG=$VERSION" >> $GITHUB_ENV
 
       - name: Build and push Docker image
