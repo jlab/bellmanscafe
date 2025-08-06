@@ -40,8 +40,8 @@ WORKDIR /src/bellmanscafe
 RUN mkdir -p ${DIR_LOGS} ${DIR_CACHE}
 
 # create flask configuration file from template
-COPY instance/example_secret_config.py instance/example_secret_config.py
-COPY Bellmansgap.py Bellmansgap.py
+# COPY instance/example_secret_config.py instance/example_secret_config.py
+# COPY Bellmansgap.py Bellmansgap.py
 RUN cp instance/example_secret_config.py instance/secret_config.py
 RUN bash -c 'sed -i "s|DIR_LOGS|${DIR_LOGS}|g" instance/secret_config.py'
 RUN bash -c 'sed -i "s|DIR_CACHE|${DIR_CACHE}|g" instance/secret_config.py'

@@ -1,3 +1,6 @@
+v2.5
+  * First real attempt to dockerrize the server. Minor fixes in the code and an example configuration were necessary.
+
 v2.4
   * In preparation of serving multiple source repositories, this PR extends the cafe's ability to handle source files that make (recursive) use of gapl includes or recursive header imports.
 

@@ -47,7 +47,7 @@ FP_GAPC_PROGRAMS = 'DIR_PROBLEMS'
 FP_CACHE = 'DIR_CACHE'
 
 # don't forget to leave a changelog message
-CAFE_VERSION = "2.4"
+CAFE_VERSION = "2.5"
 
 # maximum number of allowed algebras
 MAX_ALGEBRAS = 5
