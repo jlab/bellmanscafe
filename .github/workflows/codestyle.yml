@@ -55,7 +55,7 @@ jobs:
         sudo apt-get install bellmansgapc
     - name: Execute tests
       run: |
-        cd bellmansgap && pytest --cov=bellmanscafe --cov-report=lcov
+        cd bellmanscafe && pytest --cov=bellmanscafe --cov-report=lcov
     - name: Send coverage report to Coveralls
       uses: coverallsapp/github-action@master
       with:
