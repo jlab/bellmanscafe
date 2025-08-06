@@ -24,7 +24,7 @@ Interactive web-pages to explore Algebraic Dynamic Programming with live example
 
 1. Hosting bellmanscafe should be easy as you "just" need to pull/build and than run the docker container.
     a) **build**: sudo docker buildx build . -f Dockerfile -t bellmanscafe
-    b) **pull**: 
+    b) **pull**: `docker pull janssenlab/bellmanscafe:latest`
 2. Once the image is available (through building or pulling), you can run it as an container via `sudo docker run -p 8000:8000 -it bellmanscafe`
     - note that you have to forward port 8000 from the container to your host. This port can be re-configured in the Dockerfile
     - to make debugging more easy, I suggest you mount two host directories to "/LOGS" and "/CACHE" directories, such that they become persistent even if you restart your container, e.g. by adding `-v /home/sjanssen/bellmanscafe/CACHE/:/CACHE/` and `-v /home/sjanssen/bellmanscafe/LOGS/:/LOGS/` to your `docker build` command. (You need to modify `/home/sjanssen/bellmanscafe` of course!)
