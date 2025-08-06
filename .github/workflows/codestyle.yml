@@ -45,36 +45,19 @@ jobs:
     steps:
     - name: Checkout Repo
       uses: actions/checkout@v3
-    - name: Set up Python
-      uses: actions/setup-python@v3
-    - name: setup conda
-      uses: conda-incubator/setup-miniconda@v2
-      with:
-        # This uses *miniforge*, rather than *minicond*. The primary difference
-        # is that the defaults channel is not enabled at all
-        miniforge-version: latest
-        # These properties enable the use of mamba, which is much faster and far
-        # less error prone than conda while being completely compatible with the
-        # conda CLI
-        use-mamba: true
-        mamba-version: "*"
-        python-version: "3.9"
-        environment-file: environment.yml
+    - name: Install pytest
+      run: |
+        pip install pytest-cov
     - name: install gapc
       run: |
         sudo add-apt-repository ppa:janssenlab/software
         sudo apt-get update
         sudo apt-get install bellmansgapc
-    - name: run python tests
-      shell: bash -el {0}
+    - name: Execute tests
       run: |
-        nose2 bellmanscafe --plugin nose2.plugins.doctests --with-doctest --with-coverage
-    - name: convert coverage
-      shell: bash -el {0}
-      run: |
-        coverage lcov
-    - name: send coverage report
+        cd bellmansgap && pytest --cov=bellmanscafe --cov-report=lcov
+    - name: Send coverage report to Coveralls
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: "coverage.lcov"
+        path-to-lcov: "bellmanscafe/coverage.lcov"
